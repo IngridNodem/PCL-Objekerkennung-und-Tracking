@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <!-- Paket-Metadaten -->
+  <name>ouster_cpp</name>
+  <version>0.0.1</version>
+  <description>ROS-2-Pipeline für Ouster-LiDAR: Crop-Box, Voxelgrid, Bodensegmentierung (RANSAC), Clustering, Bounding-Boxes und RViz-Markierungen sowie Roh-Detektionen für Tracking.</description>
+
+  <!-- Betreuer/Autor -->
+  <maintainer email="ingrid@todo.todo">Ingrid Nodem L. N</maintainer>
+  <license>BSD-3-Clause</license>
+
+  <!-- Buildsystem -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- Kernabhängigkeiten: zur Kompilierzeit benötigt -->
+  <build_depend>rclcpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>visualization_msgs</build_depend>
+  <build_depend>pcl_conversions</build_depend>
+  <build_depend>vision_msgs</build_depend>
+
+  <!-- Export für Abhängigkeitsweitergabe an abhängige Pakete -->
+  <build_export_depend>rclcpp</build_export_depend>
+  <build_export_depend>sensor_msgs</build_export_depend>
+  <build_export_depend>visualization_msgs</build_export_depend>
+  <build_export_depend>pcl_conversions</build_export_depend>
+  <build_export_depend>vision_msgs</build_export_depend>
+
+  <!-- Laufzeitabhängigkeiten (wenn die Nodes ausgeführt werden) -->
+  <exec_depend>rclcpp</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>visualization_msgs</exec_depend>
+  <exec_depend>pcl_conversions</exec_depend>
+  <exec_depend>vision_msgs</exec_depend>
+
+  <!-- Systembibliotheken via rosdep (Plattform-abhängig aufgelöst) -->
+  <!-- PCL für Punktwolkenverarbeitung -->
+  <build_depend>libpcl-all-dev</build_depend>
+  <!-- Eigen3 für lineare Algebra (Kalman etc.) -->
+  <build_depend>eigen</build_depend>
+  <!-- Optional (empfohlen): erleichtert find_package(Eigen3) in CMake -->
+  <!-- <build_depend>eigen3_cmake_module</build_depend>
+  <build_export_depend>eigen3_cmake_module</build_export_depend>
+  <exec_depend>eigen3_cmake_module</exec_depend> -->
+
+  <!-- Tests (optional) -->
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <!-- Export-Block für ament -->
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
+
