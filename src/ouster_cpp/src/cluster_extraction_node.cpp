@@ -12,7 +12,6 @@
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/common/common.h>
 #include <pcl/features/moment_of_inertia_estimation.h>
-
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <string>
@@ -105,6 +104,8 @@ private:
     {
       visualization_msgs::msg::Marker m;
       m.header = msg->header;
+      // Zeitstempel auf Sendezeit setzen (Latenzmessung)
+      m.header.stamp = this->now();
       m.action = visualization_msgs::msg::Marker::DELETEALL;
       viz_arr.markers.push_back(m);
     }
@@ -112,6 +113,8 @@ private:
     // Ausgabecontainer für den Tracker
     vision_msgs::msg::Detection3DArray det_arr;
     det_arr.header = msg->header;
+    // Zeitstempel auf Sendezeit setzen (Latenzmessung)
+    det_arr.header.stamp = this->now();
 
     if (cloud->empty()) {
       pub_markers_->publish(viz_arr);
@@ -179,6 +182,7 @@ private:
       // ----------------------------
       visualization_msgs::msg::Marker box;
       box.header = msg->header;
+      box.header.stamp = this->now();
       box.ns = "clusters";
       box.id = id;
       box.type = visualization_msgs::msg::Marker::CUBE;
@@ -198,6 +202,7 @@ private:
 
       visualization_msgs::msg::Marker label;
       label.header = msg->header;
+      label.header.stamp = this->now();
       label.ns = "clusters_labels";
       label.id = 100000 + id;
       label.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
@@ -219,7 +224,8 @@ private:
       // (B) Detection3D für den Tracker
       // ----------------------------
       vision_msgs::msg::Detection3D det;
-      det.header = msg->header;
+      // Gleicher Frame, aktuelle Zeit (Latenzmessung)
+      det.header = det_arr.header;
       det.bbox.center.position.x = center.x();
       det.bbox.center.position.y = center.y();
       det.bbox.center.position.z = center.z();

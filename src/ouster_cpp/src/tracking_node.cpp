@@ -327,11 +327,14 @@ private:
   void publishTracks(const std_msgs::msg::Header& header) {
     vision_msgs::msg::Detection3DArray out;
     out.header = header;
+    // Zeitstempel: aktuelle Zeit für Latenzmessung
+    out.header.stamp = this->now();
 
     visualization_msgs::msg::MarkerArray markers;
     {
       visualization_msgs::msg::Marker del;
       del.header = header;
+      del.header.stamp = this->now();
       del.action = visualization_msgs::msg::Marker::DELETEALL;
       markers.markers.push_back(del);
     }
@@ -363,7 +366,8 @@ private:
 
       // Detection3D befüllen (inkl. Orientierung aus Track)
       vision_msgs::msg::Detection3D det;
-      det.header = header;
+      // Gleicher Frame, aktuelle Zeit wie im Array-Header
+      det.header = out.header;
       det.bbox.center.position.x = x;
       det.bbox.center.position.y = y;
       det.bbox.center.position.z = t.z;
@@ -385,6 +389,7 @@ private:
       // RViz Marker (mit derselben Orientierung)
       visualization_msgs::msg::Marker box;
       box.header = header;
+      box.header.stamp = this->now();
       box.ns = "tracks";
       box.id = t.id;
       box.type = visualization_msgs::msg::Marker::CUBE;
@@ -404,6 +409,7 @@ private:
 
       visualization_msgs::msg::Marker label;
       label.header = header;
+      label.header.stamp = this->now();
       label.ns = "tracks_labels";
       label.id = 100000 + t.id;
       label.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;

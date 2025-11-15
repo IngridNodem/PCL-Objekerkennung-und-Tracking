@@ -94,6 +94,8 @@ private:
     // Leere Wolke -> leere Ausgabe mit Header
     if (msg->width == 0 || msg->height == 0) {
       sensor_msgs::msg::PointCloud2 empty; empty.header = msg->header;
+      // Zeitstempel auf Sendezeit setzen (Latenzmessung)
+      empty.header.stamp = this->now();
       pub_->publish(empty); return;
     }
 
@@ -162,6 +164,8 @@ private:
 
     sensor_msgs::msg::PointCloud2 out;
     out.header = msg->header;
+    // Zeitstempel auf Sendezeit setzen (Latenzmessung)
+    out.header.stamp = this->now();
     out.height = 1;
     out.width  = static_cast<uint32_t>(n);
     out.is_bigendian = false;

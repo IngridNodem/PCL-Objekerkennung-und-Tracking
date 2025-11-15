@@ -18,8 +18,13 @@ public:
     // --- Parameter (I/O und Grenzen der Zuschneide-Box)
     input_topic_  = declare_parameter<std::string>("input_topic",  "/ouster/points");
     output_topic_ = declare_parameter<std::string>("output_topic", "/points_cropped");
-    min_bound_    = get_vec3_param("min_bound", {-20.0, -15.0, -3.0});
-    max_bound_    = get_vec3_param("max_bound", { 20.0,  15.0,  5.0});
+    // Grenzen als Parameter (Double-Array) wirklich lesen; Defaults wie bisher
+    {
+      const auto vmin = declare_parameter<std::vector<double>>("min_bound", {-20.0, -15.0, -3.0});
+      const auto vmax = declare_parameter<std::vector<double>>("max_bound", { 20.0,  15.0,  5.0});
+      min_bound_ = vec3_from_param(vmin, {static_cast<float>(-20.0f), static_cast<float>(-15.0f), static_cast<float>(-3.0f)});
+      max_bound_ = vec3_from_param(vmax, {static_cast<float>( 20.0f), static_cast<float>( 15.0f), static_cast<float>( 5.0f)});
+    }
 
     // Dynamische Re-Konfiguration (optional): aktualisiert lokale Parameterwerte
     param_cb_ = this->add_on_set_parameters_callback(
@@ -62,14 +67,6 @@ public:
   }
 
 private:
-  // --- Helfer: liest einen Vektor-Parameter (3 Elemente) mit Fallback
-  static std::array<float,3> get_vec3_param(const std::string& name, const std::array<double,3>& def) {
-    // Robuste Übernahme der Standardwerte (der Klarheit halber ohne direkte Parameterabfrage)
-    std::array<float,3> out;
-    out[0]=def[0]; out[1]=def[1]; out[2]=def[2];
-    return out;
-  }
-
   // --- Helfer: wandelt vector<double> in std::array<float,3> um (bei falscher Größe Fallback)
   static std::array<float,3> vec3_from_param(const std::vector<double>& v, const std::array<float,3>& fallback) {
     if (v.size() != 3) return fallback;
@@ -91,6 +88,8 @@ private:
       // Leere Punktwolke mit kopiertem Header ausgeben
       sensor_msgs::msg::PointCloud2 empty;
       empty.header = msg->header;
+      // Zeitstempel für Latenzmessung auf Sendezeit setzen
+      empty.header.stamp = this->now();
       pub_->publish(empty);
       return;
     }
@@ -154,6 +153,8 @@ private:
     // --- Aufbau der Ausgabepunktwolke mit festem Layout (20 Byte pro Punkt)
     sensor_msgs::msg::PointCloud2 out;
     out.header = msg->header;
+    // Zeitstempel für Latenzmessung auf Sendezeit setzen
+    out.header.stamp = this->now();
     out.height = 1;
     out.width  = static_cast<uint32_t>(n);
     out.is_bigendian = false;

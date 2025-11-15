@@ -70,6 +70,8 @@ private:
         sensor_msgs::msg::PointCloud2 out_msg;
         pcl::toROSMsg(*obstacles, out_msg);
         out_msg.header = msg->header;
+        // Zeitstempel auf Sendezeit setzen (Latenzmessung)
+        out_msg.header.stamp = this->now();
         pub_->publish(out_msg);
     }
 
