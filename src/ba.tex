@@ -1,0 +1,1653 @@
+
+% !TeX program = pdflatex
+\documentclass[12pt,a4paper,oneside]{scrreprt}
+
+% ---------- Packages ----------
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[ngerman]{babel}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{csquotes}
+\usepackage[printonlyused]{acronym}
+\usepackage{tocbasic} % better control of ToC lists
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{titling}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{pgf-pie}
+\usepackage{booktabs} 
+\usepackage{siunitx}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\setlength{\parindent}{0pt} 
+\setlength{\parskip}{6pt}
+
+% ---------- Page Setup ----------
+\geometry{left=30mm,right=20mm,top=20mm,bottom=30mm}
+\onehalfspacing
+\setkomafont{sectioning}{\normalfont\bfseries}
+\setkomafont{disposition}{\normalfont\bfseries}
+\renewcommand{\arraystretch}{1.2}
+
+% ---------- Header / Footer ----------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage\ / \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0pt}
+
+% --- Seitenränder ---
+\usepackage[a4paper, left=3cm, right=2cm, top=2cm, bottom=3cm]{geometry}
+
+% --- Kopf- und Fußzeilen ---
+\usepackage{fancyhdr}
+\usepackage{graphicx} % Für das Logo
+\usepackage{lastpage} % Für "Seite X von Y" falls benötigt
+
+% --- Stil für alle Seiten ---
+\pagestyle{fancy}
+
+% Kopfzeile leeren
+\fancyhead{}
+\fancyfoot{}
+
+% --- Kopfzeile: links = Kapitelname, rechts = Logo ---
+\fancyhead[L]{\nouppercase{\leftmark}} % aktueller Kapitelname
+\fancyhead[R]{\includegraphics[height=1cm]{Bilder/TH_Nuernberg_Logo.png}} % passe den Pfad an!
+
+% --- Fußzeile: Seitenzahlen zentriert ---
+\fancyfoot[C]{\thepage}
+
+% --- Linien unter/über Kopf- und Fußzeile ---
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% --- Optional: Stil für Kapitelanfangsseiten (ohne Logo) ---
+\fancypagestyle{plain}{
+  \fancyhead{}
+  \fancyfoot[C]{\thepage}
+  \renewcommand{\headrulewidth}{0pt}
+}
+
+% ---------- Metadata ----------
+\newcommand{\arbeitstitel}{Entwicklung und Evaluierung von Algorithmen zur Umfelderkennung auf Basis hochauflösender 360°-LiDAR-Sensordaten}
+\newcommand{\autor}{Ingrid Nodem Lambou}
+\newcommand{\erstpruefer}{Prof. Dr. Christina Singer}
+\newcommand{\zweitpruefer}{Prof. Dr. Christian Pfitzner}
+\newcommand{\ort}{Nürnberg}
+\newcommand{\abgabedatum}{30.11.2025}
+\newcommand{\studiengang}{Mechatronik/Feinwerktechnik (B.\,Eng.)}
+\newcommand{\matrikelnr}{3584699}
+\newcommand{\studienschwerpunkt}{\textit{(eintragen)}} % Placeholder
+\newcommand{\firma}{\textit{(eintragen)}} % Placeholder
+\newcommand{\firmenbetreuer}{\textit{(Name, Abt., Tel.-Nr.)}} % Placeholder
+\newcommand{\ausgabedatum}{\textit{(eintragen)}} % Placeholder
+
+%-----------Literatur--------------
+%-----------Literatur--------------
+\usepackage[backend=biber,style=authoryear,sorting=nyt,maxbibnames=99]{biblatex}
+\addbibresource{literatur.bib} % nom exact du .bib
+
+%--Document can have many numberedd subsection---
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3} % (optionnel : pour qu'elles apparaissent aussi dans la table des matières)
+
+% --- TikZ für Flussdiagramme ---
+\usepackage[utf8]{inputenc}  % encodage
+\usepackage[T1]{fontenc}     % caractères accentués
+\usepackage[ngerman]{babel}  % ou [french] selon la langue
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows, positioning}
+
+% --- Stile für Flowchart-Knoten und Pfeile ---
+\tikzset{
+  startstop/.style = {rectangle, rounded corners, minimum width=3.2cm,
+    minimum height=1.0cm, text centered, draw=black, fill=red!30},
+  process/.style   = {rectangle, minimum width=3.6cm, minimum height=1.0cm,
+    text centered, draw=black, fill=orange!30},
+  arrow/.style     = {thick,->,>=stealth}
+}
+
+% ---------- Document ----------
+\begin{document}
+\pagenumbering{Roman}
+
+% ====== Offizielles Deckblatt (Hochschule) ======
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+    {\Large\textbf{Bachelorarbeit}}\\[1.5cm]
+    {\LARGE\textbf{\arbeitstitel}}\\[1.5cm]
+    \begin{tabular}{@{}ll@{}}
+        \textbf{Autor:} & \autor \\
+        \textbf{Erstgutachter:} & \erstpruefer \\
+        \textbf{Zweitgutachter:} & \zweitpruefer \\
+        \textbf{Ort, Abgabetermin:} & \ort, \abgabedatum \\
+    \end{tabular}
+    \vfill
+\end{titlepage}
+\cleardoublepage
+
+% ====== Offizielles Deckblatt (Formular) ======
+\begin{titlepage}
+    \centering
+    {\Large\textbf{Offizielles Deckblatt Bachelorarbeit}}\\[1.2cm]
+    \begin{tabular}{@{}p{5cm}p{9cm}@{}}
+        \textbf{Bearbeiter:} & \autor \dotfill \\[0.3cm]
+        \textbf{Matrikel-Nr.:} & \matrikelnr \dotfill \\[0.3cm]
+        \textbf{Studiengang:} & \studiengang \dotfill \\[0.3cm]
+        \textbf{Studienschwerpunkt:} & \studienschwerpunkt \dotfill \\[0.3cm]
+        \textbf{Erstprüfer:} & \erstpruefer \dotfill \\[0.3cm]
+        \textbf{Zweitprüfer:} & \zweitpruefer \dotfill \\[0.3cm]
+        \textbf{Durchgeführt bei der Firma:} & \firma \dotfill \\[0.3cm]
+        \textbf{Betreuer innerhalb der Firma:} & \firmenbetreuer \dotfill \\[0.3cm]
+        \textbf{Ausgabedatum:} & \ausgabedatum \dotfill \\[0.3cm]
+        \textbf{Abgabedatum:} & \abgabedatum \dotfill \\[0.8cm]
+        \textbf{Thema der Arbeit:} & \arbeitstitel \\[0.8cm]
+        \textbf{Die Arbeit ist frei einsehbar:} & $\Box$ Ja \quad $\Box$ Nein \\[0.8cm]
+        \textbf{Die Arbeit darf nur mit Zustimmung von:} & \textit{(bei Firmenarbeiten Name, Abt., Tel.-Nr.)} \dotfill \\
+    \end{tabular}
+    \vfill
+\end{titlepage}
+\cleardoublepage
+
+% ====== Prüfungsrechtliche ErklÃ¤rung ======
+\chapter*{Prüfungsrechtliche Erklärung}
+Hiermit versichere ich, dass ich die vorliegende Bachelorarbeit selbstständig verfasst und keine anderen als die angegebenen Quellen und Hilfsmittel benutzt habe. Alle Stellen, die wörtlich oder sinngemäß aus veröffentlichten oder nicht veröffentlichten Quellen entnommen wurden, sind als solche kenntlich gemacht. Diese Arbeit wurde in gleicher oder ähnlicher Form noch keiner anderen Prüfungsbehörde vorgelegt.\\[1.2cm]
+\textbf{Nürnberg, \abgabedatum}\\[0.8cm]
+\autor \dotfill
+\cleardoublepage
+
+% ====== Kurzfassung / Zusammenfassung ======
+\chapter*{Kurzfassung}
+\addcontentsline{toc}{chapter}{Kurzfassung}
+\noindent
+\textit{Hier Kurzzusammenfassung in deutscher Sprache einfügen.} % Placeholder
+
+\cleardoublepage
+
+% ====== Inhalts- und Verzeichnisse ======
+\tableofcontents
+\cleardoublepage
+
+\listoffigures
+\addcontentsline{toc}{chapter}{Abbildungsverzeichnis}
+\cleardoublepage
+
+\listoftables
+\addcontentsline{toc}{chapter}{Tabellenverzeichnis}
+\cleardoublepage
+
+\chapter*{Abkürzungsverzeichnis}
+\addcontentsline{toc}{chapter}{Abkürzungsverzeichnis}
+\begin{acronym}[LiDAR]
+    \acro{LiDAR}{Light Detection and Ranging}
+    \acro{ROS}{Robot Operating System}
+    \acro{ToF}{Time of Flight}
+    \acro{BEV}{Bird's Eye View}
+    \acro{IoU}{Intersection over Union}
+    \acro{KF}{Kalman-Filter}
+    \acro{CV}{Constant Velocity}
+    \acro{TTL}{Time To Live}
+    \acro{EMA}{Exponentielle gleitende Mittelung}
+    \acro{QoS}{Quality of Service}
+    \acro{MOTA}{Multiple Object Tracking Accuracy}
+    \acro{MOTP}{Multiple Object Tracking Precision}
+    \acro{IDF1}{ID-based F1-Score}
+    \acro{HOTA}{Higher Order Tracking Accuracy}
+    \acro{RViz}{ROS Visualization Tool}
+\end{acronym}
+
+
+\cleardoublepage
+
+\pagenumbering{arabic}
+
+% ====== 1 Einleitung ======
+\chapter{Einleitung}
+
+\section{Hinführung}
+Autonome und hochautomatisierte Fahrfunktionen sind auf eine präzise, robuste und nachvollziehbare Umfelderfassung angewiesen, um sicherheitskritische Entscheidungen treffen zu können. Während Kameras vor allem für semantische Informationen genutzt werden und Radar Distanz sowie Relativgeschwindigkeit zuverlässig erfasst, liefert LiDAR dichte, dreidimensionale Punktwolken mit hoher Winkelauflösung und weitgehend konstanter Leistungsfähigkeit bei unterschiedlichen Lichtverhältnissen \parencite{Arnold2019Survey}. Dadurch bildet LiDAR in modernen Wahrnehmungsarchitekturen einen zentralen Baustein der Hinderniserkennung, Segmentierung und Objektverfolgung.
+
+Am Institut für Fahrzeugtechnik Nürnberg (IFZN) wurde die LiDAR-gestützte Umfelderfassung bereits in mehreren Projekten untersucht. Einen wesentlichen Beitrag hierzu lieferte die Masterarbeit von Wendel (2025), in der eine Sensorplattform auf einem Opel Astra realisiert sowie eine erste ROS~2-basierte Messkette zur Analyse von Punktwolken implementiert wurde \parencite{Wendel2025}. Diese bestehende Infrastruktur – bestehend aus Datenerfassung, ROS~2-Publish/Subscribe-Architektur, dSPACE-Anbindung und Visualisierung über \textit{RViz2} – bildet die Grundlage der vorliegenden Arbeit.
+
+Aufbauend auf dem Messkonzept von Wendel fokussiert diese Arbeit den Ouster~OS1, einen 360°-LiDAR mit hoher Kanalanzahl und einer Datenrate im Millionenbereich pro Sekunde \parencite{OusterOS1}. Die erzeugten Punktwolken eröffnen ein hohes Potenzial für eine präzise Objektidentifikation im urbanen Umfeld, stellen jedoch gleichzeitig hohe Anforderungen an Datenvorverarbeitung, Bodenfilterung, Clusterbildung und Tracking in (nahezu) Echtzeit.
+
+Für eine reproduzierbare, modulare und echtzeitfähige Verarbeitung das Robot Operating System 2 (ROS~2) eingesetzt, das durch standardisierte Nachrichtenformate, deterministische Kommunikationsmechanismen und integrierte Visualisierungstools ein etabliertes Softwareframework für mobile Robotersysteme darstellt \parencite{Macenski2022ROS2,ROS2Docs}. Die vorliegende Arbeit erweitert die bestehende Messkette um Filter-, Segmentierungs- und Trackingmodule , welche die Punktwolke Schritt für Schritt in semantisch verwertbare Objektlisten überführen.
+
+\section{Themenspezifizierung und Abgrenzung}
+Ziel dieser Arbeit ist die Entwicklung und Evaluierung einer modularen, echtzeitnahen Pipeline zur LiDAR‑basierten Umfelderkennung auf Basis hochauflösender 360\textdegree{}‑Daten. Im Fokus stehen die qualitätssteigernde Vorverarbeitung (u.\,a. Ausreißerreduktion, Downsampling), (ii) eine robuste Bodensegmentierung für unterschiedliche Szenarien, (iii) die extraktionssichere Bildung von Clustern und zugehörigen Bounding‑Boxen sowie (iv) die objektspezifische Verfolgung. Die Implementierung erfolgt in ROS~2 mit dem Ziel, klare Schnittstellen, reproduzierbare Experimente und eine messbare Laufzeitgüte zu erzielen.
+
+Nicht Bestandteil der Arbeit sind Sensorfusion mit Kamera/Radar, semantische Segmentierung mittels großskaliger neuronaler Netze inklusive umfangreicher Trainingsläufe, sowie kartengestützte Lokalisierung und globale Trajektorienplanung. Ebenfalls außerhalb des Fokus liegen Hardware‑Design und optoelektronische Auslegung des Sensors, eine sicherheitstechnische Zertifizierung sowie herstellerübergreifende Performancevergleiche jenseits der eingesetzten Ouster‑OS1‑Konfiguration. Kalibrierung wird auf die für die Verarbeitung erforderliche Extrinsik/Zeitsynchronisation begrenzt; eine detaillierte Analyse der Langzeitdrift ist nicht Gegenstand.
+
+\section{Forschungsfragen}
+Zur Zielerreichung werden u.\,a. folgende Fragen untersucht:
+\begin{enumerate}[label=\textbf{F\arabic*})]
+  \item Welche Vorverarbeitungsstrategien verbessern die Datenqualität bei vertretbarer Laufzeit und stabiler End‑zu‑Ende‑Latenz?
+  \item Welche Verfahren zur Bodensegmentierung erreichen die beste Balance aus Genauigkeit (z.\,B. IoU) und Robustheit über Szenarien hinweg ? 
+  \item Wie wirken sich Vorverarbeitung und Bodensegmentierung auf die nachgelagerte Objektbildung (Clustering/Bounding‑Boxes) und Detektion aus (z.\,B. Precision/Recall)?
+  \item Wie lässt sich die Pipeline in ROS~2 so integrieren, dass deterministische Verarbeitung und geforderte Durchsatzraten (FPS) erreicht werden, ohne die Erkennungsleistung signifikant zu kompromittieren?
+\end{enumerate}
+
+\section{Beitrag der Arbeit}
+Die Arbeit leistet folgende Beiträge:
+\begin{itemize}
+  \item Entwurf und Implementierung einer modularen ROS~2‑Pipeline für Vorverarbeitung, Bodensegmentierung, Cluster‑ und Box‑Bildung sowie Tracking auf Basis eines Ouster~OS1‑Sensors.
+  \item Systematische Gegenüberstellung ausgewählter Boden‑ und Clusterverfahren unter konsistenten Metriken (Genauigkeit/Robustheit vs. Laufzeit), inklusive Analyse relevanter Parameterwirkungen.
+  \item Bereitstellung reproduzierbarer Experimente mit klar dokumentierten Konfigurationen, Datenschnitten und Auswertungsskripten.
+\end{itemize}
+
+\section{Methodische Vorgehensweise}
+Die Bearbeitung folgt einem experimentell‑analytischen Vorgehen: (i) Literaturrecherche und Anforderungsanalyse, (ii) Datenerhebung/‑auswahl mit Ouster~OS1, (iii) Implementierung der Pipelinebausteine, (iv) Integration in ROS~2 mit definierten QoS‑Profilen und Ausführungsmodellen, (v) experimentelle Evaluierung anhand festgelegter Metriken und Lastfälle, (vi) Diskussion der Trade‑offs zwischen Genauigkeit, Robustheit und Laufzeit.
+
+\section{Aufbau der Arbeit}
+Kapitel~\ref{chap:stand-der-technik} stellt wissenschaftlich‑technische Grundlagen, Messprinzipien und sensorische Eigenschaften dar und verortet die gewählten Verfahren im Stand der Technik. Kapitel~\ref{chap:systemarchitektur} beschreibt die Systemarchitektur, Datenflüsse und Implementierungsentscheidungen in ROS~2. Darauf aufbauend folgen die Kapitel zur Vorverarbeitung, zur Cluster‑/Bounding‑Box‑Bildung und zur Objektverfolgung mit jeweils fokussierten Evaluationsabschnitten. Ein abschließendes Kapitel fasst die Ergebnisse zusammen und gibt einen Ausblick auf weiterführende Arbeiten.
+
+% ====== 2 Wissenschaftliche Grundlagen ======
+\chapter{Stand der Technik und Wissenschaft}
+\label{chap:stand-der-technik}
+
+LiDAR hat sich in modernen Fahrerassistenzsystemen (ADAS) und beim automatisierten Fahren als zentrale Sensortechnologie etabliert. Im Vergleich zu Kameras (empfindlich gegenüber Beleuchtung/Blendung) und Radar (robust, jedoch begrenzte Winkelauflösung) liefert LiDAR hochgenaue Distanzinformationen mit hoher Winkelauflösung als dreidimensionale Punktwolken. Historisch stammt LiDAR aus Geodäsie, Fernerkundung und Atmosphärenforschung und fand mit Fortschritten in Laser- und Optoelektronik seit den 2000er‑Jahren zunehmend Eingang in die Automobiltechnik. Ziel dieses Kapitels ist die Darstellung der wissenschaftlich‑technischen Grundlagen, relevanter Messprinzipien und Anwendungen sowie der in dieser Arbeit verwendeten Sensorik.
+
+\section{Sensoraufbau}
+\label{sec:sensoraufbau}
+
+Ein LiDAR-Sensor umfasst Sendeoptik und Strahlablenkung, Empfangsoptik und Lichtsensor sowie Auslese- und Steuerungselektronik (vgl. Abb.~\ref{fig:sensoraufbau}). 
+
+\subsection {Sendeoptik und Strahlablenkung}
+Vom Ausgang der Laserquelle gelangt das Licht zunächst in die Sendeoptik. 
+Diese formt das Intensitätsprofil des Strahls und bestimmt somit indirekt 
+die Auflösung des Sensors. Häufig werden refraktive Linsen oder diffraktive 
+optische Elemente (DOE) eingesetzt, welche die gewünschte Strahlform erzeugen. 
+Für rasternde Systeme übernehmen Spiegel oder Prismen die Strahlablenkung durch 
+rotierende oder oszillierende Bewegungen. Im Gegensatz dazu nutzen sogenannte 
+Flash-Systeme DOEs oder Diffusoren, um die Szene pro Aufnahme vollständig auszuleuchten.  
+
+Die Strahlablenkung ist ein zentrales Element zur Erzeugung der Winkelinformation. 
+Sie legt fest, welcher Raumwinkel in einem bestimmten Zeitpunkt erfasst wird, 
+und ermöglicht somit die sukzessive Abtastung der Umgebung.  
+
+\subsection {Empfangsoptik und Lichtsensor}
+Die Empfangsoptik sammelt das rückgestreute Licht; Apertur und Transmission bestimmen das Signal gemäß der LiDAR‑Gleichung. Antireflexbeschichtungen und auf die Quelle abgestimmte Durchlässigkeit reduzieren Rauschen durch Umgebungslicht. Als Detektoren kommen typischerweise Avalanche‑Photodioden (APD) oder SPAD‑Arrays zum Einsatz; sie bieten hohe Empfindlichkeit und kurze Anstiegszeiten für schwache, kurze Pulse. 
+
+\subsection {Auslese- und Steuerungselektronik}
+Die vom Detektor erzeugten elektrischen Signale werden durch die 
+Ausleseelektronik verarbeitet. Sie umfasst Verstärker, Analog-Digital-Wandler (ADC), 
+Zeit-zu-Digital-Wandler (TDC) und Multiplexer. Ihre Aufgabe besteht darin, 
+die Signale zu digitalisieren und die Laufzeitinformationen für jeden 
+Messpunkt zu bestimmen. Moderne Systeme berechnen auf der Sensorebene 
+bereits Distanzwerte und können weitergehende Vorverarbeitungen wie die 
+Bildung von Objektboxen oder sogar erste Klassifikationen durchführen.  
+
+Eine zentrale Rolle spielt die Steuerungselektronik, welche die Synchronisation 
+aller Komponenten sicherstellt. Sie sorgt dafür, dass der Lichtsensor nur während 
+des Aussendens eines Laserpulses aktiv ist, um unnötige Rauschsignale durch 
+Umgebungslicht zu vermeiden. Ebenso steuert sie die Strahlablenkung, sodass 
+jeder Messpunkt dem korrekten Raumwinkel zugeordnet werden kann.  
+
+Der LiDAR-Sensoraufbau vereint optische, elektronische und algorithmische 
+Bausteine zu einem Gesamtsystem, das die präzise Abbildung der Fahrzeugumgebung 
+in Echtzeit ermöglicht.  
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Bilder/Sensoraufbau.png}
+    \caption{Schematischer Aufbau eines LiDAR-Sensors mit Sendeoptik, 
+    Empfangsoptik, Strahlablenkung, Steuer- und Auswerteeinheit.}
+    \label{fig:sensoraufbau}
+\end{figure}
+
+
+\section{Wellenlängenbereiche}
+\label{sec:wellenlaenge}
+Zur Umsetzung dieses Prinzips werden überwiegend Laser im nahen Infrarotbereich 
+(NIR) eingesetzt, typischerweise mit Wellenlängen zwischen $870\,\text{nm}$ und 
+$950\,\text{nm}$. Dieser Bereich ist besonders geeignet, da die spektrale 
+Strahlungsintensität des Sonnenlichts dort vergleichsweise gering ist und somit 
+ein günstiges Signal-Rausch-Verhältnis erzielt werden kann. Gleichzeitig stehen in diesem Wellenlängenbereich sowohl kosteneffiziente Halbleiterlaser als auch empfindliche Siliziumdetektoren zur Verfügung. Für spezielle Anwendungen werden 
+auch Wellenlängen um $1064\,\text{nm}$ oder $1550\,\text{nm}$ eingesetzt, da hier 
+höhere Laserleistungen innerhalb der Augensicherheitsgrenzen möglich sind. Diese 
+erfordern jedoch alternative Detektormaterialien, was den technischen Aufwand und 
+die Kosten erhöht.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Bilder/Spektrum der elektromagnetischen Strahlung.png}
+    \caption{Spektrum der elektromagnetischen Strahlung}
+    \label{fig:ouster}
+\end{figure}
+
+\section{Messprinzip}
+\label{sec:messprinzip}
+
+\subsection{Direct Time‑of‑Flight (dToF)}
+Das Messprinzip moderner LiDAR-Systeme basiert überwiegend auf dem 
+\emph{Time-of-Flight} (ToF)-Verfahren, das sich aufgrund seiner Robustheit und 
+hohen Genauigkeit als Standard etabliert hat. Beim ToF-Verfahren wird ein kurzer 
+Laserimpuls ausgesendet, der sich mit Lichtgeschwindigkeit 
+$c \approx 3 \cdot 10^{8}\,\text{m/s}$ ausbreitet, von einem Objekt reflektiert wird und schließlich den Empfänger erreicht. Aus der gemessenen Zeitdifferenz $\Delta t$ zwischen Emission und Detektion ergibt sich die Entfernung $d$ nach folgender Gleichung:
+
+\begin{equation}
+    d = \frac{c \cdot \Delta t}{2}
+\end{equation}
+
+Der Faktor $\tfrac{1}{2}$ berücksichtigt, dass der Lichtimpuls den Weg zweimal zurücklegt – vom Sender zum Objekt und wieder zurück zum Empfänger.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Bilder/Schematisches Beispiel eines direct ToF.png}
+    \caption{Schematisches Beispiel eines direct Time-Of-Flight (dToF)}
+    \label{fig:ouster}
+\end{figure}
+
+\subsection{Indirect ToF (iToF)}
+iToF bestimmt Distanzen über die Phasenverschiebung einer modulierten Dauerlichtquelle. Vorteile sind kompakte, teils kostengünstige Sensorik und gute Kurzstreckenpräzision; Grenzen liegen in Ambiguität (Mehrdeutigkeit) und erhöhter Multipath‑Empfindlichkeit \parencite{Amann2001LaserRanging}.
+
+\subsection{FMCW‑LiDAR}
+Frequenzmoduliertes Dauerstrich‑LiDAR (FMCW) misst Entfernung und Relativgeschwindigkeit (Doppler) über Frequenzchirps. Vorteile sind Interferenzresistenz und gleichzeitige Geschwindigkeitsmessung; demgegenüber stehen höhere Auswerte‑ und Hardwarekomplexität \parencite{Behroozpour2017LidarArch}.
+
+\subsection{Fehlerquellen}
+Zu den wesentlichen Fehlerquellen optischer LiDAR-Sensoren zählen Schwankungen in der Zeitmessung (Zeitjitter in TDC/ADC), Mehrwegeffekte (Multipath), einfallswinkelabhängige Signalabschwächung sowie die Strahldivergenz des Lasers. Darüber hinaus beeinflussen die optische Reflektivität der Oberfläche, temperaturbedingte Drifts im Messsystem sowie mechanische Variationen, etwa durch Schwankungen der Rotordrehzahl, die Qualität der Messdaten. Diese Faktoren wirken sich direkt auf die erzielbare Reichweite und Präzision aus, können aber auch die Robustheit nachfolgender Verarbeitungsschritte wie Segmentierung, Objekterkennung oder Klassifikation beeinträchtigen. In sicherheitskritischen Anwendungen ist daher eine geeignete Signalkonditionierung und Filterung erforderlich, um messtechnische Artefakte zu minimieren und Fehlinterpretationen im Umfeldmodell zu vermeiden.
+
+\section{Typische Anwendungsszenarien im Fahrzeugumfeld}
+\label{sec:anwendung}
+LiDAR unterstützt zentrale ADAS‑Funktionen, Freiraum‑/Belegtheitsdetektion, Hinderniserkennung sowie hochautomatisierte Fahrfunktionen (3D‑Umfeldmodellierung, SLAM, Lokalisierung, Baustellen‑/Engstellenmanagement). In der Sensorsuite ergänzt LiDAR Kamera und Radar durch präzise 3D‑Geometrie. Limitationen entstehen bei Nebel/Regen, geringer Oberflächenreflektivität und Interferenzen; robuste Fusion und fehlertolerante Algorithmen sind daher notwendig. Leistungsanforderungen umfassen definierte Bildraten, End‑zu‑Ende‑Latenzen und Robustheitsmetriken \parencite{Arnold2019Survey}.
+
+\section{Algorithmischer Stand der Technik}
+Für LiDAR‑Umfelderkennung werden typischerweise folgende Bausteine kombiniert:
+\begin{itemize}
+  \item \textbf{Vorverarbeitung:} Downsampling (z.\,B. \emph{VoxelGrid}), Ausreißerfilter (\emph{Statistical/Radius Outlier Removal}), ggf. Bewegungsentzerrung, Intensitätsnormalisierung, Polarkoordinaten/BEV‑Darstellung, Mehrfach‑Echo‑Nutzung.
+  \item \textbf{Bodensegmentierung:} RANSAC‑Ebene \parencite{FischlerBolles1981}, Progressive Morphological Filter (PMF) \parencite{Zhang2003PMF}, gitterbasierte Höhenkarten, Cloth Simulation Filtering (CSF) \parencite{Zhang2016CSF}, probabilistische Modelle (z.\,B. Gaussian Processes); robust gegenüber Neigungen/Bordsteinen.
+  \item \textbf{Clustering:} Euklidische Clusterung, DBSCAN/HDBSCAN \parencite{Ester1996DBSCAN}, Region Growing; Parameter (Epsilon/Radius, Mindestpunkte) steuern Auflösung und Rauschtoleranz.
+  \item \textbf{Detektion/Klassifikation:} Geometrische Merkmale (PCA, OBB, Formfeatures) oder lernbasierte 3D‑Detektoren (z.\,B. Pillars/SECOND/CenterPoint), BEV‑Pipelines; Kompromiss zwischen Datenbedarf, Robustheit und Laufzeit.
+  \item \textbf{Tracking:} KF/EKF/UKF, JPDAF/MHT sowie praxisnahe Multi‑Target‑Pipelines (Datenassoziation per NN/IoU, Geburt/Tod‑Logik, Bewegungsmodelle).
+\end{itemize}
+
+\section{Ouster OS1 am Opel Astra der TH Nürnberg}
+\subsection{Spezifische Eigenschaften des Ouster OS1}
+Der OS1 ist ein 360\textdegree{}‑LiDAR mittlerer Reichweite. Er arbeitet bei \(\approx\)\SI{865}{\nano\meter} mit \(360\textdegree{}\) horizontalem und \(\approx\)\SI{42.4}{\degree} vertikalem Sichtfeld. Je nach Konfiguration sind 32/64/128 Vertikalkanäle verfügbar; horizontal \(512/1024/2048\) Messpunkte pro Umdrehung. Je nach Modus entstehen \(\sim\)\(1.3\)–\(5.2\)\,M Punkte/s. Typische Reichweiten liegen bis \(\sim\)\SI{170}{\meter} (hohe Reflektivität) bzw. \(\sim\)\SI{90}{\meter} (dunkle Oberflächen, starke Sonne). Distanzgenauigkeit \(\approx\)\(\pm\)\SI{2.5}{\centi\meter}, typische Präzision \(\pm\)\SIrange{0.5}{3}{\centi\meter}. Bis zu zwei Echos pro Puls werden registriert. Datenfelder umfassen Distanz, Intensität/Reflexivität, Kanalnummer, Azimut und Zeitstempel; zusätzlich liefert eine IMU Bewegungsdaten mit \SI{100}{\hertz}. Die Ausgabe erfolgt über Gigabit‑Ethernet (UDP), das Gehäuse ist nach IP68/IP69K geschützt; Betriebstemperatur von \(-\)\SI{40}{\celsius} bis \(+\)\SI{60}{\celsius} \parencite{OusterOS1}.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{Bilder/Ouster.png}
+    \caption{Ouster OS1.}
+    \label{fig:ouster_os1}
+\end{figure}
+
+\subsection{Sensorpositionierung am Opel Astra}
+Der im Rahmen dieser Arbeit verwendete Ouster~OS1 ist auf dem Versuchsträger Opel Astra des Instituts montiert. Der Sensor, laut \textcite{Sagdic2025}, wurde mittig auf einer Trägerstruktur über der Fahrzeugdachkante positioniert. Diese erhöhte Montage ermöglicht ein möglichst großes 360°-Sichtfeld ohne Abschattungen durch Fahrzeugkarosserie oder Anbauteile. Die Ausrichtung des Sensors gewährleistet, dass sowohl Bereiche vor dem Fahrzeug als auch seitliche und rückwärtige Zonen erfasst werden, was für die spätere Bodenfilterung, Clusterbildung und Objektverfolgung essenziell ist. Die Abbildung~\ref{fig:sensorposition_astra} zeigt die Montageposition auf dem Fahrzeug im Labor des IFZN. Das Auto ist 1,51 m hoch. Die Höhe des Ousters über dem Sensorträgerprofil beträgt 0,103 m. Das Auto ist somit ungefähr 1,7 m vom Boden entfernt.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.83\textwidth]{Bilder/sensorposition_astra.png}
+    \caption{Montageposition des Ouster~OS1 auf dem Opel Astra (übernommen nach \textcite{Sagdic2025}).}
+    \label{fig:sensorposition_astra}
+\end{figure}
+
+\section{Bezug zu den Forschungsfragen}
+Die Auswahl und Ausgestaltung der Algorithmen richtet sich an den Anforderungen der Kapitel zur Vorverarbeitung, Cluster‑/Bounding‑Box‑Bildung und Objektverfolgung aus. Bewertet werden Genauigkeit, Robustheit und Echtzeitfähigkeit (End‑zu‑Ende‑Latenz, Ressourcenbedarf) in repräsentativen Szenarien mit OS1‑Daten. Die hier beschriebenen Eigenschaften des Sensors und der Messprinzipien begründen die methodischen Entscheidungen in den folgenden Kapiteln.
+
+\chapter{Systemarchitektur}
+\label{chap:systemarchitektur}
+
+Dieses Kapitel beschreibt die technische Systemarchitektur der Umfelderkennung auf Basis von ROS~2 und eines Ouster~OS1. Ziel ist eine nachvollziehbare, konsistente und echtzeitfähige Verarbeitungskette. Die Darstellung umfasst (i) Grundlagen von ROS~2, (ii) Datenrepräsentation und Bibliotheken, (iii) Arbeitsumgebung, (iv) Gesamtsystem mit Datenaufnahme und Pipeline, (v) Deployment sowie (vi) Bewertungsmetriken.
+
+In diesem Zusammenhang werden die Software- und Hardwarekomponenten beschrieben, die für die Erfassung, Verarbeitung und Auswertung der Sensordaten verwendet wurden. Zunächst werden die Grundlagen des Robot Operating System~2~(ROS~2) erläutert, das als Middleware zur Kommunikation zwischen den einzelnen Modulen dient. Anschließend wird die unter Linux~Ubuntu~22.04 eingerichtete Arbeitsumgebung vorgestellt, in der die Implementierung und Tests durchgeführt wurden. Abschließend erfolgt ein Überblick über das Gesamtsystem mit den definierten Anforderungen, der Datenerfassung und der praktischen Umsetzung der entwickelten Messkette.
+
+\section{Grundlagen von ROS~2}
+\label{sec:ros2_basics}
+Das \emph{Robot Operating System~2 (ROS~2)} ist ein quelloffenes Framework für modulare, verteilte Robotiksysteme. Es stellt Middleware-basierte Kommunikation (DDS), wiederverwendbare Komponenten und Entwicklungswerkzeuge bereit. Dank Skalierbarkeit und Plattformunabhängigkeit wird ROS~2 in Forschung und Industrie eingesetzt (z.\,B. autonome Fahrzeuge, mobile Robotik, Inspektion).
+
+\subsection{Nodes}
+\label{sec:ros2_nodes}
+
+In ROS2 stellen \textit{Nodes} die grundlegenden Ausführungseinheiten des Systems dar. 
+Jeder Node repräsentiert einen eigenständigen Prozess, der eine bestimmte Funktion erfüllt – beispielsweise das Erfassen von Sensordaten, die Datenverarbeitung oder die Ansteuerung von Aktoren. 
+Die Modularisierung erlaubt klar definierte Schnittstellen und Wiederverwendung (vgl. \cite{ros2_docs}).
+
+\subsection{Topics}
+\label{sec:ros2_topics}
+
+Die Kommunikation zwischen Nodes erfolgt in ROS2 hauptsächlich über \textit{Topics}. Sie transportieren Nachrichten nach dem Publish/Subscribe-Prinzip.
+Ein Node kann Daten auf einem Topic veröffentlichen (\textit{publish}) oder von diesem empfangen (\textit{subscribe}). 
+Publisher und Subscriber sind entkoppelt, was flexible, verteilte Architekturen ermöglicht (vgl. \cite{ros2_docs}).
+
+\subsection{Nachrichten}
+\label{sec:ros2_messages}
+
+Die über Topics ausgetauschten Informationen werden in Form von \textit{Nachrichten (Messages)} übertragen. 
+Eine Nachricht besteht aus einer definierten Datenstruktur, die verschiedene Datentypen wie Ganzzahlen, Gleitkommazahlen, Arrays oder benutzerdefinierte Typen enthalten kann. 
+Diese klar definierte Struktur ermöglicht einen standardisierten und sicheren Datenaustausch zwischen Nodes, unabhängig von der zugrunde liegenden Programmiersprache(~\cite{ros2_docs}).
+
+\subsection{Bags}
+\label{sec:ros2_bags}
+
+\textit{ROS2 Bags} dienen zur Aufzeichnung, Speicherung und Wiederverwendung von Nachrichten, die über Topics ausgetauscht werden.  
+Sie unterstützen Analyse, Debugging und reproduzierbare Experimente (vgl. \cite{ros2_docs}).
+
+\subsection{RViz2}
+\label{sec:ros2_rviz2}
+
+\textit{RViz2} ist ein Visualisierungstool, das zur Darstellung und Analyse der in ROS2 verarbeiteten Daten verwendet wird. 
+Es ermöglicht die dreidimensionale Visualisierung von Punktwolken, Robotermodellen, Trajektorien und Sensordatenströmen in Echtzeit und unterstützt Entwicklung und Fehlersuche (vgl. \cite{ros2_docs}).
+
+
+\subsection{DDS, Discovery und Transports}
+ROS~2 verwendet das \emph{Data Distribution Service} (DDS) als Kommunikationsmiddleware. In der Distribution \emph{Humble} sind insbesondere \emph{CycloneDDS} und \emph{FastDDS} verbreitet (über die RMW-Schichten \texttt{rmw\_cyclonedds} bzw. \texttt{rmw\_fastrtps}). DDS übernimmt die zuverlässige Verteilung von Nachrichten sowie das Teilnehmermanagement innerhalb eines ROS~2-Netzwerks.
+
+\begin{itemize}
+  \item \textbf{Discovery:} Die automatische Erkennung von Teilnehmern und Endpunkten erfolgt über die DDS-Mechanismen SPDP und SEDP (Simple Participant Discovery Protocol / Simple Endpoint Discovery Protocol). Die Kommunikation nutzt Multicast bzw.\ Unicast, wobei die \emph{Domain-ID} eine logische Trennung unterschiedlicher Netze ermöglicht.
+
+  \item \textbf{Transports:} Standardmäßig erfolgt die Datenübertragung per UDP. Bei Anwendungen mit hoher Datenrate oder lokal kooperierenden Prozessen können dagegen \emph{Shared-Memory}-Transporte sowie der ROS-eigene \emph{intra-process}-Kommunikationspfad eingesetzt werden, um Kopien zu reduzieren und Latenzen zu verringern.
+
+  \item \textbf{Konfiguration:} Viele Parameter lassen sich über DDS-XML-Profile oder Umgebungsvariablen steuern, z.\,B.\ Netzwerkschnittstellen, Whitelists, Timeouts, Puffergrößen sowie Zuverlässigkeits- und Liveliness-Parameter.
+\end{itemize}
+
+Praktisch empfiehlt es sich, auf Zielsystemen mit hoher Punktedichte (z.\,B.\ LiDAR-Pipelines) \emph{Shared-Memory} bzw.\ \emph{intra-process}-Kommunikation zu aktivieren, die Netzwerkschnittstelle explizit zu wählen (z.\,B.\ separates Sensor-LAN) und Domänen eindeutig zu trennen, um Kollissionen und unnötigen Discovery-Traffic zu vermeiden.
+
+
+\subsection{Quality of Service (QoS)}
+\label{sec:ros2_qos}
+In ROS~2 definieren Quality-of-Service-Profile (QoS) die Kommunikationssemantik zwischen Publishern und Subscribern. Sie beeinflussen maßgeblich Latenz, Paketverluste, Speicherbedarf und Synchronisation entlang der Verarbeitungspipeline. Besonders bei hochfrequenten Sensorströmen wie LiDAR ist eine konsistente und angepasste QoS-Konfiguration entscheidend für die Systemstabilität.
+
+Die wichtigsten Parameter sind \textbf{Reliability}, \textbf{History/Depth} und \textbf{Durability}. Bei \emph{Reliable} werden Nachrichten garantiert zugestellt, was bei hoher Last jedoch zu erhöhter Latenz führen kann. \emph{BestEffort} reduziert die Latenz, toleriert jedoch Verluste – etwa sinnvoll bei Visualisierungstools wie RViz2. Für Sensordaten empfiehlt sich meist die Einstellung \emph{KeepLast} mit begrenzter Tiefe (z.\,B. 5--10), da \emph{KeepAll} unnötig viel Speicher benötigt. Die \emph{Durability} sollte bei Echtzeitdaten \emph{Volatile} sein; \emph{TransientLocal} ist z.\,B. bei Konfigurationsnachrichten sinnvoll. Weitere Parameter wie \emph{Deadline}, \emph{Liveliness} und \emph{Lifespan} spielen im LiDAR-Kontext eine untergeordnete Rolle, können jedoch zur Laufzeitüberwachung eingesetzt werden.
+
+In der Praxis ergeben sich daraus folgende empfohlene Einstellungen: Für die Verarbeitungskette (z.\,B. \texttt{/points\_cropped}, \texttt{/detections\_raw}) ist ein Profil mit \emph{Reliable}, \emph{KeepLast(10)} und \emph{Volatile} sinnvoll, um Datenverluste bei gleichzeitig moderater Pufferung zu vermeiden. Für Visualisierungstopics wie \texttt{/ouster/points} genügt meist \emph{BestEffort} mit geringer Tiefe, da verpasste Nachrichten tolerierbar sind.
+
+Die Tabelle~\ref{tab:qos-topics} zeigt exemplarisch empfohlene QoS-Profile für zentrale Topics dieser Arbeit. Publisher und Subscriber handeln bei Verbindungsaufbau die Schnittmenge ihrer QoS-Profile aus. Dabei können Fehlermodi auftreten: etwa wenn ein \emph{Reliable}-Publisher mit einem \emph{BestEffort}-Subscriber verbunden wird – in diesem Fall wird die Kommunikation zwar aufgebaut, aber der Publisher puffert gegebenenfalls unkontrolliert. Ebenso führt ein Mismatch bei der \emph{Durability} dazu, dass historische Nachrichten nicht übertragen werden. Eine zu geringe \emph{Depth} wiederum kann zu Paketverlusten oder wachsender Latenz führen. Daher sollten QoS-Parameter explizit je Topic gesetzt und aktiv überwacht werden.
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabular}{llllll}
+\hline
+Knoten & Rolle & Topic (Standard) & Typ & QoS & Details \\
+\hline
+crop\_box\_node & Sub & /ouster/points & sensor\_msgs/msg/PointCloud2 & SensorDataQoS & Best Effort \\
+crop\_box\_node & Pub & /points_cropped & sensor\_msgs/msg/PointCloud2 & SensorDataQoS & Best Effort \\
+voxel\_filter\_node & Sub & points_cropped & sensor\_msgs/msg/PointCloud2 & SensorDataQoS & Best Effort \\
+voxel\_filter\_node & Pub & points_voxel & sensor\_msgs/msg/PointCloud2 & SensorDataQoS.reliable() & Zuverlässig (Reliable) \\
+ransac\_ground\_node & Sub & /points_voxel & sensor\_msgs/msg/PointCloud2 & SensorDataQoS & Best Effort \\
+ransac\_ground\_node & Pub & /obstacle_points & sensor\_msgs/msg/PointCloud2 & rclcpp::QoS(10) & Standard: Reliable \\
+cluster\_extraction\_node & Sub & /obstacle_points & sensor\_msgs/msg/PointCloud2 & SensorDataQoS & Best Effort \\
+cluster\_extraction\_node & Pub & /detections_markers & visualization\_msgs/MarkerArray & rclcpp::QoS(10) & Standard: Reliable \\
+cluster\_extraction\_node & Pub & /detections_raw & vision\_msgs/Detection3DArray & SensorDataQoS & Best Effort \\
+sort\_tracker\_node & Sub & /detections_raw & vision\_msgs/Detection3DArray & SensorDataQoS & Best Effort \\
+sort\_tracker\_node & Pub & /tracks_raw & vision\_msgs/Detection3DArray & rclcpp::QoS(10) & Standard: Reliable \\
+sort\_tracker\_node & Pub & /tracks_markers & visualization\_msgs/MarkerArray & rclcpp::QoS(10) & Standard: Reliable \\
+\hline
+\end{tabular}
+\caption{QoS-Profile der im Code verwendeten Topics (Default-Werte).}
+\end{table}
+
+
+
+\section{Datenrepräsentation und Bibliotheken}
+\subsection{\texttt{sensor\_msgs/PointCloud2}: Felder und Konventionen}
+Ouster~OS1-Daten werden als \texttt{sensor\_msgs/PointCloud2} publiziert. Wichtige Felder und Semantik:
+\begin{itemize}
+  \item \texttt{x, y, z}: kartesische Koordinaten [m] im \texttt{frame\_id} (Sensor- oder Fahrzeugrahmen; konsistent mit \textit{tf2}).
+  \item \texttt{intensity}: reflektierte Signalstärke (treiberspezifische Skalierung); vergleichbar innerhalb eines Scans.
+  \item \texttt{ring}: vertikaler Kanalindex; erlaubt kanalspezifische Filter/Strukturierung (organisierte Wolken nach Ringen).
+  \item \texttt{time} (falls vorhanden): Punktzeitversatz relativ zu \texttt{header.stamp} (intra-scan motion compensation).
+  \item Hinweis: konkrete Feldtypen (z.\,B. \texttt{float32}, \texttt{uint16}) sind treiber-/konfigurationsabhängig.
+\end{itemize}
+Kodierung: in der Regel little-endian (\texttt{is\_bigendian = false}). Speicherlayout: linearer Puffer \texttt{data} mit \texttt{point\_step}/\texttt{row\_step}; \texttt{width}/\texttt{height} definieren die 2D-Anordnung (rotierender LiDAR: \texttt{height} = Ringanzahl, \texttt{width} = Punkte/Umdrehung). \texttt{is\_dense} signalisiert \enquote{NaN}-Vorkommen. Organisierte Wolken (Ring~\(\times\) Azimut) erleichtern nachbarschaftsbasierte Filter/Segmentierung.
+
+\subsection{Point Cloud Library (PCL)}
+\label{chap:pcl}
+Die \emph{Point Cloud Library (PCL)} bildet die Grundlage der Umfelderkennung. Sie stellt effiziente Verfahren zur Filterung, Segmentierung, Clusterbildung und geometrischen Modellierung bereit (vgl. \cite{pcl_docs_2025}). In ROS~2 erfolgt die Einbindung über \texttt{pcl\_conversions} und ggf. \texttt{pcl\_ros}; \texttt{sensor\_msgs/PointCloud2} wird bidirektional in \texttt{pcl::PointCloud<T>} konvertiert.
+
+\subsection{Genutzte Module und Algorithmen}
+\begin{itemize}
+  \item \textbf{Filter}: \texttt{VoxelGrid}, \texttt{PassThrough}/\texttt{CropBox}, \texttt{StatisticalOutlierRemoval}.
+  \item \textbf{Segmentierung}: Planarsegmentierung (RANSAC) für Boden.
+  \item \textbf{Clustering}: \texttt{EuclideanClusterExtraction}.
+  \item \textbf{Konvertierung}: \texttt{pcl::fromROSMsg}/\texttt{pcl::toROSMsg}, \texttt{pcl\_conversions}.
+\end{itemize}
+\textbf{Performance}: Vorallokation, Kopiervermeidung, geeignete Punkttypen (z.\,B. \texttt{pcl::PointXYZI}).
+
+Für Entwicklung und Ausführung wird \textbf{Ubuntu~22.04~LTS (Jammy Jellyfish)} verwendet. Als Referenzplattform für ROS~2 ermöglicht Ubuntu eine nahtlose Integration von Bibliotheken, Treibern und Werkzeugen (vgl. \cite{ubuntu_docs_2025}). Die Distribution bietet stabile C++/Python-Toolchains, hohe Sicherheit und breite Unterstützung in wissenschaftlicher wie industrieller Softwareentwicklung. Die enge Verzahnung mit der in dieser Arbeit eingesetzten ROS-Distribution \emph{Humble~Hawksbill} vereinfacht die Einrichtung der Abhängigkeiten. Die aktive Entwicklergemeinschaft sorgt durch regelmäßige Updates, umfassende Dokumentation und eine große Auswahl an Open-Source-Paketen für einen reibungslosen Entwicklungsprozess. Dank der modularen Struktur von Linux lässt sich die Arbeitsumgebung flexibel an die spezifischen Anforderungen der Sensorintegration und der ROS-Module anpassen.
+
+\subsection{Bash-Skripte}
+Bash-Skripte automatisieren wiederkehrende Aufgaben (Workspace laden, Launch starten, Aufzeichnung) und sind ein zentrales Werkzeug in Linux-basierten Entwicklungsumgebungen. In dieser Arbeit fungiert ein Skript als Bindeglied zwischen der GUI und dem Python-\texttt{launch}-File der Pipeline: Beim Start werden die ROS~2-Umgebung geladen, die relevanten Workspaces gesourced und das zentrale Launch-File ausgeführt, das alle erforderlichen Knoten in definierter Reihenfolge aktiviert.
+
+%\subsection*{ROS~2 CLI und Monitoring}
+%Zur Inspektion der Laufzeitumgebung werden \texttt{ros2}-Werkzeuge genutzt: \texttt{topic list/info/hz/bw/delay}, \texttt{node list/info}, \texttt{interface show}, \texttt{doctor}. Sie unterstützen Durchsatz-/Latenzschätzung, Interface-Inspektion und Grunddiagnostik.
+
+\section{Überblick über das Gesamtsystem}
+\subsection{Anforderungen an den Algorithmus}
+
+Die vom Ouster~OS1 erfassten Sensordaten bilden die Grundlage für eine Messkette, die relevante Objekte des Umfelds erkennt und strukturiert ausgibt. Ziel ist eine Objektliste mit Position, Orientierung und Abmessungen.
+
+Für eine zuverlässige Objekterkennung ist eine geeignete Aufbereitung der Rohdaten erforderlich. Bodenpunkte und Störsignale sind zu entfernen; die Punktdichte ist zu reduzieren, ohne die Geometrie relevanter Objekte wesentlich zu verfälschen. Die Parameter der Schritte müssen anpassbar bleiben, um unterschiedliche Szenarien abbilden zu können.
+
+Die Verarbeitung erfolgt unter Echtzeitbedingungen: Alle Prozesse sind innerhalb einer festen Zeitspanne abzuschließen, damit Ergebnisse kontinuierlich bereitgestellt werden (Ziel-Gesamtlatenz \(<100\,\text{ms}\) bei \(10\,\text{Hz}\)). Ein ressourcenschonender Betrieb auf Standardhardware ist sicherzustellen. Ergebnisse werden maschinenlesbar und zur schnellen Kontrolle im Terminal ausgegeben; zudem ist die Integration in die bestehende GUI vorgesehen.
+
+Die wichtigsten Anforderungen an die entwickelte Messkette sind in Tabelle~\ref{tab:anforderungen_messkette} zusammengefasst.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|c|p{12cm}|}
+    \hline
+    \textbf{Nr.} & \textbf{Anforderung} \\ \hline
+    1 & Eingabe: Sensordaten des Ouster~OS1-LiDAR \\ \hline
+    2 & Ausgabe: Objektliste mit Position, Orientierung und Abmessungen \\ \hline
+    3 & Entfernung von Bodenpunkten und Störsignalen \\ \hline
+    4 & Reduzierung der Punktwolkendichte zur Rechenoptimierung \\ \hline
+    5 & Anpassbare Parameter für unterschiedliche Umgebungen \\ \hline
+    6 & Echtzeitverarbeitung: Latenz \textless{}100\,ms bei 10\,Hz Sensorrate \\ \hline
+    7 & Ressourcenschonender Betrieb auf Standardhardware \\ \hline
+    8 & Maschinenlesbare und terminalbasierte Ergebnisausgabe \\ \hline
+    9 & Integration in die bestehende grafische Benutzeroberfläche (GUI) \\ \hline
+  \end{tabular}
+  \caption{Anforderungen an die Messkette zur Umfelderkennung}
+  \label{tab:anforderungen_messkette}
+\end{table}
+
+\subsection{Datenerfassung}
+\label{chap:datenerfassung}
+
+Die Datenerfassung umfasst Aufnahme und Übertragung der OS1-Punktwolken. Der grundlegende Aufbau orientiert sich an \cite{Wendel2025}. Die Daten werden über eine Ethernet-Verbindung an den Embedded-PC (dSPACE MAB~III) übertragen; zur Anbindung kommt ein USB-A-auf-Ethernet-Adapter des Typs \emph{Renkforce RF-4708614} mit einer Übertragungsrate bis \(1\,\text{Gbit/s}\) zum Einsatz (vgl. \cite{conrad2025}). Die Kommunikation zwischen Sensor und Embedded-System erfolgt über ROS~2.
+
+Der Ouster~OS1 publiziert seine Messdaten als \texttt{sensor\_msgs/PointCloud2} auf \texttt{/ouster/points}. Die Punktwolken enthalten pro Punkt Kartesierkoordinaten \((x,y,z)\), die Intensität des reflektierten Signals sowie den Ring-Index des jeweiligen Lasers; der Zeitstempel wird direkt aus der LiDAR-Firmware übernommen. Die Punktwolken werden über das lokale ROS~2-Netz an den Laptop übertragen, auf dem sie wahlweise in \emph{RViz2} visualisiert oder über die GUI verarbeitet werden können.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{Bilder/messkette_sensordaten.png}
+  \caption{Aufbau der Datenerfassung mit dem Ouster~OS1-LiDAR (überarbeitet nach \cite{Wendel2025}).}
+  \label{fig:messkette_sensordaten}
+\end{figure}
+
+\subsection{Pipeline (Umsetzung)}
+Abbildung~\ref{fig:ros2-pipeline-alltopics} zeigt die ROS~2-Pipeline von der Aufnahme über Vorverarbeitung, Bodensegmentierung und Cluster/Bounding-Boxes bis zur Objektverfolgung. Jeder Knoten hat klar definierte Ein-/Ausgänge und Topics.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=2.2cm,
+    process/.style={rectangle, rounded corners, draw=black, fill=blue!5,
+                    text centered, minimum width=4.2cm, minimum height=1cm},
+    startstop/.style={ellipse, draw=black, fill=gray!15,
+                      text centered, minimum width=3cm, minimum height=1cm},
+    rviz/.style={rectangle, draw=black, fill=green!10, rounded corners,
+                 text centered, minimum width=3.5cm, minimum height=0.9cm,
+                 font=\scriptsize},
+    arrow/.style={thick,->,>=stealth},
+    every node/.style={font=\small}
+  ]
+
+  % Hauptlinie
+  \node (start)   [startstop] {Start};
+  \node (input)   [process, below of=start] {Messdaten einlesen};
+  \node (crop)    [process, below of=input] {CropBox-Filter};
+  \node (voxel)   [process, below of=crop] {VoxelGrid-Filter};
+  \node (ground)  [process, below of=voxel] {Bodensegmentierung};
+  \node (cluster) [process, below of=ground] {Cluster-Extraktion \& Bounding Boxes};
+  \node (track)   [process, below of=cluster] {Objektverfolgung};
+  \node (end)     [startstop, below of=track] {Ende};
+
+  % RViz-Knoten (rechts)
+  \node (rviz_input)  [rviz, right=4.1cm of input]  {RViz};
+  \node (rviz_crop)   [rviz, right=4.1cm of crop]   {RViz};
+  \node (rviz_voxel)  [rviz, right=4.1cm of voxel]  {RViz};
+  \node (rviz_ground) [rviz, right=4.1cm of ground] {RViz};
+  \node (rviz_cluster)[rviz, right=2.8cm of cluster]{RViz};
+  \node (rviz_track)  [rviz, right=4.1cm of track]  {RViz};
+
+  % Vertikale Pfeile (Pipeline)
+  \draw[arrow] (start) -- (input);
+  \draw[arrow] (input) -- node[right]{\scriptsize \texttt{/ouster/points}} (crop);
+  \draw[arrow] (crop)  -- node[right]{\scriptsize \texttt{/points\_cropped}} (voxel);
+  \draw[arrow] (voxel) -- node[right]{\scriptsize \texttt{/points\_voxel}} (ground);
+  \draw[arrow] (ground)-- node[right]{\scriptsize \texttt{/obstacle\_points}} (cluster);
+  \draw[arrow] (cluster)-- node[right]{\scriptsize \texttt{/detections\_raw}} (track);
+  \draw[arrow] (track) -- node[right]{\scriptsize \texttt{/tracks\_raw}} (end);
+
+  % Pfeile zu RViz (alle Schritte)
+  \draw[arrow] (input.east)  -- node[above,sloped]{\scriptsize \texttt{/ouster/points}} (rviz_input.west);
+  \draw[arrow] (crop.east)   -- node[above,sloped]{\scriptsize \texttt{/points\_cropped}} (rviz_crop.west);
+  \draw[arrow] (voxel.east)  -- node[above,sloped]{\scriptsize \texttt{/points\_voxel}} (rviz_voxel.west);
+  \draw[arrow] (ground.east) -- node[above,sloped]{\scriptsize \texttt{/obstacle\_points}} (rviz_ground.west);
+  \draw[arrow] (cluster.east)-- node[above,sloped]{\scriptsize \texttt{/detections\_markers}} (rviz_cluster.west);
+  \draw[arrow] (track.east)  -- node[above,sloped]{\scriptsize \texttt{/tracks\_markers}} (rviz_track.west);
+
+  % Caption & Label
+  \end{tikzpicture}
+  \caption{ROS~2-Algorithmus mit allen Nodes, ihren Topic-Verbindungen und den Ausgaben zur Visualisierung in RViz.}
+  \label{fig:ros2-pipeline-alltopics}
+\end{figure}
+
+\section{Deployment und Packaging}
+Die Umsetzung erfolgt im ROS~2-Workspace (\texttt{colcon}); \texttt{src/} enthält die Pakete, \texttt{build/}/\texttt{install/}/\texttt{log/} werden erzeugt. Abhängigkeiten werden in \texttt{package.xml} deklariert und in \texttt{CMakeLists.txt} gebunden. Eine Trennung in Bibliotheken (Kernlogik) und Executables (ROS~2-Anbindung) erhöht die Wiederverwendbarkeit.
+
+Start und Parametrisierung erfolgen über Launch-Dateien. Namensräume strukturieren Topics (z.\,B. Sensorpfad, Verarbeitungspfad) und erlauben parallele Instanziierung. Die Visualisierung erfolgt über \textbf{RViz2}.
+
+\section{Leistungsmetriken und Verifikation}
+
+\subsection{E2E-Latenz}
+Für das betrachtete System wird eine Ende-zu-Ende-Latenz von weniger als \(100\,\text{ms}\) bei einer Verarbeitung mit \(10\,\text{Hz}\) angestrebt. Zur Verifikation werden an den Modulgrenzen Zeitstempel gesetzt (Eingang und Ausgang), die anschließend hinsichtlich Mittelwert, 95. Perzentil und 99. Perzentil über lange Sequenzen ausgewertet werden. Die Messungen erfolgen bei der Wiedergabe identischer Datensätze aus \texttt{rosbag2}. Die Instrumentierung erfolgt anhand des Eingangszeitstempels aus \texttt{header.stamp}, während Zwischenzeiten innerhalb der Module mitgeführt und protokolliert werden. Eine gemeinsame Zeitbasis (z.\,B. deaktivierte Simulationszeit oder externe Synchronisation) wird vorausgesetzt, um Vergleichbarkeit und Konsistenz zu gewährleisten.
+
+\subsection{Ressourcennutzung (CPU/RAM)}
+Die Auslastung der Rechen- und Speicherressourcen wird für jeden Knoten unter repräsentativer Last erfasst. Optimierungsmaßnahmen wie ein angepasstes Datenlayout, die Vermeidung unnötiger Kopien oder die Vorallokation von Puffern werden dokumentiert und quantitativ bewertet. Zur Analyse kommen Werkzeuge wie \texttt{ros2 topic hz}, \texttt{ros2 topic bw}, \texttt{ros2 topic delay} sowie Systemprofiler (\texttt{top}/\texttt{htop}) zum Einsatz. Für Variantenvergleiche werden die Ergebnisse in Form persistenter Artefakte (z.\,B. CSV- oder JSON-Dateien) abgelegt.
+
+\chapter{Vorverarbeitung}
+\section{CropBox-Filter}
+
+\subsection{Prinzip}
+Zur Begrenzung der Punktwolke auf einen relevanten Bereich wird der \textit{CropBox-Filter} der 
+Point Cloud Library (PCL) eingesetzt. 
+Dieser Filter ermöglicht es, eine achsenparallel ausgerichtete Begrenzungsbox (AABB) zu definieren, 
+innerhalb derer alle Punkte einer Punktwolke beibehalten werden, während Punkte außerhalb dieses 
+Volumens verworfen werden. 
+Gemäß der Dokumentation \cite{pcl_cropbox_2025} basiert die Implementierung der Klasse 
+\texttt{pcl::CropBox<pcl::PCLPointCloud2>} auf einer effizienten räumlichen Filterung, 
+die eine Punktwolke entlang der Achsen $x$, $y$ und $z$ beschneidet.  
+Dadurch wird das Datenvolumen reduziert, was zu einer deutlichen Verringerung des 
+Rechenaufwands für nachfolgende Verarbeitungsschritte führt.
+
+\subsection{Implementierung}
+Im Rahmen dieser Arbeit wurde der \texttt{crop\_box\_node} in C++ unter ROS~2 
+entwickelt, um diesen Filter dynamisch innerhalb der gesamten Verarbeitungskette anzuwenden. 
+Der Node empfängt eine eingehende Punktwolke vom Ouster-LiDAR-Sensor auf dem Topic 
+\texttt{/ouster/points}, filtert die Daten gemäß den eingestellten Grenzen und publiziert die 
+gefilterte Punktwolke auf \texttt{/points\_cropped}. 
+Die Parameter \texttt{min\_bound} und \texttt{max\_bound} definieren die minimale und maximale Ausdehnung 
+des Arbeitsvolumens in Metern, während die Parameter \texttt{input\_topic} und 
+\texttt{output\_topic} den Ein- und Ausgang der Datenströme steuern. 
+Das Konzept ist in Tabelle~\ref{tab:cropbox_params} zusammengefasst.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|l|c|}
+    \hline
+    \textbf{Parametername} & \textbf{Startwert} \\ \hline
+    \texttt{input\_topic}  & \texttt{/ouster/points} \\ \hline
+    \texttt{output\_topic} & \texttt{/points\_cropped} \\ \hline
+    \texttt{min\_bound}    & \([-20.0, -15.0, -3.0]\) \\ \hline
+    \texttt{max\_bound}    & \([20.0, 15.0, 5.0]\) \\ \hline
+  \end{tabular}
+  \caption{Startparameter des CropBox-Filters}
+  \label{tab:cropbox_params}
+\end{table}
+
+Der \texttt{crop\_box\_node} wurde so implementiert, dass er sowohl Pflichtfelder 
+(\texttt{x}, \texttt{y}, \texttt{z}) als auch optionale Felder wie 
+\texttt{intensity} (FLOAT32/UINT16) und \texttt{ring} erkennt.  
+Für jeden Punkt wird geprüft, ob er innerhalb des durch die Parameter definierten 
+Volumens liegt. Ist dies der Fall, wird er beibehalten und in die 
+Ausgabepunktwolke übernommen. 
+Die Implementierung erlaubt zudem eine Laufzeitänderung der Grenzen 
+durch dynamische Re-Konfiguration via \texttt{set\_parameters}, ohne dass 
+die ROS~2-Verbindungen neu aufgebaut werden müssen.
+
+Da sich im Messbereich Gebäude und weitere störende Objekte befanden, welche die Anzahl falscher Detektionen signifikant erhöhen konnten, wurden die Grenzen des \texttt{crop\_box\_node} sukzessive angepasst. Durch iterative Parameteroptimierung ergaben sich folgende final verwendete Werte: \texttt{min\_bound = [-10.0, -6.0, -3.0]} sowie \texttt{max\_bound = [10.0, 6.0, 5.0]}.
+
+\subsection{Ergebnis}
+Abbildung~\ref{fig:cropbox_compare} zeigt die Wirkung des Filters im Vergleich: 
+Links ist die ursprüngliche Punktwolke mit vollständiger Umgebung dargestellt, 
+während rechts nur der relevante Bereich nach Anwendung des CropBox-Filters zu sehen ist. 
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{Bilder/cropbox_compare.png}
+  \caption{Vergleich der Punktwolke vor (links) und nach (rechts) Anwendung des 
+  \textit{CropBox-Filters}.}
+  \label{fig:cropbox_compare}
+\end{figure}
+
+
+\section{VoxelGrid-Filter}
+
+\subsection{Prinzip}
+Der \textit{VoxelGrid-Filter} reduziert die Punktanzahl, indem der Raum in kubische Voxel der
+Kantenlänge $l=\texttt{voxel\_size}$ diskretisiert wird und pro Voxel nur ein repräsentativer Punkt
+(z.\,B. der erste oder ein Schwerpunkt) beibehalten wird. Dadurch sinken Datenrate und
+Rechenaufwand nachgelagerter Schritte (Bodenebensegmentierung, Clustering, Tracking), bei
+gleichzeitiger Kontrolle des Informationsverlustes über die Wahl von $l$.
+Das Funktionsprinzip entspricht der gängigen Downsampling-Strategie in der Literatur
+(vgl. Abbildung~\ref{fig:voxel_principle}), siehe z.\,B. die Darstellung in \emph{Applied Sciences}
+(2024)\footnote{Abbildung nach Quelle: \url{https://www.mdpi.com/2076-3417/14/8/3160}.}.
+
+% préambule : \usepackage{graphicx}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=.82\textwidth]{Bilder/voxelgrid_prinzip.png}%
+  \caption{Funktionsprinzip des VoxelGrid-Filters: Aufteilung des Raums in Voxel und
+  Beibehaltung eines repräsentativen Punktes pro Voxel (nach Lyu~u.\,a., 2024).}
+  \label{fig:voxel_principle}
+\end{figure}
+
+
+\subsection{Implementierung}
+Der \textit{VoxelFilterNode} liest die
+zuvor per \textit{CropBox} zugeschnittene Punktwolke auf \texttt{points\_cropped}, führt die
+Voxelisierung mit der Parametergröße \texttt{voxel\_size} durch und publiziert die
+downsamplete Punktwolke auf \texttt{points\_voxel}. Die wichtigsten Startparameter sind in
+Tabelle~\ref{tab:voxel_params} zusammengefasst.
+
+% préambule : \usepackage{booktabs} (optionnel, pour un rendu plus pro)
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|l|c|}
+    \hline
+    \textbf{Parametername} & \textbf{Startwert} \\ \hline
+    \texttt{input\_topic}  & \texttt{points\_cropped} \\ \hline
+    \texttt{output\_topic} & \texttt{points\_voxel} \\ \hline
+    \texttt{voxel\_size}   & \(\,0{,}20\,\mathrm{m}\,\) \\ \hline
+  \end{tabular}
+  \caption{Startparameter des VoxelGrid-Filters}
+  \label{tab:voxel_params}
+\end{table}
+
+\subsection{Ergebnis}
+Wie in Abbildung~\ref{fig:voxel_compare} dargestellt, führt die Anwendung des
+VoxelGrid-Filters zu einer gleichmäßigeren und deutlich reduzierten Punktdichte,
+ohne dass dabei wichtige Strukturen der Szene verloren gehen.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{Bilder/voxel_compare.png}
+  \caption{Vergleich nach \textit{CropBox} (links) und nach \textit{VoxelGrid-Filter} (rechts).
+  Das Downsampling reduziert die Punktdichte deutlich, bewahrt jedoch die wesentliche
+  Geometrie für die nachfolgenden Schritte.}
+  \label{fig:voxel_compare}
+\end{figure}
+
+
+\chapter{Bodensegmentierung}
+\label{chap:bodensegmentierung}
+
+Die Bodensegmentierung ist ein essenzieller Vorverarbeitungsschritt innerhalb der Pipeline zur Objekterkennung. 
+Ihr Ziel besteht darin, Bodenpunkte zuverlässig von Hindernissen und anderen Objekten zu trennen, um die nachfolgenden Schritte – insbesondere die Cluster- und Objekterkennung – zu erleichtern. 
+Im Folgenden werden zunächst die Anforderungen an die Bodensegmentierung beschrieben, anschließend verschiedene Methoden anhand definierter Bewertungskriterien verglichen und abschließend die in dieser Arbeit implementierte Methode vorgestellt.
+
+
+\section{Anforderungen an der Bodensegmentierung}
+\label{sec:anforderungen_bodenseg}
+
+Die wichtigsten Anforderungen an ein Bodensegmentierungsverfahren lassen sich nach~\cite{gomes2023survey} in mehreren Kriterien zusammenfassen, 
+die in Tabelle~\ref{tab:anforderungen_bodensegmentierung} dargestellt sind.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3} % augmente l'espacement vertical
+\setlength{\tabcolsep}{8pt}       % ajuste l'espacement horizontal
+\begin{tabular}{|p{4cm}|p{9.5cm}|}
+\hline
+\textbf{Kriterium} & \textbf{Beschreibung} \\ \hline
+
+\textbf{Echtzeitfähigkeit} & 
+Das Verfahren muss Punktwolken in Echtzeit verarbeiten können (z.\,B. <100\,ms pro Frame), 
+um eine kontinuierliche Fahrzeugsteuerung zu ermöglichen. \\ \hline
+
+\textbf{Rechenaufwand} & 
+Geringe Rechen- und Speicheranforderungen sind notwendig, 
+da die Algorithmen häufig auf eingebetteten Systemen mit begrenzten Ressourcen laufen. \\ \hline
+
+\textbf{Segmentierungs\-robustheit} & 
+Das Verfahren sollte robust gegenüber Über- und Untersegmentierung sein 
+und Bodenpunkte korrekt von Hindernissen trennen. \\ \hline
+
+\textbf{Leistung bei steigenden Hindernissen} & 
+Die Methode sollte sanft ansteigende Strukturen (z.\,B. Rampen oder Bordsteine) 
+korrekt als Teil des Bodens erkennen. \\ \hline
+
+\textbf{Leistung bei unebenem Gelände} & 
+Auch bei Neigungen oder unregelmäßigen Bodenoberflächen 
+muss die Bodenschätzung stabil bleiben. \\ \hline
+
+\textbf{Leistung bei spärlichen Daten} & 
+Das Verfahren sollte bei geringer Punktdichte (z.\,B. großer Abstand zum Sensor) 
+zuverlässige Ergebnisse liefern. \\ \hline
+\end{tabular}
+
+\vspace{5pt}
+\caption{Hauptanforderungen an die Bodensegmentierung (nach~\cite{gomes2023survey})}
+\label{tab:anforderungen_bodensegmentierung}
+\end{table}
+
+Diese Arbeit fokusiert sich auf vier Hauptkriterien:
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|c|p{4cm}|p{9cm}|}
+\hline
+\textbf{Nr.} & \textbf{Kriterium} & \textbf{Beschreibung} \\ \hline
+1 & Echtzeitfähigkeit & Bewertet, ob die Methode unter den gegebenen Rechenbedingungen (10\,Hz Sensorrate) eine kontinuierliche Verarbeitung der Punktwolke in Echtzeit ermöglicht. \\ \hline
+2 & Robustheit & Misst die Widerstandsfähigkeit gegenüber Rauschen, Ausreißern und unterschiedlichen Geländetypen (z.\,B. unebenes Terrain oder variable Punktdichten). \\ \hline
+3 & Genauigkeit & Beschreibt die Fähigkeit der Methode, die Bodenpunkte präzise von Nicht-Bodenpunkten zu trennen und somit eine zuverlässige Segmentierung zu gewährleisten. \\ \hline
+4 & Rechenaufwand & Bewertet den benötigten Ressourcenverbrauch (CPU/GPU-Zeit und Speicherbedarf) für die Durchführung der Bodensegmentierung. \\ \hline
+\end{tabular}
+\caption{Bewertungskriterien zur Analyse der Bodensegmentierungsmethoden.}
+\label{tab:bewertungskriterien}
+\end{table}
+
+Die Auswahl dieser vier Bewertungskriterien basiert auf den Anforderungen, 
+die bei der Verarbeitung von LiDAR-Daten in urbanen Umgebungen besonders relevant sind.  
+In städtischen Szenarien treten komplexe Strukturen, wechselnde Oberflächenmaterialien 
+und zahlreiche bewegte Objekte auf, was eine hohe Robustheit und Genauigkeit bei der 
+Bodensegmentierung erfordert.  
+Gleichzeitig muss die Verarbeitung der Sensordaten in Echtzeit erfolgen, 
+um eine kontinuierliche Umfeldwahrnehmung und gegebenenfalls eine sichere Fahrzeugführung 
+zu gewährleisten.  
+Da in praktischen Anwendungen häufig nur begrenzte Rechenressourcen zur Verfügung stehen, 
+ist auch der Rechenaufwand ein entscheidender Faktor für die Auswahl geeigneter Verfahren.  
+Diese vier Kriterien bilden somit die Grundlage für eine objektive Bewertung 
+und den methodischen Vergleich der in dieser Arbeit betrachteten Ansätze.
+
+\section{Methoden der Bodensegmentierung}
+\label{chap:bodenmethoden}
+
+Die Bodensegmentierung ist ein wesentlicher Verarbeitungsschritt in der Umfeldwahrnehmung autonomer Fahrzeuge. 
+Ihr Ziel ist es, die Bodenpunkte in einer LiDAR-Punktwolke zuverlässig von Objekten und Hindernissen zu trennen, 
+um Navigations- und Objekterkennungsalgorithmen zu entlasten. 
+Nach~\cite{gomes2023survey} lassen sich die gängigen Verfahren zur Bodensegmentierung 
+in fünf Hauptkategorien einteilen (siehe Abbildung~\ref{fig:boden_taxonomie}): 
+
+\begin{itemize}
+    \item 2.5D-Gitterbasierte Verfahren
+    \item Bodenmodellierung (Ground Modelling)
+    \item Methoden auf Basis benachbarter Punkte und lokaler Merkmale
+    \item Verfahren höherer Ordnung (Higher-Order Inference)
+    \item Lernbasierte Verfahren (Deep Learning)
+\end{itemize}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{Bilder/boden_taxonomie.png}
+  \caption{Klassifizierung und Systematisierung bestehender Bodensegmentierungsmethoden}
+  \label{fig:boden_taxonomie}
+\end{figure}
+
+
+Diese Klassifikation deckt sowohl klassische geometrische Ansätze als auch moderne, neuronale Verfahren ab. 
+Im Folgenden werden die wichtigsten Prinzipien und repräsentativen Algorithmen jeder Kategorie erläutert.
+
+\subsection{2.5D-Gitterbasierte Verfahren}
+% ============================
+
+Ein verbreiteter Ansatz zur Bodensegmentierung besteht darin, die dreidimensionale Punktwolke in eine zweidimensionale Rasterdarstellung zu überführen.  
+Dabei werden die Punkte nach ihren Koordinaten in diskrete Zellen eingeteilt, sodass jede Zelle statistische Höheninformationen über die in ihr enthaltenen Punkte speichert.  
+Dieser sogenannte 2.5D-Ansatz reduziert die Komplexität der Verarbeitung erheblich, da die Analyse nicht mehr im vollen 3D-Raum, sondern auf einer strukturierten Gitterebene erfolgt.
+
+Douillard et al.~\cite{douillard2011segmentation} präsentieren ein solches Verfahren auf Basis von \textit{Elevation Maps}, bei dem jede Gitterzelle durch den Mittelwert der Höhenwerte ihrer Punkte beschrieben wird.  
+Zellen mit geringer Höhenvarianz werden als Boden klassifiziert, während größere Abweichungen auf Objekte oder Hindernisse hinweisen.  
+Durch diese Reduktion auf lokale Höhenstatistiken kann die Methode Bodenflächen effizient und robust in urbanen Umgebungen identifizieren, ohne den gesamten Punktwolkenraum verarbeiten zu müssen.
+
+
+% ============================
+\subsection{Bodenmodellierung (Ground Modelling)}
+% ============================
+
+Diese Methoden approximieren die Bodenfläche durch mathematische Modelle, typischerweise in Form von Ebenen oder Linien, um die Trennung zwischen Boden- und Nichtbodenpunkten zu ermöglichen.
+
+\textbf{Plane Fitting:}  
+In \cite{hu2013robust} wird die Identifikation von Bodenpunkten mithilfe der \textit{Random Sample Consensus (RANSAC)}-Methode beschrieben, 
+bei der eine Ebene an die niedrigsten Punkte angepasst und Punkte mit geringem orthogonalen Abstand als \textit{Inlier} klassifiziert werden.  
+Ein ähnlicher Ansatz teilt die Punktwolke in konzentrische Zonen auf und passt für jede Zone lokal angepasste Ebenen an, 
+wobei die \textit{Principal Component Analysis (PCA)} eingesetzt wird, um die Hauptrichtung der Punktverteilung zu bestimmen und daraus die bestmögliche Ebenenorientierung zu berechnen \cite{lim2020fast}.  
+Dieser Ansatz erreicht eine hohe Präzision (F1-Score $\approx 0.93$) bei gleichzeitigem Echtzeitverhalten.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{Bilder/plane_fitting.png}
+  \caption{Visuelle Darstellung einer orthogonalen Distanzklassifizierung (~\cite{gomes2023survey})}
+  \label{fig:plane_fitting}
+\end{figure}
+
+\textbf{Linienextraktion:}  
+Ein auf lokalen Linienanpassungen basierendes Verfahren modelliert die entlang eines Laserstrahls erfassten Punkte als nahezu linearen Verlauf \cite{himmelsbach2010fast}.  
+Dieses Verfahren ist recheneffizient und eignet sich für Echtzeitverarbeitung, weist jedoch Schwächen in stark unebenem oder komplexem Gelände auf.
+
+\textbf{Gaussian Process Regression (GPR):}  
+Die \textit{Gaussian Process Regression (GPR)} wurde zur Modellierung der Bodenhöhe eingeführt, 
+wobei der Höhenverlauf als kontinuierliche Funktion mit zugehöriger Unsicherheitsabschätzung beschrieben wird \cite{douillard2011segmentation}.  
+Durch die Verwendung nichtstationärer Kovarianzfunktionen kann sich das Modell lokal an unterschiedliche Geländestrukturen anpassen und dadurch eine hohe Genauigkeit auch in unregelmäßigem Terrain erreichen \cite{chen2014real}.
+
+% ============================
+\subsection{Benachbarte Punkte und lokale Merkmale}
+% ============================
+
+Diese Algorithmen analysieren geometrische Beziehungen zwischen benachbarten Punkten in der Punktwolke.  
+Dabei wird häufig die vertikale Kanalstruktur moderner LiDAR-Sensoren (z.\,B. Velodyne VLP-16 oder Ouster OS1-64) ausgenutzt, um lokale Abhängigkeiten entlang der Scanlinien zu erkennen.
+
+\textbf{Kanalbasierte Verfahren:}  
+In \cite{chu2019ground} wird die Bodenextraktion entlang vertikaler Scans beschrieben, 
+bei der lokale Höhenunterschiede und Gradienten ausgewertet werden.  
+Punkte zwischen einem Startbodenpunkt und einem definierten Schwellenwert werden als Boden klassifiziert.  
+Das Verfahren ist recheneffizient, reagiert jedoch empfindlich auf eine ungenaue Parametrierung, etwa bei der Wahl des Höhen- oder Gradientschwellenwerts.
+
+\textbf{Region-Growing und Clustering:}  
+In \cite{moosmann2009segmentation} wird ein graphenbasiertes Region-Growing-Verfahren vorgestellt, 
+bei dem benachbarte Punkte iterativ zu Regionen zusammengefügt werden, 
+sofern lokale geometrische Kriterien (z.\,B. Konvexität) erfüllt sind.  
+Ein alternativer Ansatz kombiniert voxelbasiertes Clustering mit statistischer Analyse, 
+um Bodencluster zuverlässig zu isolieren \cite{douillard2011segmentation}.  
+Solche Methoden liefern stabile Ergebnisse auch in komplexen Szenen, 
+sind jedoch rechenintensiver und daher weniger für Echtzeitanwendungen geeignet.
+
+\textbf{Range-Image-Methoden:}  
+In \cite{bogoslavskyi2016fast} wird die Punktwolke in ein zweidimensionales Entfernungsbild (\textit{Range Image}) projiziert, 
+bei dem jeder Pixel den Abstand eines Messpunkts zum Sensor repräsentiert.  
+Diese Repräsentation ermöglicht eine effiziente Definition von Nachbarschaften und vereinfacht die anschließende Segmentierung erheblich.  
+Mit diesem Ansatz kann die Bodenextraktion in wenigen Millisekunden pro Frame durchgeführt werden, was eine Echtzeitverarbeitung erlaubt.
+
+% ============================
+\subsection{Verfahren höherer Ordnung}
+% ============================
+
+Ansätze dieser Kategorie verwenden probabilistische Graphmodelle wie 
+\textit{Markov Random Fields (MRF)} oder \textit{Conditional Random Fields (CRF)}, 
+um Abhängigkeiten zwischen benachbarten Punkten explizit zu modellieren.  
+Durch die Berücksichtigung solcher räumlicher Korrelationen können Fehlklassifikationen, 
+insbesondere in spärlichen oder verrauschten Punktwolken, deutlich reduziert werden.
+
+In \cite{guo2011ground} wird ein MRF-Modell mit dem \textit{Belief Propagation (BP)}-Verfahren kombiniert, 
+das die Wahrscheinlichkeiten einzelner Punktzuordnungen iterativ aktualisiert, 
+um eine konsistente Bodenfläche auch in unebenem Gelände zu rekonstruieren.  
+Ein weiterentwickelter Ansatz integriert zeitliche Abhängigkeiten in ein CRF-Modell, 
+wodurch die Konsistenz zwischen aufeinanderfolgenden Frames verbessert 
+und die Stabilität der Segmentierung bei Bewegungen erhöht wird \cite{rummelhard2015temporal}.
+
+% ============================
+\subsection{Lernbasierte Verfahren}
+% ============================
+
+In den letzten Jahren haben sich tief neuronale Netze als besonders leistungsfähige Ansätze für die Punktwolkensegmentierung etabliert.  
+Je nach Architektur werden die Sensordaten entweder direkt in Punktform verarbeitet oder zuvor in strukturierte Darstellungen überführt, um eine effiziente Merkmalsextraktion zu ermöglichen.
+
+\textbf{PointNet- und Voxel-basierte Modelle:}  
+Das in \cite{qi2017pointnet} vorgestellte PointNet-Framework ermöglicht die direkte Verarbeitung unstrukturierter Punktwolken, indem es für jeden Punkt Merkmale extrahiert und diese global aggregiert.  
+Zur Erfassung lokaler geometrischer Abhängigkeiten wurde das Konzept in PointNet++ erweitert.  
+Alternativ unterteilen voxelbasierte Verfahren wie VoxelNet \cite{zhou2018voxelnet} oder PointPillars \cite{lang2019pointpillars} die Punktwolke in diskrete 3D-Zellen (Voxel) bzw. Säulen und verwenden dreidimensionale Faltungsnetzwerke (3D-CNNs) zur Merkmalsanalyse.  
+
+\textbf{Bildbasierte Ansätze:}  
+In \cite{wu2018squeezeseg} und \cite{milioto2019rangenet++} werden Punktwolken in zweidimensionale Entfernungsbilder (\textit{Range Images}) projiziert, sodass konventionelle 2D-Faltungsnetzwerke auf LiDAR-Daten angewendet werden können.  
+Diese Repräsentation ermöglicht eine Echtzeitverarbeitung auf GPUs bei gleichzeitig hoher Segmentierungsgenauigkeit.  
+
+\textbf{Spezialisierte Netze für Bodensegmentierung:}  
+Ein speziell für die Bodenerkennung entwickeltes neuronales Modell ist GndNet \cite{paigwar2020gndnet}.  
+Das Netz basiert auf einem zweidimensionalen Gittermodell, in dem für jede Zelle die Bodenhöhe vorhergesagt wird.  
+Dieses Verfahren erreicht eine mittlere Intersection-over-Union (IoU) von 83,6\,\% bei einer Laufzeit von nur 17,9\,ms pro Frame und ist somit für Echtzeitanwendungen geeignet.
+
+% ============================
+\subsection{Zusammenfassung}
+% ============================
+
+Tabelle~\ref{tab:vergleich_bodenmethoden} fasst die wesentlichen Eigenschaften der vorgestellten Bodensegmentierungsmethoden zusammen.  
+Sie verdeutlicht die jeweiligen Stärken und Grenzen der Ansätze sowie ihre typischen Einsatzgebiete in der mobilen Robotik und Umfelderkennung.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|p{3.5cm}|p{4cm}|p{4cm}|p{3cm}|}
+\hline
+\textbf{Methodenkategorie} & \textbf{Vorteile} & \textbf{Nachteile} & \textbf{Typisches Einsatzgebiet} \\ \hline
+2.5D-Gitterbasierte Verfahren & Geringe Rechenlast, robust auf ebenem Gelände & Begrenzte Genauigkeit bei Überhängen oder Brücken & Stadt- und Straßenszenarien \\ \hline
+Bodenmodellierung & Hohe Präzision, einfache mathematische Umsetzung & Geringe Robustheit bei komplexen Oberflächenformen & Flaches bis leicht geneigtes Terrain \\ \hline
+Lokale Merkmalsanalyse & Unempfindlich gegenüber Dichteänderungen & Starke Abhängigkeit von Parameterwahl und Sensorgeometrie & Dynamische oder unstrukturierte Umgebungen \\ \hline
+Probabilistische Graphmodelle (MRF/CRF) & Hohe Konsistenz durch Nachbarschaftsbeziehungen & Hohe Rechenkomplexität, geringe Echtzeitfähigkeit & Forschungs- und Entwicklungsumgebungen \\ \hline
+Lernbasierte Verfahren & Sehr hohe Genauigkeit, anpassungsfähig durch Training & Großer Trainings- und Hardwareaufwand & Autonomes Fahren, Echtzeit-Perzeption \\ \hline
+\end{tabular}
+\caption{Vergleich der Bodensegmentierungsmethoden in Bezug auf Rechenaufwand, Robustheit und Einsatzgebiet (nach~\cite{gomes2023survey}).}
+\label{tab:vergleich_bodenmethoden}
+\end{table}
+
+\begin{table}[h!]
+  \centering
+  \renewcommand{\arraystretch}{1.2}
+  \resizebox{\textwidth}{!}{%
+    \begin{tabular}{|l|c|c|c|c|c|}
+      \hline
+      \textbf{Methode} &
+      \textbf{Genauigkeit} &
+      \textbf{Rechenaufwand} &
+      \textbf{Robustheit} &
+      \textbf{Echtzeitfähig} &
+      \textbf{Geländeanpassung} \\
+      \hline
+      Höhenbasierte Verfahren & Niedrig & Sehr gering & Niedrig & Ja & Nein \\ \hline
+      Rasterbasierte Verfahren & Mittel & Gering & Mittel & Ja & Teilweise \\ \hline
+      \textbf{RANSAC (Plane Fitting)} & \textbf{Hoch} & \textbf{Mittel bis hoch} & \textbf{Hoch} & \textbf{Eingeschränkt} & \textbf{Nein} \\ \hline
+      Morphologische Filter & Mittel & Gering & Mittel & Ja & Teilweise \\ \hline
+      ML-/DL-basierte Verfahren & Sehr hoch & Hoch & Hoch & Nein & Ja \\ \hline
+    \end{tabular}%
+  }
+  \caption{Vergleich der Methoden zur Bodensegmentierung nach Bewertungskriterien (nach~\cite{gomes2023survey}).}
+  \label{tab:boden-methodenvergleich-ransac}
+\end{table}
+
+
+Das RANSAC-Verfahren zeichnet sich durch eine hohe Robustheit gegenüber Ausreißern aus und liefert eine präzise Anpassung planarer Bodenflächen.  
+Im Vergleich zu rasterbasierten oder morphologischen Methoden ermöglicht es eine genauere Modellierung, erfordert jedoch einen höheren Rechenaufwand und eine sorgfältige Parametrierung, um eine stabile Echtzeitverarbeitung zu gewährleisten.  
+Aufgrund seiner Balance zwischen Präzision und algorithmischer Einfachheit wurde RANSAC als Grundlage für die in dieser Arbeit implementierte Bodensegmentierung ausgewählt.
+
+\section{Implementierung}
+
+\label{sec:implementierung_ransac}
+
+Die Bodensegmentierung wurde als eigenständiger ROS~2-Knoten in \texttt{C++} mit der \textit{Point Cloud Library (PCL)} implementiert. 
+Der Knoten \texttt{ransac\_ground\_node} abonniert gefilterte LiDAR-Punktwolken, schätzt eine Bodenebene mittels \textit{SAC-RANSAC} und veröffentlicht eine Hindernis-Punktwolke, aus der die Bodenpunkte entfernt wurden. 
+Die Architektur ist strikt streaming-orientiert (Callback-basiert) und verzichtet auf Blockierungen, wodurch eine niedrige Latenz erzielt wird.
+
+Der Knoten deklariert die Ein- und Ausgabetopics als Parameter und nutzt \texttt{SensorDataQoS}:
+\begin{itemize}
+  \item \textbf{Eingabe (\texttt{input\_topic})}: \texttt{/points\_voxel} \ \emph{(Typ: \texttt{sensor\_msgs/PointCloud2})}, enthält bereits per VoxelGrid ausgedünnte Punkte (\texttt{pcl::PointXYZI}).
+  \item \textbf{Ausgabe (\texttt{output\_topic})}: \texttt{/obstacle\_points} \ \emph{(Typ: \texttt{sensor\_msgs/PointCloud2})}, enthält ausschließlich Nicht-Boden-Punkte.
+\end{itemize}
+Leere Eingaben werden verworfen, um unnötige Rechenarbeit zu vermeiden.
+
+Die wesentlichen Laufzeitparameter werden als ROS-Parameter deklariert und können über Launch-Dateien oder \texttt{ros2 param} angepasst werden (Default-Werte aus dem Code):
+\begin{table}[h!]
+\centering
+\begin{tabular}{|l|c|l|}
+\hline
+\textbf{Parameter} & \textbf{Default} & \textbf{Bedeutung} \\ \hline
+\texttt{input\_topic} & \texttt{/points\_voxel} & Eingangs-Punktwolke (vorsegmentiert per VoxelGrid) \\ \hline
+\texttt{output\_topic} & \texttt{/obstacle\_points} & Ausgabe ohne Bodenpunkte \\ \hline
+\texttt{distance\_threshold} & $0{,}15\,\mathrm{m}$ & maximaler Punkt-zu-Ebene-Abstand für Inlier \\ \hline
+\texttt{max\_iterations} & $1000$ & maximale RANSAC-Iterationen \\ \hline
+\end{tabular}
+\caption{RANSAC-Parametrisierung des \texttt{ransac\_ground\_node}.}
+\label{tab:ransac_params}
+\end{table}
+
+Zur Ebenenschätzung wird \texttt{pcl::SACSegmentation} mit \texttt{SACMODEL\_PLANE} und \texttt{SAC\_RANSAC} verwendet, inkl.\ Koeffizientenoptimierung:
+\begin{enumerate}
+  \item \textbf{Konvertierung}: \texttt{sensor\_msgs/PointCloud2} $\rightarrow$ \texttt{pcl::PointCloud<pcl::PointXYZI>}.
+  \item \textbf{RANSAC-Konfiguration}: \texttt{setOptimizeCoefficients(true)}, \texttt{setModelType(PLANE)}, \texttt{setMethodType(RANSAC)}, \texttt{setDistanceThreshold}, \texttt{setMaxIterations}.
+  \item \textbf{Segmentierung}: \texttt{seg.segment(inliers, coefficients)} liefert Inlier-Indizes der Bodenpunkte und Ebenenparameter $\mathbf{n}=(a,b,c)$, $d$ der Ebene
+  \[
+    a x + b y + c z + d = 0.
+  \]
+  \item \textbf{Extraktion der Hindernisse}: \texttt{pcl::ExtractIndices} mit \texttt{setNegative(true)} filtert alle Punkte \emph{außerhalb} der Bodenenebene (\,$>$ \texttt{distance\_threshold}\,).
+  \item \textbf{Publikation}: Rückkonvertierung nach \texttt{PointCloud2} und Veröffentlichung auf \texttt{/obstacle\_points} (mit ursprünglichem Header/Frame).
+\end{enumerate}
+Ein Punkt $\mathbf{p}=(x,y,z)^\top$ zählt als Inlier, wenn sein orthogonaler Abstand zur Ebene
+\[
+  \mathrm{dist}(\mathbf{p}, \Pi) \;=\; \frac{|a x + b y + c z + d|}{\sqrt{a^2+b^2+c^2}}
+\]
+kleiner gleich \texttt{distance\_threshold} ist.
+
+\section{Ergebnis}
+Als Ergebnis ergibt sich eine Punktwolke, die frei von Bodenpunkten ist (siehe Abbildung~\ref{fig:ransac_compare}). 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{Bilder/ransac_compare.png}
+  \caption{Vergleich der ursprünglichen Punktwolke (links) und der nach dem RANSAC-Algorithmus gefilterten Punktwolke (rechts)}
+  \label{fig:ransac_compare}
+\end{figure}
+
+\chapter{Cluster-Extraktion und Ermittlung von Bounding-Boxes}
+\label{chap:cluster_extraction}
+
+Nach der Entfernung der Bodenpunkte (vgl. Kapitel~\ref{chap:bodensegmentierung}) werden die verbleibenden Punktwolken in zusammenhängende Punktmengen (Cluster) gruppiert und mit Begrenzungsboxen beschrieben. Ziel ist eine in Echtzeit lauffähige, robuste Objektbildung, die konsistente Boxen (Lage, Abmessungen) für die nachgelagerte Verfolgung bereitstellt.
+
+\section{Prinzip}
+\label{sec:prinzip_cluster_boxes}
+Zwei Punkte \(p_i=(x_i,y_i,z_i)^\top\) und \(p_j\) gehören demselben Cluster an, wenn sie in einem geeigneten Nachbarschaftsbegriff als verbunden gelten. Anschaulich entsteht so ein Nachbarschaftsgraph, dessen Zusammenhangskomponenten die gesuchten Cluster bilden. Im gängigen euklidischen Ansatz bildet die euklidische Distanz
+\[
+ d(p_i,p_j) = \sqrt{(x_i-x_j)^2+(y_i-y_j)^2+(z_i-z_j)^2}
+\]
+die Grundlage; Punkte werden über Nachbarschaftsschwellen und eine Suche im k-d-Baum zu Komponenten zusammengefasst. Dabei ist zu beachten, dass LiDAR-Punktwolken eine von der Entfernung abhängige, anisotrope Punktdichte aufweisen (winkelbasiertes Abtastgitter). Deshalb beeinflussen Vorverarbeitung (Voxelgröße) und die Wahl der Verknüpfungsschwelle \(\varepsilon\) die Fragmentierung/Verschmelzung besonders stark (vgl. Parametrierung unten). Für jede Komponente werden anschließend eine Lage (Zentrum) und Abmessungen über eine Begrenzungsbox ermittelt. Die resultierenden Objekte werden als \emph{Detektionen} publiziert und dienen dem Tracking. Abbildung~\ref{fig:cluster_principle} skizziert das Vorgehen.
+
+\begin{figure}[H]
+  \centering
+  % Platzhalter — später durch Illustration ersetzen
+  \fbox{\parbox{0.9\linewidth}{\centering
+    Platzhalter: Schemadarstellung — Eingangspunktwolke → farbige Cluster → Boxen.
+  }}
+  \caption{Prinzip: euklidische Clusterung und nachgelagerte Box-Ermittlung.}
+  \label{fig:cluster_principle}
+\end{figure}
+
+\subsection{Cluster-Extraktion}
+\label{sec:cluster_extraction}
+In dieser Arbeit wird die euklidische Clusterung der \emph{Point Cloud Library (PCL)} eingesetzt (\texttt{pcl::EuclideanClusterExtraction}) in Verbindung mit einem k-d-Baum (\texttt{pcl::search::KdTree}) \parencite{pcl_docs_2025}. Der Ansatz ist in Echtzeit erprobt, skaliert gut mit der Punktzahl und benötigt nur wenige, gut interpretierbare Parameter:
+
+\begin{itemize}
+  \item \textbf{\texttt{cluster\_tolerance}} \(\varepsilon\) [m]: maximaler euklidischer Punktabstand innerhalb eines Clusters (räumliche Verknüpfung).
+  \item \textbf{\texttt{min\_cluster\_size}} / \textbf{\texttt{max\_cluster\_size}}: untere/obere Schranke der Punktanzahl pro Cluster (Rauschen verwerfen, Ausreißer begrenzen).
+  \item \textbf{\texttt{max\_clusters}}: harte Obergrenze pro Frame (Determinismus, Zeitbudget).
+\end{itemize}
+
+Richtwerte im Zusammenspiel mit einem Voxel-Filter (Voxelkantenlänge \(\approx\)\SI{0.15}{\meter}–\SI{0.25}{\meter}):
+\(\varepsilon \in [\SI{0.3}{\meter},\SI{0.7}{\meter}]\), \texttt{min\_cluster\_size} \(\approx 30\)–\(60\), \texttt{max\_clusters} \(\approx 200\). Kleinere \(\varepsilon\) vermeiden Verschmelzen benachbarter Objekte, größere \(\varepsilon\) reduzieren Fragmentierung in der Ferne. Alternativen wie dichtebasierte Verfahren (DBSCAN/HDBSCAN) sind möglich, werden hier zugunsten der Echtzeitfähigkeit und einfachen Parametrik jedoch nicht eingesetzt \parencite{Ester1996DBSCAN}.
+
+\paragraph{Ablauf (Algorithmus)}
+\begin{enumerate}
+  \item \textbf{Vorbereitung}: optionales Downsampling per Voxel (gleichmäßigere Dichte, O(\(n\))).
+  \item \textbf{k-d-Baum}: Aufbau für die reduzierte Punktwolke (O(\(n\log n\))).
+  \item \textbf{Region Growing}: iteratives Durchlaufen unbesuchter Punkte; Nachbarsuche innerhalb \(\varepsilon\) über k-d-Baum, Zusammenfassen zu Komponenten (typisch \(\in O(n\log n)\)).
+  \item \textbf{Selektion}: Verwerfen zu kleiner/großer Komponenten per \texttt{min/max\_cluster\_size}.
+\end{enumerate}
+
+\paragraph{Praktische Aspekte}
+- \emph{Komplexität}: der Flaschenhals ist die Nachbarsuche; Voxel-Dowsampling reduziert \(n\) und beschleunigt die Suche signifikant.
+- \emph{Parameterkopplung}: sinnvolle Werte von \(\varepsilon\) korrelieren mit der Voxelgröße. Faustregel: \(\varepsilon\approx 2\dots 3\)\,\(\times\)\,\texttt{voxel\_size}.
+- \emph{Reichweiten-Adaption (optional)}: \(\varepsilon(r)=\alpha r+\beta\) kann Fernbereichs-Fragmentierung reduzieren; in dieser Arbeit verwenden wir für Determinismus und Einfachheit eine konstante \(\varepsilon\).
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|l|c|p{8cm}|}
+    \hline
+    \textbf{Parameter} & \textbf{Beispiel} & \textbf{Bedeutung} \\ \hline
+    \texttt{cluster\_tolerance} & \(0{,}5\,\mathrm{m}\) & Verknüpfungsschwelle in der euklidischen Nachbarschaft \\ \hline
+    \texttt{min\_cluster\_size} & 40 & Rauschunterdrückung, minimale Punktzahl \\ \hline
+    \texttt{max\_cluster\_size} & 8000 & Obergrenze zur Begrenzung großer Flächen/Hecken \\ \hline
+    \texttt{max\_clusters} & 200 & Harte Obergrenze pro Frame (Zeitbudget/Determinismus) \\ \hline
+  \end{tabular}
+  \caption{Parameter der euklidischen Clusterung (Richtwerte in den Experimenten).}
+  \label{tab:cluster_params_new}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  % Platzhalter — später durch Plot/Heatmap ersetzen
+  \fbox{\parbox{0.9\linewidth}{\centering
+    Platzhalter: Einfluss von \(\varepsilon\) und Voxelgröße auf Clusteranzahl, BEV-IoU und Laufzeit.
+  }}
+  \caption{Parameter-Einfluss (Beispiel): \(\varepsilon\) (\texttt{cluster\_tolerance}) und Voxelgröße im Vergleich.}
+  \label{fig:epsilon_sweep}
+\end{figure}
+
+\subsection{Ermittlung von Bounding-Boxes}
+\label{sec:boxes}
+Für jeden Cluster werden Zentrum und Ausdehnung über eine Begrenzungsbox bestimmt. Unterschieden werden achsenparallele Boxen (AABB) und orientierte Boxen (OBB). Beide Varianten liefern ein Zentrum \(\mathbf{c}\) und die Kantenlängen \((L, W, H)\); OBB enthält zusätzlich eine Orientierung \(\mathbf{q}\) (z.\,B. als Quaternion). Abbildung~\ref{fig:aabb_obb_compare} zeigt den praktischen Unterschied.
+
+\begin{figure}[H]
+  \centering
+  % Platzhalter — später durch Vergleichsgrafik ersetzen
+  \fbox{\parbox{0.9\linewidth}{\centering
+    Platzhalter: Vergleich AABB (achsenparallel) vs. OBB (orientiert) am selben Cluster (Draufsicht/3D).
+  }}
+  \caption{Vergleich AABB vs. OBB an einem Beispielcluster.}
+  \label{fig:aabb_obb_compare}
+\end{figure}
+
+Die Boxermittlung folgt auf die Punktzusammenfassung und nutzt ausschließlich Clusterpunkte. Für robuste Höhen \(H\) empfiehlt sich die Verwendung von Perzentilen (z.\,B. \(H=\mathrm{P}_{95}(z)-\mathrm{P}_{05}(z)\)), um vereinzelte Ausreißer zu dämpfen.
+
+\subsubsection{AABB}
+\label{sec:aabb}
+Die AABB wird durch die minimalen und maximalen Koordinaten je Achse bestimmt:
+\(x_{\min},x_{\max},y_{\min},y_{\max},z_{\min},z_{\max}\). Zentrum und Kantenlängen ergeben sich zu
+\[\mathbf{c}=\tfrac{1}{2}\bigl((x_{\min},y_{\min},z_{\min})^\top+(x_{\max},y_{\max},z_{\max})^\top\bigr),\quad
+ L=x_{\max}-x_{\min},\; W=y_{\max}-y_{\min},\; H=z_{\max}-z_{\min}.
+\]
+Vorteile: sehr geringe Rechenkosten, deterministisch und robust gegenüber Ausdünnung/Teilsicht. Nachteil: bei gedrehten Objekten überschätzt die AABB die Grundfläche in der Draufsicht (BEV), da die Orientierung nicht erfasst wird.
+
+\subsubsection{OBB}
+\label{sec:obb}
+Die OBB richtet die Box entlang der Hauptachsen des Punktverteilungstensors aus. Praktisch wird dies in PCL über die Trägheits-/PCA-Schätzung realisiert (z.\,B. \texttt{pcl::MomentOfInertiaEstimation}) \parencite{pcl_docs_2025}. Vorteile: kompaktere Umhüllung bei deutlich orientierten, elongierten Objekten (Fahrzeuge, Leitplanken); die abgeleitete Yaw kann nachgelagert genutzt werden. Nachteile: höhere Rechenkosten und potenzielle Instabilitäten bei kleinen, teilverdeckten oder nahezu isotropen Clustern (Rauscheinfluss, Sprünge der Hauptachsen). Eine alternative, zweidimensionale Näherung ist die Bestimmung eines Minimalrechtecks in der Draufsicht (BEV), welches besonders stabile Yaw-Werte für straßennahe Objekte liefert; diese Option ist mit geringem Mehraufwand realisierbar und lässt sich mit AABB kombinieren (AABB für \(L,W,H\), Yaw aus BEV). Abbildung~\ref{fig:bev_minarea} reserviert Platz für eine entsprechende Darstellung.
+
+\begin{figure}[H]
+  \centering
+  % Platzhalter — später durch BEV-MinArea-Beispiel ersetzen
+  \fbox{\parbox{0.9\linewidth}{\centering
+    Platzhalter: BEV-Minimalrechteck (Yaw) vs. AABB-Grundfläche im gleichen Ausschnitt (Straßenszene).
+  }}
+  \caption{BEV-Minimalrechteck zur robusten Yaw-Schätzung (Vergleich zur AABB-Grundfläche).}
+  \label{fig:bev_minarea}
+\end{figure}
+
+\paragraph*{Vergleich AABB vs. OBB und Wahl in dieser Arbeit}
+\begin{itemize}
+  \item \textbf{AABB}: \emph{+} sehr schnell, stabil, deterministisch; \emph{−} keine Orientierung, tendenziell größere Grundfläche bei gedrehten Objekten.
+  \item \textbf{OBB}: \emph{+} Orientierung/kompaktere Hülle bei elongierten Objekten; \emph{−} aufwändiger, empfindlicher gegenüber Ausdünnung/Teilsicht, potenziell sprunghaft.
+\end{itemize}
+In dieser Arbeit wird \textbf{AABB} verwendet. Hauptgründe sind die hohe Stabilität der Boxen unter realen Sensorbedingungen (variable Punktdichte, Okklusionen) und die geringen Rechenkosten, die die Echtzeitfähigkeit in der Gesamtkette begünstigen. Die Orientierung kann optional aus nachfolgenden Schritten (z.\,B. in BEV) geschätzt werden, ohne die Boxbildung zu destabilisieren. Eine OBB-Erweiterung ist als künftige Verbesserung vorgesehen, insbesondere wenn robuste Orientierungsmerkmale (z.\,B. BEV-MinArea) zuverlässig verfügbar sind.
+
+\section{Implementierung}
+\label{sec:implementierung_cluster_boxes}
+
+Die Umsetzung erfolgt auf Basis von PCL und ROS~2 als durchgängige Verarbeitungskette. Auf dem Topic \texttt{/obstacle\_points} wird die \emph{EuclideanClusterExtraction} mit einer KdTree-Struktur angewendet, um Punktwolken in einzelne Objekte zu segmentieren. Die resultierenden Cluster werden anschließend sowohl als Marker für RViz visualisiert als auch in Form eines \texttt{vision\_msgs/Detection3DArray} veröffentlicht. Die Pipeline ist darauf ausgelegt, deterministische Latenzen und eine robuste Plausibilisierung der Objekte sicherzustellen.
+
+Als Eingabe dient das Topic \texttt{/obstacle\_points} mit dem Nachrichtentyp \texttt{sensor\_msgs/PointCloud2} unter Verwendung des \emph{SensorDataQoS}-Profils. Als Ausgabe werden die geschätzten Objektboxen in einem \texttt{vision\_msgs/Detection3DArray} bereitgestellt, welches Zentrum, Ausmaße und optional die Orientierung umfasst. Zusätzlich erfolgt eine parallele Veröffentlichung als RViz-Marker zur visuellen Kontrolle. Für den Sensorpfad wird ein \emph{BestEffort}-Profil mit \emph{KeepLast} (Tiefe \(\leq 4\)) verwendet, während die Ergebnis-Topics zuverlässig (\emph{reliable}) übertragen werden. Eine harte Obergrenze \texttt{max\_clusters} sowie die Vorallokation der Speicherstrukturen verhindern Latenzspitzen bei dichter Punktbelegung.
+
+Zur Unterdrückung von Rauschen und großflächigen Artefakten werden größenbasierte Filter eingesetzt. Objekte, deren geschätzte Ausmaße außerhalb plausibler Grenzen liegen – etwa extrem flache Fassaden oder unrealistisch große Boxen – werden verworfen. Die Parameter \(\varepsilon\), \texttt{min\_cluster\_size} und die Grenzen der Größenfilter sind direkt mit der Auflösung des Voxel-Downsamplings zu koppeln. Eine praxisnahe Faustregel ist \(\varepsilon \approx 2 \dots 3 \times \texttt{voxel\_size}\). Für die Schätzung der Höhe \(H\) eignen sich robuste Perzentilschätzer, um Ausreißer in vertikaler Richtung zu kompensieren.
+
+Die Kombination aus Voxel-Downsampling, KdTree-Suche und einer festen Maximalzahl an Clustern ermöglicht eine stabile Verarbeitung in Echtzeit. Zudem wird bewusst auf Axis-Aligned Bounding Boxes (AABB) statt auf rechenintensivere OBBs zurückgegriffen, da AABBs bei Fahrzeugumgebungen als numerisch stabil und ausreichend präzise gelten. Insgesamt führt dieser Aufbau zu einer effizienten Segmentierung mit konstanten Antwortzeiten und gut kontrollierbaren Ressourcenanforderungen.
+
+\section{Ergebnis}
+\label{sec:ergebnis_cluster_boxes}
+In den Experimenten liefert die Pipeline konsistente Boxen bei moderatem Rechenaufwand. Die AABB-Wahl erweist sich als robust gegenüber variabler Punktdichte und Teilokklusion; OBB bietet dagegen Vorteile bei stark orientierten, elongierten Objekten, ist jedoch empfindlicher und teurer.
+
+Abbildung~\ref{fig:clustering_result} zeigt den Cluster eines detektierten Pkw mit AABB-Dimensionen.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{Bilder/clustering_result.png}
+  \caption{Detektierter Fahrzeug-Cluster mit AABB-Dimensionen (4.06 × 2.04 × 1.33 m)}
+  \label{fig:clustering_result}
+\end{figure}
+
+\chapter{Objektverfolgung}
+\section{Prinzip}
+
+Zur Verfolgung erkannter Objekte wird ein zweidimensionaler Kalman-Filter mit anschließender Zuordnung der Detektionen mittels Ungarischem Algorithmus eingesetzt. Im Folgenden wird zunächst der Kalman-Filter und anschließend das Zuordnungsverfahren erläutert.
+
+\subsection{2D-Kalman-Filter}
+Der Kalman-Filter schätzt den Zustandsvektor eines Objekts und aktualisiert ihn bei jeder neuen Messung (\cite{kalman1960}). Im hier verwendeten 2D-Modell lautet der Zustandsvektor
+\[
+\mathbf{x} =
+\begin{bmatrix}
+x \\ y \\ v_x \\ v_y
+\end{bmatrix},
+\]
+wobei $(x,y)$ die Position und $(v_x, v_y)$ die Geschwindigkeit in der Ebene beschreiben. Als Bewegungsmodell wird konstante Geschwindigkeit angenommen, d.\,h. die Position entwickelt sich proportional zur Geschwindigkeit, während die Geschwindigkeit unverändert bleibt. Dieses lineare Modell ist für Tracking-Aufgaben im Verkehrsumfeld weit verbreitet \cite{bar2004estimation}.
+
+Die Zustandsvorhersage erfolgt mittels Übergangsmatrix
+\[
+\mathbf{F} =
+\begin{bmatrix}
+1 & 0 & \Delta t & 0\\
+0 & 1 & 0 & \Delta t\\
+0 & 0 & 1 & 0\\
+0 & 0 & 0 & 1
+\end{bmatrix},
+\]
+wobei $\Delta t$ die Zeitdifferenz zwischen zwei Messungen darstellt. Die Kovarianzmatrix wird entsprechend
+\[
+\mathbf{P}_{k|k-1} = \mathbf{F}\,\mathbf{P}_{k-1|k-1}\,\mathbf{F}^T + \mathbf{Q}
+\]
+fortgeschrieben, wobei $\mathbf{Q}$ das Prozessrauschen modelliert und Beschleunigungen oder Modellabweichungen abdeckt.
+
+Liegt eine neue Detektion vor, wird der Filter aktualisiert. Die erwartete Messung wird über
+\[
+\mathbf{z}_{k|k-1} = \mathbf{H}\,\mathbf{x}_{k|k-1}, \quad
+\mathbf{H} =
+\begin{bmatrix}
+1 & 0 & 0 & 0\\
+0 & 1 & 0 & 0
+\end{bmatrix}
+\]
+berechnet. Der Innovationsvektor lautet
+\[
+\mathbf{y}_k = \mathbf{z}_k - \mathbf{H}\,\mathbf{x}_{k|k-1},
+\]
+und mit der Innovationskovarianz
+\[
+\mathbf{S}_k = \mathbf{H}\,\mathbf{P}_{k|k-1}\,\mathbf{H}^T + \mathbf{R}
+\]
+ergibt sich der Kalman-Gewinn:
+\[
+\mathbf{K}_k = \mathbf{P}_{k|k-1}\,\mathbf{H}^T\,\mathbf{S}_k^{-1}.
+\]
+
+Damit wird der Zustand korrigiert zu
+\[
+\mathbf{x}_{k|k} = \mathbf{x}_{k|k-1} + \mathbf{K}_k\,\mathbf{y}_k,
+\]
+und die Unsicherheit reduziert sich entsprechend
+\[
+\mathbf{P}_{k|k} = (\mathbf{I} - \mathbf{K}_k\mathbf{H})\,\mathbf{P}_{k|k-1}.
+\]
+
+Die normierte Innovationsgröße
+\[
+d^2 = \mathbf{y}_k^T\,\mathbf{S}_k^{-1}\,\mathbf{y}_k
+\]
+entspricht dem Mahalanobis-Abstand und dient als statistisches Maß, ob eine Messung konsistent zu einem Track passt. Große Abweichungen führen zur Ablehnung der Zuordnung (\textit{Gating}) (\cite{bar2004estimation}).
+
+\subsection{Datenassoziation mit dem Ungarischen Algorithmus}
+
+Um in jedem Zeitschritt neue Detektionen den bestehenden Objekt-Spuren (Tracks) korrekt zuzuordnen, wird ein Zuordnungsproblem gelöst. Hierfür wird zunächst eine Kostenmatrix
+\[
+\mathbf{C} \in \mathbb{R}^{N_\text{Track} \times N_\text{Detektion}}
+\]
+aufgebaut, deren Eintrag $c_{ij}$ die Kosten einer möglichen Zuordnung zwischen Track $i$ und Detektion $j$ beschreibt. In dieser Arbeit wird als Kostenmaß der quadratische Mahalanobis-Abstand verwendet,
+\[
+c_{ij} = (\mathbf{z}_j - \hat{\mathbf{z}}_i)^\mathrm{T}\, \mathbf{S}_i^{-1}\, (\mathbf{z}_j - \hat{\mathbf{z}}_i),
+\]
+wobei $\hat{\mathbf{z}}_i$ die vom Kalman-Filter vorhergesagte Position des Tracks und $\mathbf{S}_i$ die Innovationskovarianz ist \cite{bar2004estimation}. Kleine Werte stehen für hohe Übereinstimmung. 
+
+Um unrealistische Paarungen auszuschließen, wird ein \textit{Gating} durchgeführt: liegt $c_{ij}$ oberhalb eines Schwellenwerts $\tau$, wird diese Zuordnung verworfen. Praktisch wird dies durch Setzen des Matrixeintrags auf einen sehr großen Wert erreicht:
+\[
+c_{ij} =
+\begin{cases}
+(\mathbf{z}_j - \hat{\mathbf{z}}_i)^\mathrm{T}\, \mathbf{S}_i^{-1}\, (\mathbf{z}_j - \hat{\mathbf{z}}_i), & \text{falls } c_{ij} \le \tau,\\
+\infty, & \text{sonst}.
+\end{cases}
+\]
+Dadurch werden nur Messungen berücksichtigt, die statistisch konsistent zum jeweiligen Track sind.
+
+Im Anschluss bestimmt der Ungarische Algorithmus \cite{kuhn1955} eine optimale 1-zu-1-Zuordnung, welche die Summe der Kosten minimiert:
+\[
+\min_{\pi} \sum_{i} c_{i,\pi(i)}, \qquad \pi \text{ ist eine Permutation auf } \{1,\dots,N_\text{Track}\}.
+\]
+Das Verfahren garantiert eine eindeutige Zuordnung, bei der jeder Track höchstens eine Detektion erhält und jede Detektion höchstens einem Track zugewiesen wird. Tracks ohne passende Messung werden nur durch die Prädiktion weitergeführt, während nicht zugeordnete gültige Detektionen als neue Objekte initialisiert werden können. Durch diese Formulierung wird verhindert, dass mehrere Objekte derselben Detektion zugeordnet werden oder sich Objektidentitäten überschneiden – ein bekanntes Problem bei rein lokalem Nearest-Neighbor-Matching (\cite{bewley2016sort}).
+
+
+\section{Implementierung}
+\label{sec:implementierung_tracking}
+Die Umsetzung erfolgt als ROS~2\,--\,Knoten \texttt{tracking\_node}. Eingänge sind \texttt{/detections\_raw} (\texttt{vision\_msgs/Detection3DArray}) aus der Clusterstufe, Ausgaben \texttt{/tracks\_raw} (Detektionen mit stabilisierten Zentren/Größen/IDs) sowie \texttt{/tracks\_markers} für RViz. Sensorpfade nutzen \emph{SensorDataQoS} (BestEffort/KeepLast), Ergebnis\,--\,Topics \emph{reliable}. 
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|l|l|p{8.5cm}|}
+    \hline
+    \textbf{Parameter} & \textbf{Typ} & \textbf{Bedeutung} \\ \hline
+    \texttt{gate\_dist\_max} & [m] & euklidische Obergrenze des Gates (z.\,B. 3\,--\,4\,m) \\ \hline
+    \texttt{min\_hits} & [Frame] & Bestätigungsschwelle (2\,--\,3) \\ \hline
+    \texttt{max\_missed} & [Frame] & Löschschwelle ohne Zuordnung (6\,--\,10) \\ \hline
+    \texttt{max\_size\_L,W,H} & [m] & Plausibilitätsobergrenzen (z.\,B. L\,\(\leq\,8\), W\,\(\leq\,5\), H\,\(\leq\,4.2\)) \\ \hline
+  \end{tabular}
+  \caption{Wesentliche Parameter des Trackers .}
+  \label{tab:tracking_params}
+\end{table}
+
+Die folgenden Größenbereiche (nach Bodenentfernung) dienen sowohl der Plausibilisierung als auch der heuristischen Klassenbestimmung. Sie wurden in den Versuchen verwendet und haben sich als robuste Grenzen für typische Straßenszenen erwiesen. Dabei wurde die Bodenentfernung betrachtet.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|l|c|c|c|}
+    \hline
+    \textbf{Objektklasse} & \textbf{Länge [m]} & \textbf{Breite [m]} & \textbf{Höhe [m]} \\ \hline
+    Mensch         & 0.3 -- 1.6  & 0.4 -- 1.0  & 1.0 -- 2.0 \\ \hline
+    Fahrradfahrer  & 0.6 -- 2.0  & 0.6 -- 1.5  & 0.4 -- 1.6 \\ \hline
+    Pkw            & 2.0 -- 4.5  & 1.4 -- 3.0  & 0.6 -- 2.1 \\ \hline
+    Lkw            & 4.5 -- 8.0  & 2.0 -- 5.0  & 2.0 -- 4.2 \\ \hline
+  \end{tabular}
+  \caption{Abmessungsbereiche der Zielklassen nach Bodenentfernung (Plausibilisierung und Heuristik).}
+  \label{tab:class_dims}
+\end{table}
+
+Boxen, deren Abmessungen über globalen Obergrenzen liegen (\enquote{größer als Lkw}), werden vor Anlage/Aktualisierung verworfen; dies reduziert Fehlassoziationen und senkt Rechenlast. Außerdem werden nur vordefinierte Klassen (Person, Fahrradfahrer, Pkw, Lkw) getrackt; \enquote{Unbekannt} kann zur Unterdrückung von Artefakten verworfen werden.
+
+Tracks werden als \texttt{vision\_msgs/Detection3D} ausgegeben (Zentrum, Größe, Orientierung, ID über Label/Namespace). Die Orientierung wird bei AABB aus der Detektion (z.\,B. BEV oder Cluster) übernommen, nicht aus dem KF geschätzt. Für Debug wird ein \texttt{MarkerArray} publiziert (Box und Textlabel). Abbildung~\ref{fig:tracking_flow} skizziert den Ablauf.
+
+\begin{figure}[H]
+  \centering
+  % Platzhalter — später durch Ablaufgrafik ersetzen
+  \fbox{\parbox{0.9\linewidth}{\centering
+    Platzhalter: Datenfluss — Detections\,\(\to\) Gating\,/\,Zuordnung\,\(\to\) KF\,Update\,\(\to\) Track-Management\,\(\to\) Ausgabe.
+  }}
+  \caption{Ablauf der Objektverfolgung (Schemadarstellung).}
+  \label{fig:tracking_flow}
+\end{figure}
+
+\section{Ergebnis}
+\label{sec:ergebnis_tracking}
+Mit den in Kapitel~\ref{chap:cluster_extraction} beschriebenen Boxen liefert der Tracker stabile Trajektorien bei moderatem Rechenaufwand. Die AABB\,--\,Wahl in der Boxstufe reduziert Formsprünge; in dichtem Verkehr hilft Mahalanobis\,--\,Gating, falsche Zuordnungen zu minimieren. Startwerte sind \texttt{gate\_dist\_max}\,\(\=4\) \text{m} \texttt{min\_hits}\,\(=2\) und \texttt{max\_missed}\,\(=10\).
+
+Abbildung~\ref{fig:tracking_result} zeigt den Cluster eines detektierten Pkw mit AABB-Dimensionen.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{Bilder/tracking.png}
+  \caption{Detektierte Objekte (Bild wird noch bearbeitet)}
+  \label{fig:tracking_result}
+\end{figure}
+
+\chapter{Test und Bewertung}
+\label{chap:test_und_bewertung}
+
+In diesem Kapitel werden die Testergebnisse der entwickelten Umfelderkennungs-Pipeline vorgestellt und bewertet. 
+Die Pipeline wurde vollständig in ROS~2 umgesetzt und besteht aus den in Abbildung~\ref{fig:ros2-pipeline-alltopics} gezeigten Modulen: 
+\textit{Crop-Box-Filter}, \textit{VoxelGrid-Filter}, \textit{RANSAC-Bodensegmentierung}, \textit{Cluster-Extraktion} sowie \textit{Objektverfolgung (Tracking)}. 
+Die Konfiguration erfolgte über das Launch-File \textit{ouster\_pipeline.launch.py}, welches alle Module innerhalb des gemeinsamen Namensraums \textit{/pipeline} startet.
+
+Das System lief auf einem Ubuntu~22.04-Rechner mit ROS~2~Humble und einem AMD Ryzen 5 Prozessor (8~Kerne, 16~Threads). 
+Zur Visualisierung und qualitativen Analyse wurde \textit{RViz} eingesetzt.  
+
+\section{Testumgebung}
+\label{sec:testumgebung}
+
+Für die Evaluierung der entwickelten Messkette wurden eigens aufgezeichnete LiDAR-Datensätze des Ouster~OS1-Sensors verwendet.  
+Die Aufnahmen erfolgten in verschiedenen urbanen Szenarien auf dem Campusgelände der Technischen Hochschule Nürnberg, 
+darunter Parkflächen, Zufahrtsstraßen und Bereiche mit Fußgänger- und Fahrzeugverkehr.  Das Wetter am Tag war weder sonnig noch wolkenverhangen.
+Ziel dieser Datensätze war es, typische Objekte und Strukturen einer realen Verkehrsumgebung – 
+wie Personen, Fahrradfahrer, Pkw und Lkw – unter realistischen Bedingungen zu erfassen.  
+Die Sensordaten wurden mit einer festen Sensorrate von 10\,Hz aufgenommen und als \textit{ROS\,2\,Bag}-Dateien gespeichert.
+
+\section{Parameterstudie}
+\label{sec:parameterstudie}
+
+Die gewählte Detektionspipeline ist sensitiv gegenüber mehreren Parametern, die die Qualität der Segmentierung, Clusterbildung und Klassentrennung maßgeblich beeinflussen. Ziel der Parameterstudie ist daher die Untersuchung, welche Kombinationen aus \textit{voxel\_size}, \textit{distance\_threshold} und \textit{cluster\_tolerance} robuste Ergebnisse in unterschiedlichen urbanen Szenarien liefern. Zu diesem Zweck wurden aufgezeichnete ROS2-Bagfiles mehrfach wiederholt abgespielt und jeweils nur ein Parameter verändert, während alle anderen konstant gehalten wurden. Dadurch lässt sich der isolierte Einfluss jeder Stellgröße bewerten.
+
+\subsection{Untersuchungsaufbau}
+Die Messungen wurden in drei realen Szenarien durchgeführt:
+
+\begin{itemize}
+    \item \textbf{S1 – Geparkte Fahrzeuge auf einer ebenen Fahrbahn:} statische Umgebung mit eng stehenden PKW, geringer Verkehr, spiegelnde Oberflächen, hohe Gefahr von Übersegmentierung.
+    \item \textbf{S2 – Kreuzung:} Objekte in dichter Nachbarschaft, teilweise verdeckt, dynamische Szene; Ziel: Minimierung von Falsch-Detektionen und stabiler Klassentrennung.
+    \item \textbf{S3 – Unebene Fahrbahn:} geneigte Fläche mit parkenden Fahrzeugen; bestätigt Robustheit der Bodensegmentierung und der Clusterbildung bei variierender Höhengeometrie.
+\end{itemize}
+
+Als Bodenwahrheit (``Realwert'') dienten zum einen Kameraaufnahmen im Vorderbereich, zum anderen das 360° LiDAR-Datenbild für rückwärtige Objekte. Bewertet wurden jeweils die Klassen \textit{PKW}, \textit{Mensch}, \textit{Fahrradfahrer} und \textit{LKW} sowie die Gesamtdetektionen.
+
+\subsection{Variation von voxel\_size}
+Eine feinere Voxelgröße erhöht die Punktdichte und Detailtreue, führt allerdings zu mehr Rauschen und Zusatzobjekten. Gröbere Voxel hingegen glätten Bodenfehler, können aber kleine Objekte verschmelzen. Tabelle~\ref{tab:voxel_parked} zeigt exemplarisch die Ergebnisse im Szenario~S1 (geparkte Fahrzeuge):
+
+\begin{table}[H]
+\centering
+\caption{Detektionen in S1 (Geparkte Fahrzeuge) bei Variation von voxel\_size.}
+\label{tab:voxel_parked}
+\begin{tabular}{c|c|c|c|c|c}
+\toprule
+voxel\_size & PKW & Mensch & Fahrradfahrer & LKW & Gesamt \\
+\midrule
+0.10 & 12 & 3 & 3 & 0 & 18 \\
+0.15 & 15 & 1 & 3 & 2 & 21 \\
+0.20 & \textbf{15} & \textbf{0} & \textbf{1} & 1 & \textbf{17} \\
+0.25 & 15 & 0 & 1 & 2 & 18 \\
+\midrule
+Real & 15 & 0 & 1 & 3 & 19 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+In S1 erzielt \textbf{voxel\_size = 0.20 m} die geringste Abweichung vom Realbild: Alle PKW werden erkannt, der einzige Fahrradfahrer erscheint korrekt und es entstehen keine falschen Mensch-Detektionen.
+
+Die Ergebnisse werden in Abbildung~\ref{fig:voxel_klasse_geparkt} und \ref{fig:voxel_total_geparkt} dargestellt.
+
+% --- Insert the PGFPlots figures for voxel_size (Geparkte Autos) ---
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.85\linewidth,
+    height=0.48\linewidth,
+    grid=both,
+    xlabel={\textbf{voxel\_size (m)}},
+    ylabel={\textbf{Anzahl Detektionen}},
+    xmin=0.09, xmax=0.26,
+    ymin=0,
+    legend pos=north east,
+    title={Detektionen pro Klasse vs.\ voxel\_size (Geparkte Autos)}
+]
+    \addplot+[mark=o] coordinates {(0.10,12) (0.15,15) (0.20,15) (0.25,15)};
+    \addlegendentry{PKW}
+
+    \addplot+[mark=o] coordinates {(0.10,3) (0.15,1) (0.20,0) (0.25,0)};
+    \addlegendentry{Mensch}
+
+    \addplot+[mark=o] coordinates {(0.10,3) (0.15,3) (0.20,1) (0.25,1)};
+    \addlegendentry{Fahrradfahrer}
+
+    \addplot+[mark=o] coordinates {(0.10,0) (0.15,2) (0.20,1) (0.25,2)};
+    \addlegendentry{LKW}
+\end{axis}
+\end{tikzpicture}
+\caption{Detektionen pro Klasse bei Variation von voxel\_size (Geparkte Autos).}
+\label{fig:voxel_klasse_geparkt}
+\end{figure}
+
+% Total
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.75\linewidth,
+    height=0.44\linewidth,
+    grid=both,
+    xlabel={\textbf{voxel\_size (m)}},
+    ylabel={\textbf{Gesamtzahl Detektionen}},
+    xmin=0.09, xmax=0.26,
+    ymin=0,
+    legend pos=north east,
+    title={Gesamtdetektionen vs.\ voxel\_size (Geparkte Autos)}
+]
+    \addplot+[mark=*] coordinates {(0.10,18) (0.15,21) (0.20,17) (0.25,18)};
+    \addlegendentry{Total}
+\end{axis}
+\end{tikzpicture}
+\caption{Gesamtzahl aller Detektionen in Abhängigkeit der Voxelgröße (Geparkte Autos).}
+\label{fig:voxel_total_geparkt}
+\end{figure}
+
+Die Szenarien S2 und S3 bestätigen diese Bewertung: Voxelgrößen $\le$ 0.15\,m erzeugen deutlich mehr Bodenartefakte, wohingegen $>$ 0.25\,m kleine Objektkanten glätten. \textbf{voxel\_size = 0.20 m} stellt daher den besten Kompromiss dar.
+
+\subsection{Variation von distance\_threshold}
+Der Parameter \textit{distance\_threshold} beeinflusst die Punktfusion innerhalb der Cluster. Kleine Werte erzeugen vermehrt Split-Objekte, große Werte führen zu Verschmelzungen. Für S1 ergibt sich folgendes Bild (vgl. Tabelle~\ref{tab:distance_parked}):
+
+% Distance table (example)
+\begin{table}[H]
+\centering
+\caption{Detektionen in S1 bei Variation von distance\_threshold (voxel\_size = 0.20 m).}
+\label{tab:distance_parked}
+\begin{tabular}{c|c|c|c|c|c}
+\toprule
+distance\_threshold & PKW & Mensch & Fahrradfahrer & LKW & Gesamt \\
+\midrule
+0.10 & 16 & 0 & 1 & 1 & 18 \\
+0.15 & \textbf{15} & \textbf{0} & \textbf{1} & 1 & \textbf{17} \\
+0.20 & 17 & 0 & 1 & 2 & 20 \\
+0.25 & 16 & 0 & 1 & 1 & 18 \\
+\midrule
+Real & 15 & 0 & 1 & 3 & 19 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Ein \textbf{distance\_threshold von 0.15\,m} liefert die stabilsten Ergebnisse. Kürzere Abstände erzeugen Zusatzobjekte, während größere Werte einzelne PKW verschmelzen. Die weiteren Szenarien bestätigen dieses Ergebnis.
+
+\subsection{Variation von cluster\_tolerance}
+Die \textit{cluster\_tolerance} bestimmt den Abstand, ab dem Punktgruppen als getrennte Objekte gelten. Im Szenario S3 (geneigte Fahrbahn) sind Ergebnisse in Tabelle~\ref{tab:cluster_slope} dargestellt:
+
+\begin{table}[H]
+\centering
+\caption{Detektionen in S3 (Unebene Fläche) bei Variation von cluster\_tolerance, voxel\_size = 0.20 m.}
+\label{tab:cluster_slope}
+\begin{tabular}{c|c|c|c|c|c}
+\toprule
+cluster\_tolerance & PKW & Mensch & Fahrradfahrer & LKW & Gesamt \\
+\midrule
+0.3 & 16 & 3 & 5 & 1 & 25 \\
+0.5 & \textbf{16} & \textbf{1} & \textbf{2} & 1 & \textbf{20} \\
+0.7 & 17 & 1 & 1 & 2 & 21 \\
+0.9 & 13 & 1 & 0 & 2 & 16 \\
+\midrule
+Real & 13 & 0 & 1 & 5 & 19 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Werte unter 0.3 erzeugen starke Übersegmentierung, während 0.9 m zu Fusionsfehlern führt (Verlust kleiner Objekte). \textbf{cluster\_tolerance = 0.5\,m} zeigt den besten Kompromiss in allen Szenen.
+
+\subsection{Fazit der Parameterstudie}
+Die Parameterstudie zeigt eindeutig, dass keine einzelne Stellgröße alle Szenen optimal abdeckt. Ein robuster Kompromiss über alle getesteten städtischen Umgebungen ergibt sich jedoch mit:
+
+\begin{itemize}
+    \item \textbf{voxel\_size = 0.20 m}
+    \item \textbf{distance\_threshold = 0.15 m}
+    \item \textbf{cluster\_tolerance = 0.50 m}
+\end{itemize}
+
+Diese Kombination minimiert Bodenartefakte, verhindert übermäßige Objektfusion und erhält gleichzeitig kleine Klassen (Fahrradfahrer) zuverlässig bei. Sie wird daher im weiteren Verlauf des Projekts für die Erkennung und Nachverfolgung eingesetzt.
+
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{|l|c|X|c|}
+\hline
+\textbf{Parameter} & \textbf{Wertebereich} & \textbf{Kriterium} & \textbf{Optimales Ergebnis} \\ \hline
+\texttt{distance\_threshold} & 0–1{,}0\,m & Saubere Bodenentfernung, keine Objektverluste & 0{,}25\,m \\ \hline
+\texttt{voxel\_size} & 0{,}05–0{,}5\,m & Echtzeitfähigkeit, Detailerhalt & 0{,}2\,m \\ \hline
+\texttt{cluster\_tolerance} & 0{,}2–1{,}0\,m & Objekttrennung, keine Übersegmentierung & 0{,}5\,m \\ \hline
+\end{tabularx}
+\caption{Untersuchungsbereiche und ermittelte Optimalwerte der Hauptparameter.}
+\label{tab:param_study}
+\end{table}
+
+Die Untersuchungen zeigen, dass insbesondere die Parameter \texttt{distance\_threshold} und \texttt{voxel\_size} 
+einen maßgeblichen Einfluss auf die Gesamtergebnisse haben.  
+Ein zu kleiner Schwellenwert bei der Bodenentfernung (\textless{}0{,}15\,m) führt dazu, dass 
+Teile des Bodens als Objekte erkannt werden, während ein zu großer Wert (\textgreater{}0{,}4\,m) 
+relevante Objektpunkte entfernt.  
+Die Wahl von 0{,}25\,m erwies sich als stabiler Kompromiss.  
+Ähnlich zeigte sich bei der Voxelgröße, dass Werte zwischen 0{,}15\,m und 0{,}25\,m 
+eine gute Balance zwischen Rechenzeit und Detailgenauigkeit bieten.  
+Werte über 0{,}3\,m führten zu einem erkennbaren Informationsverlust bei kleinen Objekten (z.\,B. Fußgänger).
+
+Die gewählten Parameterwerte entsprechen somit einem ausgewogenen Kompromiss zwischen 
+Echtzeitfähigkeit und Segmentierungsqualität.  
+Eine dynamische Parametrierung, die sich an die lokale Punktdichte oder Geländebedingungen anpasst, 
+könnte in zukünftigen Arbeiten zu einer weiteren Verbesserung führen.
+
+\section{Bewertung des Algorithmus}
+
+\subsection{Echtzeitfähigkeit}
+Mit Systemzeitstempeln (\texttt{use\_sim\_time=false}) wurde eine end-to-end-Latenz der gesamten Pipeline von durchschnittlich \(\approx 51\,\mathrm{ms}\) gemessen. Nach einer kurzen Anlaufphase von rund \(114\,\mathrm{ms}\) stabilisierte sich die Latenz im Bereich von \(50\)–\(56\,\mathrm{ms}\) (Messfenster \(n \approx 100\)). Die Teilstrecken betrugen: \textit{crop}→\textit{voxel} \(\approx 45\)–\(50\,\mathrm{ms}\), \textit{voxel}→\textit{ransac} \(\approx 1{,}7\,\mathrm{ms}\), \textit{ransac}→\textit{cluster} \(\approx 0{,}3\,\mathrm{ms}\) und \textit{cluster}→\textit{track} \(\approx 3{,}7\,\mathrm{ms}\). Damit entfällt der Schwerpunkt der Laufzeit klar auf die Vorverarbeitung bis einschließlich Voxelisierung.
+
+Unter diesen Bedingungen ist die Pipeline für eine Echtzeitverarbeitung mit \(10\,\mathrm{Hz}\) (Periodendauer \(100\,\mathrm{ms}\)) mit deutlicher Reserve geeignet. Für \(20\,\mathrm{Hz}\) (Periodendauer \(50\,\mathrm{ms}\)) liegt die Latenz dagegen grenzwertig nahe am verfügbaren Zeitbudget. Moderate Optimierungen in der Vorverarbeitung (z.\,B. effizientere Speicherzugriffe, Reduktion unnötiger Kopien oder Anpassung der Voxel-Parameter) können weitere Reserve schaffen und den Stabilitätsbereich für höhere Frequenzen erweitern.
+
+\subsection{Ressourcennutzung (CPU/RAM)}
+Eine Messung über \(12\,\mathrm{s}\) (\(19\) Stichproben im \(0{,}5\,\mathrm{s}\)-Intervall) ergab eine mittlere Gesamtauslastung von \(38{,}80\,\%\) CPU sowie einen durchschnittlichen Arbeitsspeicherverbrauch von \(193{,}18\,\mathrm{MB}\) (RSS). Die CPU-Last verteilte sich auf die Teilkomponenten wie folgt: 
+\textit{crop\_box\_node} \(14{,}45\,\%\), 
+\textit{voxel\_filter\_node} \(17{,}77\,\%\), 
+\textit{ransac\_ground\_node} \(1{,}87\,\%\), 
+\textit{cluster\_extraction\_node} \(4{,}21\,\%\) 
+und \textit{tracking\_node} \(0{,}50\,\%\).
+
+Der Speicherverbrauch pro Prozess lag zwischen \(24\)–\(51\,\mathrm{MB}\): 
+\textit{crop\_box} \(43{,}37\,\mathrm{MB}\), 
+\textit{voxel} \(25{,}02\,\mathrm{MB}\), 
+\textit{RANSAC} \(50{,}93\,\mathrm{MB}\), 
+\textit{Clustering} \(50{,}12\,\mathrm{MB}\) 
+und \textit{Tracking} \(23{,}75\,\mathrm{MB}\). 
+
+Damit konzentriert sich die Rechenlast eindeutig auf die Vorverarbeitung (Crop/Voxel). Segmentierung und Clustering fallen moderat aus, während das Tracking nur einen sehr geringen Ressourcenbedarf aufweist. Insgesamt verbleibt eine deutliche CPU-Reserve bei moderater RAM-Belegung, sodass die Pipeline problemlos auf typischer Embedded- oder Fahrzeughardware betrieben werden kann.
+
+
+\subsection{Integrierbarkeit in der GUI}
+
+
+
+% ====== 8 Zusammenfassung und Ausblick ======
+\chapter{Zusammenfassung und Ausblick}
+% Inhalt hier ergÃ¤nzen
+\section{Zusammenfassung}
+\section{Ausblick}
+
+% ====== Literaturverzeichnis ======
+\cleardoublepage
+\printbibliography[title=Literaturverzeichnis]
+
+% ====== Anhang ======
+\appendix
+\chapter{Anhang A}
+% Anhang-Inhalte
+\chapter{Anhang B}
+% Anhang-Inhalte
+
+\label{LastPage}
+\end{document}
+
+
