@@ -1,0 +1,53 @@
+lio_sam_mapping:
+  ros__parameters:
+    # --- Data Sources ---
+    use_sim_time: false
+    pointCloudTopic: "/ouster/points"
+    imuTopic: "/ouster/imu"
+    odomTopic: ""
+    gpsTopic: "/fix"
+
+    # --- Frames ---
+    mapFrame: "map"
+    odomFrame: "odom"
+    baselinkFrame: "base_link"
+    lidarFrame: "os_lidar"
+
+    # --- Sensor Model (Ouster OS0/OS1 family) ---
+    N_SCAN: 64
+    Horizon_SCAN: 1024
+    downsampleRate: 1
+    lidarMinRange: 1.0
+    lidarMaxRange: 200.0
+
+    # --- IMU Settings (adapted for Ouster IMU) ---
+    imuAccNoise: 3.9939570888238808e-03
+    imuGyrNoise: 1.5636343949698187e-03
+    imuAccBiasN: 6.4356659353532566e-05
+    imuGyrBiasN: 3.5640318696367613e-05
+    imuGravity: 9.81
+
+    # --- Optimization ---
+    mappingProcessInterval: 0.1
+    maxIterations: 100
+    numberOfCores: 4
+    sensor: 1            # 0: Velodyne, 1: Ouster/Livox, 2: Others
+    odometryType: 0      # 0: IMU + LiDAR (default), 1: external odom
+    imuQueLength: 200
+
+    # --- Voxel Filters ---
+    voxelFilterSize: 0.2
+    surroundSearchRange: 50.0
+    historyKeyframeSearchRadius: 10.0
+    historyKeyframeSearchTimeDiff: 30.0
+
+    # --- Loop Closure ---
+    loopClosureEnableFlag: true
+    loopClosureFrequency: 1.0
+    surroundingKeyframeDensity: 2.0
+    historyKeyframeFitnessScore: 0.3
+
+    # --- Visualization ---
+    savePCD: false
+    saveKeyFrames: false
+    saveDirectory: "~/lio_sam"
