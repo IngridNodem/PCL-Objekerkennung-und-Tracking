@@ -541,21 +541,23 @@ Die wichtigsten Anforderungen an die entwickelte Messkette sind in Tabelle~\ref{
 
 \begin{table}[H]
   \centering
-  \begin{tabular}{|c|p{12cm}|}
-    \hline
-    \textbf{Nr.} & \textbf{Anforderung} \\ \hline
-    1 & Eingabe: Sensordaten des Ouster~OS1-LiDAR \\ \hline
-    2 & Ausgabe: Objektliste mit Position, Orientierung und Abmessungen \\ \hline
-    3 & Entfernung von Bodenpunkten und Störsignalen \\ \hline
-    4 & Reduzierung der Punktwolkendichte zur Rechenoptimierung \\ \hline
-    5 & Anpassbare Parameter für unterschiedliche Umgebungen \\ \hline
-    6 & Echtzeitverarbeitung: Latenz \textless{}100\,ms bei 10\,Hz Sensorrate \\ \hline
-    7 & Ressourcenschonender Betrieb auf Standardhardware \\ \hline
-    8 & Maschinenlesbare und terminalbasierte Ergebnisausgabe \\ \hline
-    9 & Integration in die bestehende grafische Benutzeroberfläche (GUI) \\ \hline
-  \end{tabular}
-  \caption{Anforderungen an die Messkette zur Umfelderkennung}
+  \caption{Anforderungen an die Messkette mit Messkriterien und Verifizierung}
   \label{tab:anforderungen_messkette}
+  \begin{tabularx}{\textwidth}{c Y Y Y Y}
+    \toprule
+    \textbf{Nr.} & \textbf{Kategorie} & \textbf{Anforderung} & \textbf{Messgröße/Kriterium} & \textbf{Verifizierung} \\
+    \midrule
+    1 & Eingabe & Ouster~OS1-Punktwolken werden empfangen & Topic \texttt{/ouster/points} vorhanden; Felder \texttt{x,y,z,intensity,ring}; Rate $\geq 10\,\mathrm{Hz}$ & \texttt{ros2 topic list/info/hz}; Treiberkonfiguration prüfen \\
+    2 & Ausgabe & Objektliste mit Pose und Abmessungen & Topic \texttt{/tracks\_raw} im Format \texttt{vision\_msgs/Detection3DArray} & \texttt{ros2 interface show}; Stichprobe der Nachrichten \\
+    3 & Vorverarb. & Entfernung von Bodenpunkten/Störsignalen & Topic \texttt{/obstacle\_points} zeigt keine flächigen Bodenanteile (qualitativ) & RViz-Inspektion; Vergleich vor/nach Bodenfilter \\
+    4 & Downsampling & Reduzierte Punktdichte ohne Geometrieverlust & Voxelgröße konfigurierbar; Ziel-FPS bleibt stabil & Parametertest; \texttt{ros2 topic hz} \\
+    5 & Parametrisierung & Laufzeit-Parameter anpassbar & Parameter via Launch/YAML/CLI setzbar & \texttt{ros2 param get/set}; Launch-Argumente \\
+    6 & Echtzeit & End-to-End-Latenz $<100\,\mathrm{ms}$ bei $10\,\mathrm{Hz}$ & Zeitstempel-Differenz Ein-/Ausgang; stabile $10\,\mathrm{Hz}$ & Logging der Timestamps; Bench-Skripte \\
+    7 & Ressourcen & Betrieb auf Standardhardware ohne Frame-Drops & Keine Dropped Frames bei $10\,\mathrm{Hz}$; moderater CPU/RAM-Verbrauch & Systemmonitoring; \texttt{ros2 topic hz} \\
+    8 & Ausgabeformat & Maschinenlesbare und terminalbasierte Ausgabe & Klar definierte ROS-Nachrichten + kompakte Konsolenzusammenfassung & Sichtprüfung; Nachrichtenabnahme \\
+    9 & GUI & Integration in bestehende GUI/RViz & Marker-Themen \texttt{/detections\_markers}, \texttt{/tracks\_markers} vorhanden & RViz-Ansicht; GUI-Start \\
+    \bottomrule
+  \end{tabularx}
 \end{table}
 
 \subsection{Datenerfassung}
@@ -1649,5 +1651,4 @@ Damit konzentriert sich die Rechenlast eindeutig auf die Vorverarbeitung (Crop/V
 
 \label{LastPage}
 \end{document}
-
 
