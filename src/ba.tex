@@ -930,37 +930,77 @@ Praktisch empfiehlt es sich, bei Systemen mit hoher Punktdichte (z.\,B.\ LiDAR-V
 \label{sec:ros2_qos}
 In ROS~2 definieren Quality-of-Service-Profile (QoS) die Kommunikationssemantik zwischen Publishern und Subscribern. Sie beeinflussen maßgeblich Latenz, Paketverluste, Speicherbedarf und Synchronisation entlang der Verarbeitungspipeline. Besonders bei hochfrequenten Sensorströmen wie LiDAR ist eine konsistente und angepasste QoS-Konfiguration entscheidend für die Systemstabilität.
 
-Die wichtigsten Parameter sind \textbf{Reliability}, \textbf{History/Depth} und \textbf{Durability}. Bei \emph{Reliable} werden Nachrichten garantiert zugestellt, was bei hoher Last jedoch zu erhöhter Latenz führen kann. \emph{BestEffort} reduziert die Latenz, toleriert jedoch Verluste – etwa sinnvoll bei Visualisierungstools wie RViz2. Für Sensordaten empfiehlt sich meist die Einstellung \emph{KeepLast} mit begrenzter Tiefe (z.\,B. 5--10), da \emph{KeepAll} unnötig viel Speicher benötigt. Die \emph{Durability} sollte bei Echtzeitdaten \emph{Volatile} sein; \emph{TransientLocal} ist z.\,B. bei Konfigurationsnachrichten sinnvoll. Weitere Parameter wie \emph{Deadline}, \emph{Liveliness} und \emph{Lifespan} spielen im LiDAR-Kontext eine untergeordnete Rolle, können jedoch zur Laufzeitüberwachung eingesetzt werden.
+Die Konfiguration der QoS-Profile in ROS~2 umfasst mehrere Parameter, von denen insbesondere \textbf{Reliability}, \textbf{History/Depth} und \textbf{Durability} die Übertragungseigenschaften von Sensordaten maßgeblich bestimmen. Eine kompakte Übersicht der Vor- und Nachteile findet sich in Tab.~\ref{tab:qos_vt_nt}. Die Definitionen basieren auf den DDS-Spezifikationen gemäß OMG-Standard \parencite{OMG_DDS_Spec}.
 
-In der Praxis ergeben sich daraus folgende empfohlene Einstellungen: Für die Verarbeitungskette (z.\,B. \texttt{/points\_cropped}, \texttt{/detections\_raw}) ist ein Profil mit \emph{Reliable}, \emph{KeepLast(10)} und \emph{Volatile} sinnvoll, um Datenverluste bei gleichzeitig moderater Pufferung zu vermeiden. Für Visualisierungstopics wie \texttt{/ouster/points} genügt meist \emph{BestEffort} mit geringer Tiefe, da verpasste Nachrichten tolerierbar sind.
+\begin{table}[H]
+\centering
+\caption{Wesentliche QoS-Parameter und ihre Vor- und Nachteile}
+\label{tab:qos_vt_nt}
+\begin{tabularx}{\textwidth}{l X X}
+\toprule
+\textbf{Parameter} & \textbf{Vorteile} & \textbf{Nachteile} \\
+\midrule
+\textbf{Reliability: Reliable} & Garantierte Zustellung; keine Datenverluste & Höhere Latenz bei hoher Last; höherer Ressourcenbedarf \\
+\textbf{Reliability: BestEffort} & Niedrige Latenz; ressourcenschonend & Nachrichten können verloren gehen \\
+\textbf{History: KeepLast(N)} & Begrenzter Speicherverbrauch; stabil vorhersehbar & Ältere Nachrichten werden verworfen \\
+\textbf{History: KeepAll} & Keine Nachricht geht verloren & Hoher Speicherbedarf; ungeeignet bei hohen Datenraten \\
+\textbf{Durability: Volatile} & Ideal für Echtzeitströme; keine Verzögerung & Späte Subscriber erhalten keine alten Daten \\
+\textbf{Durability: TransientLocal} & Neue Subscriber erhalten letzte Nachricht sofort & Erhöhter Speicheraufwand; nicht geeignet für LiDAR-Daten \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-Die Tabelle~\ref{tab:qos-topics} zeigt exemplarisch empfohlene QoS-Profile für zentrale Topics dieser Arbeit. Publisher und Subscriber handeln bei Verbindungsaufbau die Schnittmenge ihrer QoS-Profile aus. Dabei können Fehlermodi auftreten: etwa wenn ein \emph{Reliable}-Publisher mit einem \emph{BestEffort}-Subscriber verbunden wird – in diesem Fall wird die Kommunikation zwar aufgebaut, aber der Publisher puffert gegebenenfalls unkontrolliert. Ebenso führt ein Mismatch bei der \emph{Durability} dazu, dass historische Nachrichten nicht übertragen werden. Eine zu geringe \emph{Depth} wiederum kann zu Paketverlusten oder wachsender Latenz führen. Daher sollten QoS-Parameter explizit je Topic gesetzt und aktiv überwacht werden.
+Die \textbf{Reliability-Policy} legt fest, wie mit Nachrichtenverlusten umgegangen wird. Bei \emph{Reliable} garantiert DDS die Zustellung aller Pakete, was für deterministische Verarbeitungsschritte erforderlich ist, jedoch bei hohen Sensordatenraten zu Latenzsteigerungen führen kann. Dies entspricht dem von ROS~2 empfohlenen Verhalten für kritische Datenströme \parencite{Maruyama2016ROS2}. \emph{BestEffort} verzichtet dagegen auf Garantien und ist insbesondere für Visualisierungstopics wie \texttt{/ouster/points} geeignet, da dort gelegentliche Verluste tolerierbar sind.
+
+Die \textbf{History-Einstellung} bestimmt, wie viele Nachrichten gepuffert werden. Für LiDAR-Anwendungen mit hohen Datenraten empfiehlt sich \emph{KeepLast} mit geringer Tiefe (5--10), da kontinuierlich neue Punktwolken eintreffen und ältere Daten obsolet werden. Diese Empfehlung findet sich ebenfalls in ROS~2-Profilingstudien, die den hohen Speicherbedarf von \emph{KeepAll} dokumentieren \parencite{Buhlmann2022QoSStudy}.
+
+Die \textbf{Durability} sollte bei Echtzeitdaten grundsätzlich \emph{Volatile} sein, da nur aktuelle Sensordaten relevant sind. \emph{TransientLocal} eignet sich hingegen für selten publizierte Konfigurations- oder Statusnachrichten, für die neue Subscriber die zuletzt bekannte Information sofort erhalten sollen \parencite{DDS_Primer2018}.
+
+Weitere QoS-Parameter wie \emph{Deadline}, \emph{Liveliness} und \emph{Lifespan} spielen im LiDAR-Kontext eine untergeordnete Rolle. Sie können jedoch zur Laufzeitüberwachung eingesetzt werden, beispielsweise zur Erkennung ausgefallener Publisher oder verzögerter Messungen \parencite{ROS2_Design_QoS}.
+
+
+In der Praxis ergeben sich daraus folgende empfohlenen Einstellungen: 
+Für die Verarbeitungskette (z.\,B. \texttt{/points\_cropped}, \texttt{/detections\_raw}) 
+ist ein Profil mit \emph{Reliable}, \emph{KeepLast(10)} und \emph{Volatile} zweckmäßig, 
+um Datenverluste bei gleichzeitig moderater Pufferung zu vermeiden. 
+Für Visualisierungstopics wie \texttt{/ouster/points} genügt meist \emph{BestEffort} 
+mit geringer Tiefe, da verpasste Nachrichten tolerierbar sind.
+
+Die Tabelle ~\ref{tab:qos-topics} zeigt die QoS-Profile der in dieser Arbeit erstellten Topics. Publisher und Subscriber handeln bei Verbindungsaufbau die Schnittmenge ihrer QoS-Profile aus. Dabei können Fehlermodi auftreten: etwa wenn ein \emph{Reliable}-Publisher mit einem \emph{BestEffort}-Subscriber verbunden wird – in diesem Fall wird die Kommunikation zwar aufgebaut, aber der Publisher puffert gegebenenfalls unkontrolliert. Ebenso führt ein Mismatch bei der \emph{Durability} dazu, dass historische Nachrichten nicht übertragen werden. Eine zu geringe \emph{Depth} wiederum kann zu Paketverlusten oder wachsender Latenz führen. Daher sollten QoS-Parameter explizit je Topic gesetzt und aktiv überwacht werden.
 
 \begin{table}[htbp]
 \centering
-\small
-\begin{tabular}{llllll}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.15}
+
+\begin{tabularx}{\textwidth}{|l|c|l|l|X|}
 \hline
-Knoten & Rolle & Topic (Standard) & Typ & QoS & Details \\
+\textbf{Knoten} & \textbf{Rolle} & \textbf{Topic} & \textbf{Typ} & \textbf{QoS} \\
 \hline
-crop\_box\_node & Sub & /ouster/points & sensor\_msgs/msg/PointCloud2 & SensorDataQoS & Best Effort \\
-crop\_box\_node & Pub & /points_cropped & sensor\_msgs/msg/PointCloud2 & SensorDataQoS & Best Effort \\
-voxel\_filter\_node & Sub & points_cropped & sensor\_msgs/msg/PointCloud2 & SensorDataQoS & Best Effort \\
-voxel\_filter\_node & Pub & points_voxel & sensor\_msgs/msg/PointCloud2 & SensorDataQoS.reliable() & Zuverlässig (Reliable) \\
-ransac\_ground\_node & Sub & /points_voxel & sensor\_msgs/msg/PointCloud2 & SensorDataQoS & Best Effort \\
-ransac\_ground\_node & Pub & /obstacle_points & sensor\_msgs/msg/PointCloud2 & rclcpp::QoS(10) & Standard: Reliable \\
-cluster\_extraction\_node & Sub & /obstacle_points & sensor\_msgs/msg/PointCloud2 & SensorDataQoS & Best Effort \\
-cluster\_extraction\_node & Pub & /detections_markers & visualization\_msgs/MarkerArray & rclcpp::QoS(10) & Standard: Reliable \\
-cluster\_extraction\_node & Pub & /detections_raw & vision\_msgs/Detection3DArray & SensorDataQoS & Best Effort \\
-sort\_tracker\_node & Sub & /detections_raw & vision\_msgs/Detection3DArray & SensorDataQoS & Best Effort \\
-sort\_tracker\_node & Pub & /tracks_raw & vision\_msgs/Detection3DArray & rclcpp::QoS(10) & Standard: Reliable \\
-sort\_tracker\_node & Pub & /tracks_markers & visualization\_msgs/MarkerArray & rclcpp::QoS(10) & Standard: Reliable \\
-\hline
-\end{tabular}
+
+crop\_box\_node & Sub & \texttt{/ouster/points} & PointCloud2       & SensorDataQoS (Best Effort) \\ \hline
+crop\_box\_node & Pub & \texttt{/points\_cropped} & PointCloud2     & SensorDataQoS (Best Effort) \\ \hline
+
+voxel\_filter\_node & Sub & \texttt{/points\_cropped} & PointCloud2    & SensorDataQoS (Best Effort) \\ \hline
+voxel\_filter\_node & Pub & \texttt{/points\_voxel} & PointCloud2      & SensorDataQoS (Reliable) \\ \hline
+
+ransac\_ground\_node & Sub & \texttt{/points\_voxel} & PointCloud2      & SensorDataQoS (Best Effort) \\ \hline
+ransac\_ground\_node & Pub & \texttt{/obstacle\_points} & PointCloud2   & rclcpp::QoS(10) (Reliable) \\ \hline
+
+cluster\_extraction\_node & Sub & \texttt{/obstacle\_points} & PointCloud2  & SensorDataQoS (Best Effort) \\ \hline
+cluster\_extraction\_node & Pub & \texttt{/detections\_markers} & MarkerArray & rclcpp::QoS(10) (Reliable) \\ \hline
+cluster\_extraction\_node & Pub & \texttt{/detections\_raw} & Detection3DArray & SensorDataQoS (Best Effort) \\ \hline
+
+sort\_tracker\_node & Sub & \texttt{/detections\_raw} & Detection3DArray & SensorDataQoS (Best Effort) \\ \hline
+sort\_tracker\_node & Pub & \texttt{/tracks\_raw} & Detection3DArray  & rclcpp::QoS(10) (Reliable) \\ \hline
+sort\_tracker\_node & Pub & \texttt{/tracks\_markers} & MarkerArray     & rclcpp::QoS(10) (Reliable) \\ \hline
+
+\end{tabularx}
+
 \caption{QoS-Profile der im Code verwendeten Topics (Default-Werte).}
+\label{tab:qos-topics}
 \end{table}
-
-
 
 \section{Datenrepräsentation und Bibliotheken}
 \subsection{\texttt{sensor\_msgs/PointCloud2}: Felder und Konventionen}
