@@ -18,6 +18,7 @@
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 \usepackage{array}
 \usepackage{enumitem}
+\usepackage{listings}
 \usepackage{csquotes}
 \usepackage[printonlyused]{acronym}
 \usepackage{tocbasic} % better control of ToC lists
@@ -32,8 +33,9 @@
 \usepackage{siunitx}
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
-\setlength{\parindent}{0pt} 
+\setlength{\parindent}{0pt}
 \setlength{\parskip}{6pt}
+\lstset{basicstyle=\ttfamily\small, numbers=left, numbersep=5pt, frame=single, breaklines=true}
 
 % ---------- Page Setup ----------
 \geometry{left=30mm,right=20mm,top=20mm,bottom=30mm}
@@ -1064,15 +1066,17 @@ Dadurch wird das Datenvolumen reduziert, was zu einer deutlichen Verringerung de
 Rechenaufwands für nachfolgende Verarbeitungsschritte führt.
 
 \subsection{Implementierung}
-Im Rahmen dieser Arbeit wurde der \texttt{crop\_box\_node} in C++ unter ROS~2 
-entwickelt, um diesen Filter dynamisch innerhalb der gesamten Verarbeitungskette anzuwenden. 
-Der Node empfängt eine eingehende Punktwolke vom Ouster-LiDAR-Sensor auf dem Topic 
-\texttt{/ouster/points}, filtert die Daten gemäß den eingestellten Grenzen und publiziert die 
-gefilterte Punktwolke auf \texttt{/points\_cropped}. 
-Die Parameter \texttt{min\_bound} und \texttt{max\_bound} definieren die minimale und maximale Ausdehnung 
-des Arbeitsvolumens in Metern, während die Parameter \texttt{input\_topic} und 
-\texttt{output\_topic} den Ein- und Ausgang der Datenströme steuern. 
+Im Rahmen dieser Arbeit wurde der \texttt{crop\_box\_node} in C++ unter ROS~2
+entwickelt, um diesen Filter dynamisch innerhalb der gesamten Verarbeitungskette anzuwenden.
+Der Node empfängt eine eingehende Punktwolke vom Ouster-LiDAR-Sensor auf dem Topic
+\texttt{/ouster/points}, filtert die Daten gemäß den eingestellten Grenzen und publiziert die
+gefilterte Punktwolke auf \texttt{/points\_cropped}.
+Die Parameter \texttt{min\_bound} und \texttt{max\_bound} definieren die minimale und maximale Ausdehnung
+des Arbeitsvolumens in Metern, während die Parameter \texttt{input\_topic} und
+\texttt{output\_topic} den Ein- und Ausgang der Datenströme steuern.
 Das Konzept ist in Tabelle~\ref{tab:cropbox_params} zusammengefasst.
+Der produktive Code des Nodes liegt unter \texttt{ouster\_cpp/src/crop\_box\_node.cpp} und ist
+in Anhang~\ref{lst:cropbox_node} vollständig abgedruckt.
 
 \begin{table}[H]
   \centering
@@ -1094,15 +1098,33 @@ Der \texttt{crop\_box\_node} wurde so implementiert, dass er sowohl Pflichtfelde
 Für jeden Punkt wird geprüft, ob er innerhalb des durch die Parameter definierten 
 Volumens liegt. Ist dies der Fall, wird er beibehalten und in die 
 Ausgabepunktwolke übernommen. 
-Die Implementierung erlaubt zudem eine Laufzeitänderung der Grenzen 
-durch dynamische Re-Konfiguration via \texttt{set\_parameters}, ohne dass 
+Die Implementierung erlaubt zudem eine Laufzeitänderung der Grenzen
+durch dynamische Re-Konfiguration via \texttt{set\_parameters}, ohne dass
 die ROS~2-Verbindungen neu aufgebaut werden müssen.
 
-Da sich im Messbereich Gebäude und weitere störende Objekte befanden, welche die Anzahl falscher Detektionen signifikant erhöhen konnten, wurden die Grenzen des \texttt{crop\_box\_node} sukzessive angepasst. Durch iterative Parameteroptimierung ergaben sich folgende final verwendete Werte: \texttt{min\_bound = [-10.0, -6.0, -3.0]} sowie \texttt{max\_bound = [10.0, 6.0, 5.0]}.
+Da sich im Messbereich Gebäude und weitere störende Objekte befanden, welche die Anzahl falscher Detektionen signifikant erhöhen
+ konnten, wurden die Grenzen des \texttt{crop\_box\_node} sukzessive angepasst. Durch iterative Parameteroptimierung ergaben sich
+ folgende final verwendete Werte: \texttt{min\_bound = [-10.0, -6.0, -3.0]} sowie \texttt{max\_bound = [10.0, 6.0, 5.0]}.
+
+\subsection{Verifikation und Tests}
+Die Wirkung des CropBox-Filters wird nicht allein über Visualisierungen überprüft, sondern durch eine
+schrittweise Verifikation. Dafür wird das aufgezeichnete ROS~2-Bag einer T-Kreuzung auf ebenem Asphaltboden
+(bewusst gewählt, um symmetrische Sichtfelder und eine klare Bodenreferenz zu erhalten) mehrfach wiedergegeben.
+Pro Wiederholung werden drei Messgrößen protokolliert: (1) die Zahl der Eingangspunkte, (2) die Zahl der
+beibehaltenen Punkte innerhalb der AABB sowie (3) die zeitliche Stempelverschiebung zwischen Eingangs- und
+Ausgangsnachricht als Indikator der Knotendauer. Ein Skript fasst die Ergebnisse als CSV zusammen und
+ermöglicht den Vergleich verschiedener Parameterkombinationen.
+
+Das Testszenario „Kreuzung auf ebenem Boden“ ist gewählt, weil es sowohl freie Sichtflächen als auch klar
+begrenzte Hindernisse (Randbebauung, Bordsteine) bietet und damit typische urbanen Einsatzbedingungen
+repräsentiert, ohne dass Bodenunebenheiten die Filterbewertung verfälschen. In der finalen Konfiguration
+reduziert der Filter die Punktanzahl reproduzierbar um rund zwei Drittel, während der Zeitstempel im Header
+(vgl. Listing~\ref{lst:cropbox_node}, Zeilen 90ff.) sicherstellt, dass nachgelagerte Latenzmessungen den korrekten
+Sendezeitpunkt erhalten.
 
 \subsection{Ergebnis}
-Abbildung~\ref{fig:cropbox_compare} zeigt die Wirkung des Filters im Vergleich: 
-Links ist die ursprüngliche Punktwolke mit vollständiger Umgebung dargestellt, 
+Abbildung~\ref{fig:cropbox_compare} zeigt die Wirkung des Filters im Vergleich:
+Links ist die ursprüngliche Punktwolke mit vollständiger Umgebung dargestellt,
 während rechts nur der relevante Bereich nach Anwendung des CropBox-Filters zu sehen ist. 
 
 \begin{figure}[H]
@@ -2046,10 +2068,11 @@ Damit konzentriert sich die Rechenlast eindeutig auf die Vorverarbeitung (Crop/V
 
 % ====== Anhang ======
 \appendix
-\chapter{Anhang A}
-% Anhang-Inhalte
-\chapter{Anhang B}
-% Anhang-Inhalte
+\chapter{Quellcodeauszug CropBox-Node}
+Die vollständige C++-Implementierung des CropBox-Filters ist in Listing~\ref{lst:cropbox_node}
+aufgeführt.
+
+\lstinputlisting[language=C++,caption={C++-Implementierung des \texttt{crop\_box\_node} in ROS~2},label=lst:cropbox_node]{ouster_cpp/src/crop_box_node.cpp}
 
 \label{LastPage}
 \end{document}
