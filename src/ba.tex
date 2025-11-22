@@ -1003,16 +1003,24 @@ sort\_tracker\_node & Pub & \texttt{/tracks\_markers} & MarkerArray     & rclcpp
 \end{table}
 
 \section{Datenrepräsentation und Bibliotheken}
-\subsection{\texttt{sensor\_msgs/PointCloud2}: Felder und Konventionen}
-Ouster~OS1-Daten werden als \texttt{sensor\_msgs/PointCloud2} publiziert. Wichtige Felder und Semantik:
-\begin{itemize}
-  \item \texttt{x, y, z}: kartesische Koordinaten [m] im \texttt{frame\_id} (Sensor- oder Fahrzeugrahmen; konsistent mit \textit{tf2}).
-  \item \texttt{intensity}: reflektierte Signalstärke (treiberspezifische Skalierung); vergleichbar innerhalb eines Scans.
-  \item \texttt{ring}: vertikaler Kanalindex; erlaubt kanalspezifische Filter/Strukturierung (organisierte Wolken nach Ringen).
-  \item \texttt{time} (falls vorhanden): Punktzeitversatz relativ zu \texttt{header.stamp} (intra-scan motion compensation).
-  \item Hinweis: konkrete Feldtypen (z.\,B. \texttt{float32}, \texttt{uint16}) sind treiber-/konfigurationsabhängig.
-\end{itemize}
-Kodierung: in der Regel little-endian (\texttt{is\_bigendian = false}). Speicherlayout: linearer Puffer \texttt{data} mit \texttt{point\_step}/\texttt{row\_step}; \texttt{width}/\texttt{height} definieren die 2D-Anordnung (rotierender LiDAR: \texttt{height} = Ringanzahl, \texttt{width} = Punkte/Umdrehung). \texttt{is\_dense} signalisiert \enquote{NaN}-Vorkommen. Organisierte Wolken (Ring~\(\times\) Azimut) erleichtern nachbarschaftsbasierte Filter/Segmentierung.
+\subsection{\texttt{sensor\_msgs/PointCloud2}: Felder, Koordinaten und Layout}
+Ouster~OS1-Daten werden als \texttt{sensor\_msgs/PointCloud2} publiziert. Tabelle~\ref{tab:pointcloud2-fields} fasst die wichtigsten Felder und deren Semantik zusammen; die konkreten Datentypen (z.\,B. \texttt{float32} oder \texttt{uint16}) hängen von Treiber- und Konfiguration ab.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|l|l|}
+    \hline
+    \textbf{Feld} & \textbf{Bedeutung} \\ \hline
+    \texttt{x, y, z} & Kartesische Koordinaten in Metern im \texttt{frame\_id} (Sensor- oder Fahrzeugrahmen). \newline \emph{Koordinatensystem:} rechtsdrehend gemäß REP~103, d.\,h. \(x\) zeigt vorwärts, \(y\) nach links, \(z\) nach oben. \\ \hline
+    \texttt{intensity} & Reflektierte Signalstärke ohne physikalische Einheit; vom Treiber auf \texttt{uint16} skaliert. Kalibrierung und automatische Verstärkung sind sensorspezifisch, daher sind Werte nur innerhalb eines Scans zuverlässig vergleichbar. \\ \hline
+    \texttt{ring} & Vertikaler Kanalindex des LiDAR (Laser/Detektor-Paar). Beim eingesetzten OS1-64: \(64\) diskrete Ringe von \(0\) (unterster Strahl) bis \(63\) (oberster Strahl); andere Modellvarianten besitzen entsprechend weniger oder mehr Ringe. \\ \hline
+    \texttt{time} & Zeitversatz eines Punktes relativ zu \texttt{header.stamp} in Sekunden; dient der intra-scan Motion Compensation. \\ \hline
+  \end{tabular}
+  \caption{Zentrale Felder von \texttt{sensor\_msgs/PointCloud2} für den Ouster~OS1.}
+  \label{tab:pointcloud2-fields}
+\end{table}
+
+Alle Felder werden typischerweise little-endian kodiert (\texttt{is\_bigendian = false}). Das Speicherlayout folgt einem linearen Puffer \texttt{data} mit \texttt{point\_step} (Byte pro Punkt) und \texttt{row\_step} (Byte pro Zeile). Die Dimensionen \texttt{width}/\texttt{height} beschreiben eine 2D-Anordnung: Bei rotierenden LiDARs entspricht \texttt{height} der Ringanzahl, \texttt{width} der Punktzahl pro Umdrehung. \texttt{is\_dense} signalisiert, ob \enquote{NaN}-Einträge vorkommen. Eine organisierte Wolke (Ring~\(\times\) Azimut) ermöglicht effiziente nachbarschaftsbasierte Filter und Segmentierung sowie ringweise Verarbeitung (z.\,B. Bodenfilter nur auf unteren Ringen).
 
 \subsection{Point Cloud Library (PCL)}
 \label{chap:pcl}
