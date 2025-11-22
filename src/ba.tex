@@ -1063,27 +1063,36 @@ Die Auslastung der Rechen- und Speicherressourcen wird für jeden Knoten unter r
 \section{CropBox-Filter}
 
 \subsection{Prinzip}
-Zur Begrenzung der Punktwolke auf einen relevanten Bereich wird der \textit{CropBox-Filter} der 
-Point Cloud Library (PCL) eingesetzt. 
-Dieser Filter ermöglicht es, eine achsenparallel ausgerichtete Begrenzungsbox (AABB) zu definieren, 
-innerhalb derer alle Punkte einer Punktwolke beibehalten werden, während Punkte außerhalb dieses 
-Volumens verworfen werden. 
-Gemäß der Dokumentation \cite{pcl_cropbox_2025} basiert die Implementierung der Klasse 
-\texttt{pcl::CropBox<pcl::PCLPointCloud2>} auf einer effizienten räumlichen Filterung, 
-die eine Punktwolke entlang der Achsen $x$, $y$ und $z$ beschneidet.  
-Dadurch wird das Datenvolumen reduziert, was zu einer deutlichen Verringerung des 
-Rechenaufwands für nachfolgende Verarbeitungsschritte führt.
+Der \textit{CropBox-Filter} begrenzt eine Punktwolke auf eine achsenparallel ausgerichtete Begrenzungsbox (Axis-Aligned Bounding Box, AABB) und entfernt sämtliche Punkte außerhalb des Volumens. Formal sei \(\mathcal{P}=\{\mathbf{p}_i\}\) eine Punktwolke mit \(\mathbf{p}_i=[x_i,y_i,z_i,1]^\top\) in homogenen Koordinaten. Der Filter prüft für jede Stichprobe, ob
+\begin{align}
+\mathbf{b}_\text{min} \leq \mathbf{R}\,\mathbf{p}_i + \mathbf{t} \leq \mathbf{b}_\text{max}
+\label{eq:cropbox}
+\end{align}
+gilt, wobei \(\mathbf{R}\in\mathbb{R}^{3\times4}\) die ersten drei Zeilen der PCL-internen Transformationsmatrix sind, \(\mathbf{t}\) eine optionale Translation darstellt und \(\mathbf{b}_\text{min/max}=[x_{\min/\max},y_{\min/\max},z_{\min/\max}]^\top\) die parametrisierte Box definieren. Punkte, die diese Ungleichung nicht erfüllen, werden verworfen. Die Operation besitzt eine lineare Laufzeit \(\mathcal{O}(|\mathcal{P}|)\) und reduziert das Datenvolumen vor nachgelagerten Schritten signifikant (vgl. \cite{rusu2011pcl,pcl_cropbox_2025}). Durch die optionale Transformationsmatrix lassen sich zusätzlich gekippte Sensorkoordinaten oder Fahrzeugversätze berücksichtigen, wodurch die AABB effektiv einer beliebig orientierten Bounding Box im globalen Rahmen entspricht \cite{pcl_docs_2025}.
+
+Die Auswahl der Grenzen folgt in dieser Arbeit einem systematischen Verfahren: Zunächst wurde eine großzügige Box \(\mathbf{b}_\text{min}=[-20,-15,-3]^\top\), \(\mathbf{b}_\text{max}=[20,15,5]^\top\) definiert, um alle relevanten Rückläufer sicher zu erfassen. Anschließend erfolgte eine schrittweise Schrumpfung entlang \(x\), \(y\) und \(z\) in \(0{,}5\,\mathrm{m}\)-Schritten. Bewertet wurde jede Konfiguration anhand (i) Detektionspräzision nach dem Clustering (Anteil falsch positiver Objekte), (ii) verbleibender Punktzahl sowie (iii) Anteil abgeschnittener Fahrbahnränder in RViz. Dieses Vorgehen entspricht der iterativen ROI-Abgrenzung, wie sie in LiDAR-Pipelines zur Falsch-Alarm-Reduktion empfohlen wird \cite{hu2013robust,himmelsbach2010fast}. Die finalen Grenzen \(\mathbf{b}_\text{min}=[-10,-6,-3]^\top\) und \(\mathbf{b}_\text{max}=[10,6,5]^\top\) lieferten den besten Kompromiss aus reduzierter Punktzahl (\(-57\,\%\)) und stabiler Objektabdeckung im urbanen Messfeld.
 
 \subsection{Implementierung}
-Im Rahmen dieser Arbeit wurde der \texttt{crop\_box\_node} in C++ unter ROS~2 
-entwickelt, um diesen Filter dynamisch innerhalb der gesamten Verarbeitungskette anzuwenden. 
-Der Node empfängt eine eingehende Punktwolke vom Ouster-LiDAR-Sensor auf dem Topic 
-\texttt{/ouster/points}, filtert die Daten gemäß den eingestellten Grenzen und publiziert die 
-gefilterte Punktwolke auf \texttt{/points\_cropped}. 
-Die Parameter \texttt{min\_bound} und \texttt{max\_bound} definieren die minimale und maximale Ausdehnung 
-des Arbeitsvolumens in Metern, während die Parameter \texttt{input\_topic} und 
-\texttt{output\_topic} den Ein- und Ausgang der Datenströme steuern. 
-Das Konzept ist in Tabelle~\ref{tab:cropbox_params} zusammengefasst.
+Der \texttt{crop\_box\_node} wurde in C++ unter ROS~2 implementiert und nutzt die PCL-Schnittstellen, um die Ungleichung aus Gleichung~\eqref{eq:cropbox} Punkt für Punkt anzuwenden. Wichtige Kernschritte sind: Laden der Parameter \texttt{min\_bound} und \texttt{max\_bound}, Subscription des Eingangstopics \texttt{/ouster/points} mit SensorDataQoS und Publikation des Ergebnisses auf \texttt{/points\_cropped}. Ein Auszug zeigt den wesentlichen Ablauf \cite{pcl_docs_2025}:
+
+\begin{verbatim}
+// Ausschnitt aus src/ouster_cpp/src/crop_box_node.cpp
+const float xmin = min_bound_[0], xmax = max_bound_[0];
+const float ymin = min_bound_[1], ymax = max_bound_[1];
+const float zmin = min_bound_[2], zmax = max_bound_[2];
+
+for (; ix != ix.end(); ++ix, ++iy, ++iz) {
+  const float x = *ix, y = *iy, z = *iz;
+  // AABB-Test
+  if (x >= xmin && x <= xmax &&
+      y >= ymin && y <= ymax &&
+      z >= zmin && z <= zmax) {
+    // Punkt in Ausgabepuffer übernehmen
+  }
+}
+\end{verbatim}
+
+Neben den Pflichtfeldern \(x,y,z\) unterstützt der Node optionale Felder (\texttt{intensity}, \texttt{ring}) und erlaubt über die Callback-API \texttt{add\_on\_set\_parameters\_callback} eine Laufzeitänderung der Grenzen ohne Neustart des Nodes. Tabelle~\ref{tab:cropbox_params} fasst die Startparameter zusammen.
 
 \begin{table}[H]
   \centering
