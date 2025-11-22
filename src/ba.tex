@@ -1042,6 +1042,17 @@ Start und Parametrisierung erfolgen über Launch-Dateien. Namensräume strukturi
 
 \section{Leistungsmetriken und Verifikation}
 
+Die im Folgenden betrachteten Metriken sind kein Selbstzweck, sondern direkt aus der
+Anforderungsdefinition und dem Stand der Technik abgeleitet. Veröffentlichte Arbeiten zu
+Echtzeit-Objekterkennung evaluieren systematisch Ende-zu-Ende-Latenz sowie CPU/RAM-Bedarf
+als zentrale Gütekriterien (vgl. \cite{feng2021survey}). Genau diese Größen entsprechen den in
+Tabelle~\ref{tab:anforderungen_messkette} formulierten Messkriterien: \textbf{Anforderung~6}
+fordert eine Ende-zu-Ende-Latenz von unter \(100\,\text{ms}\) bei stabilen \(10\,\text{Hz}\),
+\textbf{Anforderung~7} begrenzt die Auslastung auf \(\leq 60\,\%\) CPU/RAM auf Standardhardware.
+Die gewählten Verifikationsschritte (Zeitstempel-Instrumentierung für Latenz, Profiler für
+Ressourcennutzung) knüpfen somit unmittelbar an die definierten Anforderungen an und machen
+nachvollziehbar, wie deren Erfüllung gemessen und nachgewiesen wird.
+
 \subsection{E2E-Latenz}
 Für das betrachtete System wird eine Ende-zu-Ende-Latenz von weniger als \(100\,\text{ms}\) bei einer Verarbeitung mit \(10\,\text{Hz}\) angestrebt. Zur Verifikation werden an den Modulgrenzen Zeitstempel gesetzt (Eingang und Ausgang), die anschließend hinsichtlich Mittelwert, 95. Perzentil und 99. Perzentil über lange Sequenzen ausgewertet werden. Die Messungen erfolgen bei der Wiedergabe identischer Datensätze aus \texttt{rosbag2}. Die Instrumentierung erfolgt anhand des Eingangszeitstempels aus \texttt{header.stamp}, während Zwischenzeiten innerhalb der Module mitgeführt und protokolliert werden. Eine gemeinsame Zeitbasis (z.\,B. deaktivierte Simulationszeit oder externe Synchronisation) wird vorausgesetzt, um Vergleichbarkeit und Konsistenz zu gewährleisten.
 
