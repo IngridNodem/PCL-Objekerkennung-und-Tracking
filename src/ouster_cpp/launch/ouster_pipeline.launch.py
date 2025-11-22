@@ -62,7 +62,7 @@ def generate_launch_description():
                     'use_sim_time': use_sim_time,
                     'input_topic':       'points_voxel',     # -> /<ns>/points_voxel
                     'output_topic':      'obstacle_points',  # -> /<ns>/obstacle_points
-                    'distance_threshold': 0.25,              # max. Abstand zur Bodenebene [m]
+                    'distance_threshold': 0.15,              # max. Abstand zur Bodenebene [m]
                     'max_iterations':     1000,              # RANSAC-Iterationen
                 }]
             ),

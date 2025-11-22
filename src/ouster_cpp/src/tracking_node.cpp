@@ -149,7 +149,7 @@ static inline ClassResult classify_bbox(double L, double W, double H, double z_c
   }
 
   // Person (Mensch)
-  if (L >= 0.3 && L <= 1.6 &&
+  if (L >= 0.3 && L <= 0.6 &&
       W >= 0.4 && W <= 1.0 &&
       H >= 1.0 && H <= 2.0)
   {
