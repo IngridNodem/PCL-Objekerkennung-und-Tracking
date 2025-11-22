@@ -64,6 +64,18 @@ install(
   DESTINATION lib/${PROJECT_NAME}
 )
 
+# --- Install helper Python probes (make available via `ros2 run`) ---
+install(
+  PROGRAMS
+    scripts/latency_probe.py
+    scripts/resource_probe.py
+    scripts/frame_loss_probe.py
+    scripts/ids_probe.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(PROGRAMS scripts/latency_probe.py scripts/resource_probe.py DESTINATION lib/${PROJECT_NAME})
+
 # --- Headers publics ---
 install(DIRECTORY include/ DESTINATION include)
 
@@ -76,4 +88,3 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/launch")
 endif()
 
 ament_package()
-
