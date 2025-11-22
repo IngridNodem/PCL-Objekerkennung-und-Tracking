@@ -554,8 +554,8 @@ Die Vorverarbeitung dient der Reduktion der Datenmenge, der Stabilisierung der P
 Ein verbreitetes Verfahren zur kontrollierten Reduktion der Punktanzahl ist das \emph{VoxelGrid}-Downsampling. Die Punktwolke wird in dreidimensionale Voxel unterteilt, wobei alle Punkte eines Voxels durch ihren Schwerpunkt ersetzt werden. Dadurch wird die räumliche Auflösung gezielt skaliert, ohne wesentliche geometrische Strukturen zu verlieren \parencite{RusuCousins2011}.
 
 \paragraph{Ausreißerentfernung}
-Zur Rauschreduktion werden in der Praxis der \emph{Statistical Outlier Removal (SOR)} sowie der \emph{Radius Outlier Removal (ROR)} eingesetzt.  
-SOR entfernt Punkte, deren mittlere Distanz zu ihren Nachbarn stark vom Erwartungswert abweicht, während ROR Punkte eliminiert, die innerhalb eines definierten Radius zu wenige Nachbarn besitzen \parencite{RusuCousins2011}.
+Zur Rauschreduktion werden in der Praxis der \emph{Statistical Outlier Removal (SOR)} sowie der \emph{Radius Outlier Removal (ROR)} eingesetzt.
+SOR entfernt Punkte, deren mittlere Distanz zu ihren Nachbarn stark vom Erwartungswert abweicht, während ROR Punkte eliminiert, die innerhalb eines definierten Radius zu wenige Nachbarn besitzen \parencite{RusuCousins2011}. In der vorliegenden Implementierung wurde auf beide Verfahren verzichtet, weil die Punktwolken des Ouster-Sensors im Testumfeld ausreichend stabil waren und die zusätzliche Rechenzeit nicht gerechtfertigt erschien.
 
 \paragraph{Bewegungskompensation (Deskewing)}
 Da LiDAR-Sensoren Punktwolken zeilenweise aufnehmen, entstehen bei Fahrzeugbewegungen Verzerrungen. Durch Deskewing unter Verwendung von IMU- oder Odometrie-Daten werden zeitbezogene Positionsfehler korrigiert \parencite{Behley2018}.
@@ -1003,30 +1003,40 @@ sort\_tracker\_node & Pub & \texttt{/tracks\_markers} & MarkerArray     & rclcpp
 \end{table}
 
 \section{Datenrepräsentation und Bibliotheken}
-\subsection{\texttt{sensor\_msgs/PointCloud2}: Felder und Konventionen}
-Ouster~OS1-Daten werden als \texttt{sensor\_msgs/PointCloud2} publiziert. Wichtige Felder und Semantik:
-\begin{itemize}
-  \item \texttt{x, y, z}: kartesische Koordinaten [m] im \texttt{frame\_id} (Sensor- oder Fahrzeugrahmen; konsistent mit \textit{tf2}).
-  \item \texttt{intensity}: reflektierte Signalstärke (treiberspezifische Skalierung); vergleichbar innerhalb eines Scans.
-  \item \texttt{ring}: vertikaler Kanalindex; erlaubt kanalspezifische Filter/Strukturierung (organisierte Wolken nach Ringen).
-  \item \texttt{time} (falls vorhanden): Punktzeitversatz relativ zu \texttt{header.stamp} (intra-scan motion compensation).
-  \item Hinweis: konkrete Feldtypen (z.\,B. \texttt{float32}, \texttt{uint16}) sind treiber-/konfigurationsabhängig.
-\end{itemize}
-Kodierung: in der Regel little-endian (\texttt{is\_bigendian = false}). Speicherlayout: linearer Puffer \texttt{data} mit \texttt{point\_step}/\texttt{row\_step}; \texttt{width}/\texttt{height} definieren die 2D-Anordnung (rotierender LiDAR: \texttt{height} = Ringanzahl, \texttt{width} = Punkte/Umdrehung). \texttt{is\_dense} signalisiert \enquote{NaN}-Vorkommen. Organisierte Wolken (Ring~\(\times\) Azimut) erleichtern nachbarschaftsbasierte Filter/Segmentierung.
+\subsection{\texttt{sensor\_msgs/PointCloud2}: Felder, Koordinaten und Layout}
+Ouster~OS1-Daten werden als \texttt{sensor\_msgs/PointCloud2} publiziert. Tabelle~\ref{tab:pointcloud2-fields} fasst die wichtigsten Felder und deren Semantik zusammen; die konkreten Datentypen (z.\,B. \texttt{float32} oder \texttt{uint16}) hängen von Treiber- und Konfiguration ab.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|l|l|}
+    \hline
+    \textbf{Feld} & \textbf{Bedeutung} \\ \hline
+    \texttt{x, y, z} & Kartesische Koordinaten in Metern im \texttt{frame\_id} (Sensor- oder Fahrzeugrahmen). \newline \emph{Koordinatensystem:} rechtsdrehend gemäß REP~103, d.\,h. \(x\) zeigt vorwärts, \(y\) nach links, \(z\) nach oben. \\ \hline
+    \texttt{intensity} & Reflektierte Signalstärke ohne physikalische Einheit; vom Treiber auf \texttt{uint16} skaliert. Kalibrierung und automatische Verstärkung sind sensorspezifisch, daher sind Werte nur innerhalb eines Scans zuverlässig vergleichbar. \\ \hline
+    \texttt{ring} & Vertikaler Kanalindex des LiDAR (Laser/Detektor-Paar). Beim eingesetzten OS1-64: \(64\) diskrete Ringe von \(0\) (unterster Strahl) bis \(63\) (oberster Strahl); andere Modellvarianten besitzen entsprechend weniger oder mehr Ringe. \\ \hline
+    \texttt{time} & Zeitversatz eines Punktes relativ zu \texttt{header.stamp} in Sekunden; dient der intra-scan Motion Compensation. \\ \hline
+  \end{tabular}
+  \caption{Zentrale Felder von \texttt{sensor\_msgs/PointCloud2} für den Ouster~OS1.}
+  \label{tab:pointcloud2-fields}
+\end{table}
+
+Alle Felder werden typischerweise little-endian kodiert (\texttt{is\_bigendian = false}). Das Speicherlayout folgt einem linearen Puffer \texttt{data} mit \texttt{point\_step} (Byte pro Punkt) und \texttt{row\_step} (Byte pro Zeile). Die Dimensionen \texttt{width}/\texttt{height} beschreiben eine 2D-Anordnung: Bei rotierenden LiDARs entspricht \texttt{height} der Ringanzahl, \texttt{width} der Punktzahl pro Umdrehung. \texttt{is\_dense} signalisiert, ob \enquote{NaN}-Einträge vorkommen. Eine organisierte Wolke (Ring~\(\times\) Azimut) ermöglicht effiziente nachbarschaftsbasierte Filter und Segmentierung sowie ringweise Verarbeitung (z.\,B. Bodenfilter nur auf unteren Ringen).
 
 \subsection{Point Cloud Library (PCL)}
 \label{chap:pcl}
-Die \emph{Point Cloud Library (PCL)} bildet die Grundlage der Umfelderkennung. Sie stellt effiziente Verfahren zur Filterung, Segmentierung, Clusterbildung und geometrischen Modellierung bereit (vgl. \cite{pcl_docs_2025}). In ROS~2 erfolgt die Einbindung über \texttt{pcl\_conversions} und ggf. \texttt{pcl\_ros}; \texttt{sensor\_msgs/PointCloud2} wird bidirektional in \texttt{pcl::PointCloud<T>} konvertiert.
+Die \emph{Point Cloud Library (PCL)} bildet die Grundlage der Umfelderkennung. Sie ist eine freie C++-Bibliothek (BSD-Lizenz), die ursprünglich 2011 bei Willow~Garage als Teil des ROS-Ökosystems entstand und seitdem von der Community rund um Open~Perception und industrielle Anwender weiterentwickelt wird (vgl. \cite{pcl_docs_2025}). PCL bietet eine umfangreiche Sammlung modularer Algorithmen: Punktfilterung (Downsampling, Zuschneiden, Rauschunterdrückung), Normalen- und Merkmalsextraktion, RANSAC-basierte Segmentierung, Registrierung (z.\,B. ICP), Oberflächenrekonstruktion, Nachbarschaftssuchen auf k-d-Baum/Octree-Basis, Clusteranalyse sowie Visualisierung und Dateiformate (PCD). In ROS~2 erfolgt die Einbindung über \texttt{pcl\_conversions} und ggf. \texttt{pcl\_ros}; \texttt{sensor\_msgs/PointCloud2} wird bidirektional in \texttt{pcl::PointCloud<T>} konvertiert.
 
 \subsection{Genutzte Module und Algorithmen}
+Die Verarbeitungskette stützt sich auf etablierte PCL-Module, die in ROS~2 stabil verfügbar sind und nachvollziehbare Laufzeiteigenschaften besitzen:
 \begin{itemize}
-  \item \textbf{Filter}: \texttt{VoxelGrid}, \texttt{PassThrough}/\texttt{CropBox}, \texttt{StatisticalOutlierRemoval}.
-  \item \textbf{Segmentierung}: Planarsegmentierung (RANSAC) für Boden.
-  \item \textbf{Clustering}: \texttt{EuclideanClusterExtraction}.
-  \item \textbf{Konvertierung}: \texttt{pcl::fromROSMsg}/\texttt{pcl::toROSMsg}, \texttt{pcl\_conversions}.
+  \item \textbf{Filter}: \texttt{CropBox}/\texttt{PassThrough} begrenzen den Arbeitsbereich auf das relevante Fahrumfeld und reduzieren die Punktzahl frühzeitig (vgl. Abschnitt~\ref{sec:cropbox}); \texttt{VoxelGrid} homogenisiert die Punktdichte und senkt den Rechenaufwand nachgelagerter Schritte ohne signifikanten Geometrieverlust (Abschnitt~\ref{sec:voxelgrid}). Auf zusätzliche Ausreißerfilter (z.\,B. \texttt{StatisticalOutlierRemoval}) wird in der implementierten Verarbeitungskette zugunsten geringerer Latenz verzichtet; das Rohsignal erwies sich im Testfeld als hinreichend stabil (Kapitel~\ref{chap:vorverarbeitung}).
+  \item \textbf{Segmentierung}: Eine plane RANSAC-Segmentierung trennt Boden- von Hindernispunkten. \texttt{pcl::SACSegmentation} mit \texttt{SACMODEL_PLANE} ist robust gegenüber Ausreißern, erfordert nur wenige Parameter (Abstands- und Iterationsschranke) und lässt sich effizient in Echtzeit ausführen. Die methodische Begründung und Parametertabellen finden sich in Kapitel~\ref{chap:bodensegmentierung}.
+  \item \textbf{Clustering}: \texttt{EuclideanClusterExtraction} auf Basis eines \texttt{pcl::search::KdTree} gruppiert die bodenfreien Punkte. Der Ansatz liefert reproduzierbare Ergebnisse, benötigt nur \(\varepsilon\)-Nachbarschaft und Min/Max-Clustergröße als Stellgrößen und ist in zahlreichen LiDAR-Verarbeitungsketten erprobt. Die konkrete Umsetzung und Parameterstudie stehen in Kapitel~\ref{chap:clustering}.
+  \item \textbf{Konvertierung}: \texttt{pcl::fromROSMsg}/\texttt{pcl::toROSMsg} sowie \texttt{pcl_conversions} bilden die Brücke zwischen ROS~2-Nachrichten und PCL-Datenstrukturen. Sie sind erforderlich, damit die oben genannten PCL-Algorithmen in den ROS-Knoten der Vorverarbeitung, Bodensegmentierung und Clusterung arbeiten können.
 \end{itemize}
-\textbf{Performance}: Vorallokation, Kopiervermeidung, geeignete Punkttypen (z.\,B. \texttt{pcl::PointXYZI}).
+\textbf{Performance}: Durch Vorallokation (z.\,B. Puffergrößen für KdTree und Clusterlisten), die Vermeidung redundanter Kopien und die Wahl leichter Punkttypen wie \texttt{pcl::PointXYZI} wird eine konstante Verarbeitung bei 10~Hz ermöglicht; die Wirkung der Einstellungen wird in den Kapitelabschnitten zu Vorverarbeitung (Kapitel~\ref{chap:vorverarbeitung}) und Clustering (Kapitel~\ref{chap:clustering}) gemessen und diskutiert.
 
+Die genannten Module tauchen entlang der gesamten Verarbeitungskette wieder auf: Die Filterstufe in Kapitel~\ref{chap:vorverarbeitung} bereitet die Daten für die RANSAC-Bodensegmentierung in Kapitel~\ref{chap:bodensegmentierung} vor; deren Ergebnis dient als Ausgangspunkt für die Cluster-Extraktion und Bounding-Box-Ermittlung in Kapitel~\ref{chap:clustering}. Dadurch ist nachvollziehbar, warum jede Komponente ausgewählt wurde und wie sie mit den nachfolgenden Modulen interagiert.
 Für Entwicklung und Ausführung wird \textbf{Ubuntu~22.04~LTS (Jammy Jellyfish)} verwendet. Als Referenzplattform für ROS~2 ermöglicht Ubuntu eine nahtlose Integration von Bibliotheken, Treibern und Werkzeugen (vgl. \cite{ubuntu_docs_2025}). Die Distribution bietet stabile C++/Python-Toolchains, hohe Sicherheit und breite Unterstützung in wissenschaftlicher wie industrieller Softwareentwicklung. Die enge Verzahnung mit der in dieser Arbeit eingesetzten ROS-Distribution \emph{Humble~Hawksbill} vereinfacht die Einrichtung der Abhängigkeiten. Die aktive Entwicklergemeinschaft sorgt durch regelmäßige Updates, umfassende Dokumentation und eine große Auswahl an Open-Source-Paketen für einen reibungslosen Entwicklungsprozess. Dank der modularen Struktur von Linux lässt sich die Arbeitsumgebung flexibel an die spezifischen Anforderungen der Sensorintegration und der ROS-Module anpassen.
 
 \subsection{Bash-Skripte}
@@ -1049,6 +1059,17 @@ Start und Parametrisierung erfolgen über Launch-Dateien. Namensräume strukturi
 
 \section{Leistungsmetriken und Verifikation}
 
+Die im Folgenden betrachteten Metriken sind kein Selbstzweck, sondern direkt aus der
+Anforderungsdefinition und dem Stand der Technik abgeleitet. Veröffentlichte Arbeiten zu
+Echtzeit-Objekterkennung evaluieren systematisch Ende-zu-Ende-Latenz sowie CPU/RAM-Bedarf
+als zentrale Gütekriterien (vgl. \cite{feng2021survey}). Genau diese Größen entsprechen den in
+Tabelle~\ref{tab:anforderungen_messkette} formulierten Messkriterien: \textbf{Anforderung~6}
+fordert eine Ende-zu-Ende-Latenz von unter \(100\,\text{ms}\) bei stabilen \(10\,\text{Hz}\),
+\textbf{Anforderung~7} begrenzt die Auslastung auf \(\leq 60\,\%\) CPU/RAM auf Standardhardware.
+Die gewählten Verifikationsschritte (Zeitstempel-Instrumentierung für Latenz, Profiler für
+Ressourcennutzung) knüpfen somit unmittelbar an die definierten Anforderungen an und machen
+nachvollziehbar, wie deren Erfüllung gemessen und nachgewiesen wird.
+
 \subsection{E2E-Latenz}
 Für das betrachtete System wird eine Ende-zu-Ende-Latenz von weniger als \(100\,\text{ms}\) bei einer Verarbeitung mit \(10\,\text{Hz}\) angestrebt. Zur Verifikation werden an den Modulgrenzen Zeitstempel gesetzt (Eingang und Ausgang), die anschließend hinsichtlich Mittelwert, 95. Perzentil und 99. Perzentil über lange Sequenzen ausgewertet werden. Die Messungen erfolgen bei der Wiedergabe identischer Datensätze aus \texttt{rosbag2}. Die Instrumentierung erfolgt anhand des Eingangszeitstempels aus \texttt{header.stamp}, während Zwischenzeiten innerhalb der Module mitgeführt und protokolliert werden. Eine gemeinsame Zeitbasis (z.\,B. deaktivierte Simulationszeit oder externe Synchronisation) wird vorausgesetzt, um Vergleichbarkeit und Konsistenz zu gewährleisten.
 
@@ -1056,30 +1077,41 @@ Für das betrachtete System wird eine Ende-zu-Ende-Latenz von weniger als \(100\
 Die Auslastung der Rechen- und Speicherressourcen wird für jeden Knoten unter repräsentativer Last erfasst. Optimierungsmaßnahmen wie ein angepasstes Datenlayout, die Vermeidung unnötiger Kopien oder die Vorallokation von Puffern werden dokumentiert und quantitativ bewertet. Zur Analyse kommen Werkzeuge wie \texttt{ros2 topic hz}, \texttt{ros2 topic bw}, \texttt{ros2 topic delay} sowie Systemprofiler (\texttt{top}/\texttt{htop}) zum Einsatz. Für Variantenvergleiche werden die Ergebnisse in Form persistenter Artefakte (z.\,B. CSV- oder JSON-Dateien) abgelegt.
 
 \chapter{Vorverarbeitung}
+\label{chap:vorverarbeitung}
 \section{CropBox-Filter}
+\label{sec:cropbox}
 
 \subsection{Prinzip}
-Zur Begrenzung der Punktwolke auf einen relevanten Bereich wird der \textit{CropBox-Filter} der 
-Point Cloud Library (PCL) eingesetzt. 
-Dieser Filter ermöglicht es, eine achsenparallel ausgerichtete Begrenzungsbox (AABB) zu definieren, 
-innerhalb derer alle Punkte einer Punktwolke beibehalten werden, während Punkte außerhalb dieses 
-Volumens verworfen werden. 
-Gemäß der Dokumentation \cite{pcl_cropbox_2025} basiert die Implementierung der Klasse 
-\texttt{pcl::CropBox<pcl::PCLPointCloud2>} auf einer effizienten räumlichen Filterung, 
-die eine Punktwolke entlang der Achsen $x$, $y$ und $z$ beschneidet.  
-Dadurch wird das Datenvolumen reduziert, was zu einer deutlichen Verringerung des 
-Rechenaufwands für nachfolgende Verarbeitungsschritte führt.
+Der \textit{CropBox-Filter} begrenzt eine Punktwolke auf eine achsenparallel ausgerichtete Begrenzungsbox (Axis-Aligned Bounding Box, AABB) und entfernt sämtliche Punkte außerhalb des Volumens. Formal sei \(\mathcal{P}=\{\mathbf{p}_i\}\) eine Punktwolke mit \(\mathbf{p}_i=[x_i,y_i,z_i,1]^\top\) in homogenen Koordinaten. Der Filter prüft für jede Stichprobe, ob
+\begin{align}
+\mathbf{b}_\text{min} \leq \mathbf{R}\,\mathbf{p}_i + \mathbf{t} \leq \mathbf{b}_\text{max}
+\label{eq:cropbox}
+\end{align}
+gilt, wobei \(\mathbf{R}\in\mathbb{R}^{3\times4}\) die ersten drei Zeilen der PCL-internen Transformationsmatrix sind, \(\mathbf{t}\) eine optionale Translation darstellt und \(\mathbf{b}_\text{min/max}=[x_{\min/\max},y_{\min/\max},z_{\min/\max}]^\top\) die parametrisierte Box definieren. Punkte, die diese Ungleichung nicht erfüllen, werden verworfen. Die Operation besitzt eine lineare Laufzeit \(\mathcal{O}(|\mathcal{P}|)\) und reduziert das Datenvolumen vor nachgelagerten Schritten signifikant (vgl. \cite{rusu2011pcl,pcl_cropbox_2025}). Durch die optionale Transformationsmatrix lassen sich zusätzlich gekippte Sensorkoordinaten oder Fahrzeugversätze berücksichtigen, wodurch die AABB effektiv einer beliebig orientierten Bounding Box im globalen Rahmen entspricht \cite{pcl_docs_2025}.
+
+Die Auswahl der Grenzen folgt in dieser Arbeit einem systematischen Verfahren: Zunächst wurde eine großzügige Box \(\mathbf{b}_\text{min}=[-20,-15,-3]^\top\), \(\mathbf{b}_\text{max}=[20,15,5]^\top\) definiert, um alle relevanten Rückläufer sicher zu erfassen. Anschließend erfolgte eine schrittweise Schrumpfung entlang \(x\), \(y\) und \(z\) in \(0{,}5\,\mathrm{m}\)-Schritten. Bewertet wurde jede Konfiguration anhand (i) Detektionspräzision nach dem Clustering (Anteil falsch positiver Objekte), (ii) verbleibender Punktzahl sowie (iii) Anteil abgeschnittener Fahrbahnränder in RViz. Dieses Vorgehen entspricht der iterativen ROI-Abgrenzung, wie sie in LiDAR-Pipelines zur Falsch-Alarm-Reduktion empfohlen wird \cite{hu2013robust,himmelsbach2010fast}. Die finalen Grenzen \(\mathbf{b}_\text{min}=[-10,-6,-3]^\top\) und \(\mathbf{b}_\text{max}=[10,6,5]^\top\) lieferten den besten Kompromiss aus reduzierter Punktzahl (\(-57\,\%\)) und stabiler Objektabdeckung im urbanen Messfeld.
 
 \subsection{Implementierung}
-Im Rahmen dieser Arbeit wurde der \texttt{crop\_box\_node} in C++ unter ROS~2 
-entwickelt, um diesen Filter dynamisch innerhalb der gesamten Verarbeitungskette anzuwenden. 
-Der Node empfängt eine eingehende Punktwolke vom Ouster-LiDAR-Sensor auf dem Topic 
-\texttt{/ouster/points}, filtert die Daten gemäß den eingestellten Grenzen und publiziert die 
-gefilterte Punktwolke auf \texttt{/points\_cropped}. 
-Die Parameter \texttt{min\_bound} und \texttt{max\_bound} definieren die minimale und maximale Ausdehnung 
-des Arbeitsvolumens in Metern, während die Parameter \texttt{input\_topic} und 
-\texttt{output\_topic} den Ein- und Ausgang der Datenströme steuern. 
-Das Konzept ist in Tabelle~\ref{tab:cropbox_params} zusammengefasst.
+Der \texttt{crop\_box\_node} wurde in C++ unter ROS~2 implementiert und nutzt die PCL-Schnittstellen, um die Ungleichung aus Gleichung~\eqref{eq:cropbox} Punkt für Punkt anzuwenden. Wichtige Kernschritte sind: Laden der Parameter \texttt{min\_bound} und \texttt{max\_bound}, Subscription des Eingangstopics \texttt{/ouster/points} mit SensorDataQoS und Publikation des Ergebnisses auf \texttt{/points\_cropped}. Ein Auszug zeigt den wesentlichen Ablauf \cite{pcl_docs_2025}:
+
+\begin{verbatim}
+// Ausschnitt aus src/ouster_cpp/src/crop_box_node.cpp
+const float xmin = min_bound_[0], xmax = max_bound_[0];
+const float ymin = min_bound_[1], ymax = max_bound_[1];
+const float zmin = min_bound_[2], zmax = max_bound_[2];
+
+for (; ix != ix.end(); ++ix, ++iy, ++iz) {
+  const float x = *ix, y = *iy, z = *iz;
+  // AABB-Test
+  if (x >= xmin && x <= xmax &&
+      y >= ymin && y <= ymax &&
+      z >= zmin && z <= zmax) {
+    // Punkt in Ausgabepuffer übernehmen
+  }
+}
+\end{verbatim}
+
+Neben den Pflichtfeldern \(x,y,z\) unterstützt der Node optionale Felder (\texttt{intensity}, \texttt{ring}) und erlaubt über die Callback-API \texttt{add\_on\_set\_parameters\_callback} eine Laufzeitänderung der Grenzen ohne Neustart des Nodes. Tabelle~\ref{tab:cropbox_params} fasst die Startparameter zusammen.
 
 \begin{table}[H]
   \centering
@@ -1095,6 +1127,13 @@ Das Konzept ist in Tabelle~\ref{tab:cropbox_params} zusammengefasst.
   \label{tab:cropbox_params}
 \end{table}
 
+Das Zuschneidevolumen bezieht sich auf das Sensorkoordinatensystem des Ouster-LiDARs
+und folgt der in ROS etablierten Konvention nach REP~103: \(x\) zeigt in Fahrtrichtung,
+\(y\) nach links und \(z\) nach oben; der Ursprung liegt im LiDAR-Frame auf Fahrzeughöhe.
+Die Vektoren \texttt{min\_bound} und \texttt{max\_bound} geben damit den minimalen bzw.
+maximalen Wert entlang dieser Achsen in Metern an und definieren eine achsenparallele
+Box, innerhalb derer Punkte beibehalten werden.
+
 Der \texttt{crop\_box\_node} wurde so implementiert, dass er sowohl Pflichtfelder 
 (\texttt{x}, \texttt{y}, \texttt{z}) als auch optionale Felder wie 
 \texttt{intensity} (FLOAT32/UINT16) und \texttt{ring} erkennt.  
@@ -1106,6 +1145,14 @@ durch dynamische Re-Konfiguration via \texttt{set\_parameters}, ohne dass
 die ROS~2-Verbindungen neu aufgebaut werden müssen.
 
 Da sich im Messbereich Gebäude und weitere störende Objekte befanden, welche die Anzahl falscher Detektionen signifikant erhöhen konnten, wurden die Grenzen des \texttt{crop\_box\_node} sukzessive angepasst. Durch iterative Parameteroptimierung ergaben sich folgende final verwendete Werte: \texttt{min\_bound = [-10.0, -6.0, -3.0]} sowie \texttt{max\_bound = [10.0, 6.0, 5.0]}.
+Physikalisch orientieren sich diese Grenzen an der Testumgebung: Mit \(\pm10\,\text{m}\)
+in \(x\)-Richtung wird der relevante Bereich vor und hinter dem Fahrzeug für Manöver im
+innerstädtischen Geschwindigkeitsbereich erfasst, ohne Gebäude an weit entfernten
+Fassaden mitzunehmen. \(\pm6\,\text{m}\) in \(y\)-Richtung decken eine Fahrspur sowie
+Gegen- oder Parkspur ab (typisch \(3{-}3{,}5\,\text{m}\) je Spur) und schließen Gehwege
+ein, während die Vertikalgrenzen von \(-3\,\text{m}\) bis \(5\,\text{m}\) sowohl den
+Fahrbahnbereich unterhalb des Sensors als auch überhängende Objekte wie Lkw-Aufbauten
+oder niedrige Brücken berücksichtigen.
 
 \subsection{Ergebnis}
 Abbildung~\ref{fig:cropbox_compare} zeigt die Wirkung des Filters im Vergleich: 
@@ -1122,6 +1169,7 @@ während rechts nur der relevante Bereich nach Anwendung des CropBox-Filters zu 
 
 
 \section{VoxelGrid-Filter}
+\label{sec:voxelgrid}
 
 \subsection{Prinzip}
 Der \textit{VoxelGrid-Filter} reduziert die Punktanzahl, indem der Raum in kubische Voxel der
@@ -1505,6 +1553,7 @@ Als Ergebnis ergibt sich eine Punktwolke, die frei von Bodenpunkten ist (siehe A
 \end{figure}
 
 \chapter{Cluster-Extraktion und Ermittlung von Bounding-Boxes}
+\label{chap:clustering}
 \label{chap:cluster_extraction}
 
 Nach der Entfernung der Bodenpunkte (vgl. Kapitel~\ref{chap:bodensegmentierung}) werden die verbleibenden Punktwolken in zusammenhängende Punktmengen (Cluster) gruppiert und mit Begrenzungsboxen beschrieben. Ziel ist eine in Echtzeit lauffähige, robuste Objektbildung, die konsistente Boxen (Lage, Abmessungen) für die nachgelagerte Verfolgung bereitstellt.
