@@ -543,7 +543,7 @@ Schließlich unterstützt LiDAR Funktionen der \emph{Situations- und Kontextinte
 \section{Algorithmischer Stand der Technik}
 \label{sec:stand-der-technik}
 
-Die algorithmische Verarbeitung hochauflösender 3D-LiDAR-Daten folgt in der Literatur einem weitgehend etablierten Pipeline-Modell, das aus Vorverarbeitung, Bodensegmentierung, Segmentierung (Clustering), Merkmalsextraktion sowie Objektverfolgung besteht. Jedes Modul adressiert dabei spezifische Herausforderungen roher Punktwolken wie Rauschen, variable Punktdichten, Mehrwegeffekte oder dynamische Verkehrsszenen. Im Folgenden werden die einzelnen Bausteine detailliert beschrieben und jeweils mit relevanter Literatur untermauert.
+Die algorithmische Verarbeitung hochauflösender 3D-LiDAR-Daten folgt in der Literatur einem weitgehend etablierten Verarbeitungskettenmodell, das aus Vorverarbeitung, Bodensegmentierung, Segmentierung (Clustering), Merkmalsextraktion sowie Objektverfolgung besteht. Jedes Modul adressiert dabei spezifische Herausforderungen roher Punktwolken wie Rauschen, variable Punktdichten, Mehrwegeffekte oder dynamische Verkehrsszenen. Im Folgenden werden die einzelnen Bausteine detailliert beschrieben und jeweils mit relevanter Literatur untermauert.
 
 % =====================================================================
 \subsection{Vorverarbeitung}
@@ -554,8 +554,8 @@ Die Vorverarbeitung dient der Reduktion der Datenmenge, der Stabilisierung der P
 Ein verbreitetes Verfahren zur kontrollierten Reduktion der Punktanzahl ist das \emph{VoxelGrid}-Downsampling. Die Punktwolke wird in dreidimensionale Voxel unterteilt, wobei alle Punkte eines Voxels durch ihren Schwerpunkt ersetzt werden. Dadurch wird die räumliche Auflösung gezielt skaliert, ohne wesentliche geometrische Strukturen zu verlieren \parencite{RusuCousins2011}.
 
 \paragraph{Ausreißerentfernung}
-Zur Rauschreduktion werden in der Praxis der \emph{Statistical Outlier Removal (SOR)} sowie der \emph{Radius Outlier Removal (ROR)} eingesetzt.  
-SOR entfernt Punkte, deren mittlere Distanz zu ihren Nachbarn stark vom Erwartungswert abweicht, während ROR Punkte eliminiert, die innerhalb eines definierten Radius zu wenige Nachbarn besitzen \parencite{RusuCousins2011}.
+Zur Rauschreduktion werden in der Praxis der \emph{Statistical Outlier Removal (SOR)} sowie der \emph{Radius Outlier Removal (ROR)} eingesetzt.
+SOR entfernt Punkte, deren mittlere Distanz zu ihren Nachbarn stark vom Erwartungswert abweicht, während ROR Punkte eliminiert, die innerhalb eines definierten Radius zu wenige Nachbarn besitzen \parencite{RusuCousins2011}. In der vorliegenden Implementierung wurde auf beide Verfahren verzichtet, weil die Punktwolken des Ouster-Sensors im Testumfeld ausreichend stabil waren und die zusätzliche Rechenzeit nicht gerechtfertigt erschien.
 
 \paragraph{Bewegungskompensation (Deskewing)}
 Da LiDAR-Sensoren Punktwolken zeilenweise aufnehmen, entstehen bei Fahrzeugbewegungen Verzerrungen. Durch Deskewing unter Verwendung von IMU- oder Odometrie-Daten werden zeitbezogene Positionsfehler korrigiert \parencite{Behley2018}.
@@ -600,7 +600,7 @@ Nach Entfernung des Bodens wird die verbleibende Punktwolke segmentiert. Wichtig
 Das klassische PCL-Verfahren gruppiert Punkte, die innerhalb eines Distanzschwellwertes verbunden sind. Diese Methode ist einfach und schnell, reagiert jedoch empfindlich auf variable Punktdichten.
 
 \paragraph{DBSCAN und HDBSCAN}
-Dichtebasierte Verfahren erkennen Cluster beliebiger Form und klassifizieren isolierte Punkte als Rauschen. DBSCAN ist in vielen LiDAR-Pipelines Standard \parencite{Ester1996DBSCAN}.  
+Dichtebasierte Verfahren erkennen Cluster beliebiger Form und klassifizieren isolierte Punkte als Rauschen. DBSCAN ist in vielen LiDAR-Verarbeitungsketten Standard \parencite{Ester1996DBSCAN}.  
 HDBSCAN erweitert das Konzept um hierarchische Dichteanalysen und ist robuster gegenüber Dichteunterschieden.
 
 \paragraph{Region Growing}
@@ -718,7 +718,7 @@ Abbildung~\ref{fig:position_sensor} veranschaulicht den Versuchsträger Opel Ast
 \chapter{Systemarchitektur}
 \label{chap:systemarchitektur}
 
-Dieses Kapitel beschreibt die technische Systemarchitektur der Umfelderkennung auf Basis von ROS~2 und eines Ouster~OS1. Ziel ist eine nachvollziehbare, konsistente und echtzeitfähige Verarbeitungskette. Die Darstellung umfasst (i) Grundlagen von ROS~2, (ii) Datenrepräsentation und Bibliotheken, (iii) Arbeitsumgebung, (iv) Gesamtsystem mit Datenaufnahme und Pipeline, (v) Deployment sowie (vi) Bewertungsmetriken.
+Dieses Kapitel beschreibt die technische Systemarchitektur der Umfelderkennung auf Basis von ROS~2 und eines Ouster~OS1. Ziel ist eine nachvollziehbare, konsistente und echtzeitfähige Verarbeitungskette. Die Darstellung umfasst (i) Grundlagen von ROS~2, (ii) Datenrepräsentation und Bibliotheken, (iii) Arbeitsumgebung, (iv) Gesamtsystem mit Datenaufnahme und Verarbeitungskette, (v) Deployment sowie (vi) Bewertungsmetriken.
 
 In diesem Zusammenhang "structure du chapitre"
 
@@ -813,7 +813,7 @@ Der Embedded-PC leitet die Punktwolken über das interne ROS~2-Netzwerk an den L
 \end{figure}
 
 \subsection{Umsetzung}
-Abbildung~\ref{fig:ros2-pipeline-alltopics} zeigt die ROS~2-Pipeline von der Aufnahme über Vorverarbeitung, Bodensegmentierung und Cluster/Bounding-Boxes bis zur Objektverfolgung. Jeder Knoten hat klar definierte Ein-/Ausgänge und Topics.
+Abbildung~\ref{fig:ros2-pipeline-alltopics} zeigt die ROS~2-Verarbeitungskette von der Aufnahme über Vorverarbeitung, Bodensegmentierung und Cluster/Bounding-Boxes bis zur Objektverfolgung. Jeder Knoten hat klar definierte Ein-/Ausgänge und Topics.
 
 \begin{figure}[H]
 \centering
@@ -848,7 +848,7 @@ Abbildung~\ref{fig:ros2-pipeline-alltopics} zeigt die ROS~2-Pipeline von der Auf
   \node (rviz_cluster)[rviz, right=2.8cm of cluster]{RViz};
   \node (rviz_track)  [rviz, right=4.1cm of track]  {RViz};
 
-  % Vertikale Pfeile (Pipeline)
+  % Vertikale Pfeile (Verarbeitungskette)
   \draw[arrow] (start) -- (input);
   \draw[arrow] (input) -- node[right]{\scriptsize \texttt{/ouster/points}} (crop);
   \draw[arrow] (crop)  -- node[right]{\scriptsize \texttt{/points\_cropped}} (voxel);
@@ -1019,18 +1019,20 @@ Kodierung: in der Regel little-endian (\texttt{is\_bigendian = false}). Speicher
 Die \emph{Point Cloud Library (PCL)} bildet die Grundlage der Umfelderkennung. Sie stellt effiziente Verfahren zur Filterung, Segmentierung, Clusterbildung und geometrischen Modellierung bereit (vgl. \cite{pcl_docs_2025}). In ROS~2 erfolgt die Einbindung über \texttt{pcl\_conversions} und ggf. \texttt{pcl\_ros}; \texttt{sensor\_msgs/PointCloud2} wird bidirektional in \texttt{pcl::PointCloud<T>} konvertiert.
 
 \subsection{Genutzte Module und Algorithmen}
+Die Verarbeitungskette stützt sich auf etablierte PCL-Module, die in ROS~2 stabil verfügbar sind und nachvollziehbare Laufzeiteigenschaften besitzen:
 \begin{itemize}
-  \item \textbf{Filter}: \texttt{VoxelGrid}, \texttt{PassThrough}/\texttt{CropBox}, \texttt{StatisticalOutlierRemoval}.
-  \item \textbf{Segmentierung}: Planarsegmentierung (RANSAC) für Boden.
-  \item \textbf{Clustering}: \texttt{EuclideanClusterExtraction}.
-  \item \textbf{Konvertierung}: \texttt{pcl::fromROSMsg}/\texttt{pcl::toROSMsg}, \texttt{pcl\_conversions}.
+  \item \textbf{Filter}: \texttt{CropBox}/\texttt{PassThrough} begrenzen den Arbeitsbereich auf das relevante Fahrumfeld und reduzieren die Punktzahl frühzeitig (vgl. Abschnitt~\ref{sec:cropbox}); \texttt{VoxelGrid} homogenisiert die Punktdichte und senkt den Rechenaufwand nachgelagerter Schritte ohne signifikanten Geometrieverlust (Abschnitt~\ref{sec:voxelgrid}). Auf zusätzliche Ausreißerfilter (z.\,B. \texttt{StatisticalOutlierRemoval}) wird in der implementierten Verarbeitungskette zugunsten geringerer Latenz verzichtet; das Rohsignal erwies sich im Testfeld als hinreichend stabil (Kapitel~\ref{chap:vorverarbeitung}).
+  \item \textbf{Segmentierung}: Eine plane RANSAC-Segmentierung trennt Boden- von Hindernispunkten. \texttt{pcl::SACSegmentation} mit \texttt{SACMODEL_PLANE} ist robust gegenüber Ausreißern, erfordert nur wenige Parameter (Abstands- und Iterationsschranke) und lässt sich effizient in Echtzeit ausführen. Die methodische Begründung und Parametertabellen finden sich in Kapitel~\ref{chap:bodensegmentierung}.
+  \item \textbf{Clustering}: \texttt{EuclideanClusterExtraction} auf Basis eines \texttt{pcl::search::KdTree} gruppiert die bodenfreien Punkte. Der Ansatz liefert reproduzierbare Ergebnisse, benötigt nur \(\varepsilon\)-Nachbarschaft und Min/Max-Clustergröße als Stellgrößen und ist in zahlreichen LiDAR-Verarbeitungsketten erprobt. Die konkrete Umsetzung und Parameterstudie stehen in Kapitel~\ref{chap:clustering}.
+  \item \textbf{Konvertierung}: \texttt{pcl::fromROSMsg}/\texttt{pcl::toROSMsg} sowie \texttt{pcl_conversions} bilden die Brücke zwischen ROS~2-Nachrichten und PCL-Datenstrukturen. Sie sind erforderlich, damit die oben genannten PCL-Algorithmen in den ROS-Knoten der Vorverarbeitung, Bodensegmentierung und Clusterung arbeiten können.
 \end{itemize}
-\textbf{Performance}: Vorallokation, Kopiervermeidung, geeignete Punkttypen (z.\,B. \texttt{pcl::PointXYZI}).
+\textbf{Performance}: Durch Vorallokation (z.\,B. Puffergrößen für KdTree und Clusterlisten), die Vermeidung redundanter Kopien und die Wahl leichter Punkttypen wie \texttt{pcl::PointXYZI} wird eine konstante Verarbeitung bei 10~Hz ermöglicht; die Wirkung der Einstellungen wird in den Kapitelabschnitten zu Vorverarbeitung (Kapitel~\ref{chap:vorverarbeitung}) und Clustering (Kapitel~\ref{chap:clustering}) gemessen und diskutiert.
 
+Die genannten Module tauchen entlang der gesamten Verarbeitungskette wieder auf: Die Filterstufe in Kapitel~\ref{chap:vorverarbeitung} bereitet die Daten für die RANSAC-Bodensegmentierung in Kapitel~\ref{chap:bodensegmentierung} vor; deren Ergebnis dient als Ausgangspunkt für die Cluster-Extraktion und Bounding-Box-Ermittlung in Kapitel~\ref{chap:clustering}. Dadurch ist nachvollziehbar, warum jede Komponente ausgewählt wurde und wie sie mit den nachfolgenden Modulen interagiert.
 Für Entwicklung und Ausführung wird \textbf{Ubuntu~22.04~LTS (Jammy Jellyfish)} verwendet. Als Referenzplattform für ROS~2 ermöglicht Ubuntu eine nahtlose Integration von Bibliotheken, Treibern und Werkzeugen (vgl. \cite{ubuntu_docs_2025}). Die Distribution bietet stabile C++/Python-Toolchains, hohe Sicherheit und breite Unterstützung in wissenschaftlicher wie industrieller Softwareentwicklung. Die enge Verzahnung mit der in dieser Arbeit eingesetzten ROS-Distribution \emph{Humble~Hawksbill} vereinfacht die Einrichtung der Abhängigkeiten. Die aktive Entwicklergemeinschaft sorgt durch regelmäßige Updates, umfassende Dokumentation und eine große Auswahl an Open-Source-Paketen für einen reibungslosen Entwicklungsprozess. Dank der modularen Struktur von Linux lässt sich die Arbeitsumgebung flexibel an die spezifischen Anforderungen der Sensorintegration und der ROS-Module anpassen.
 
 \subsection{Bash-Skripte}
-Bash-Skripte automatisieren wiederkehrende Aufgaben (Workspace laden, Launch starten, Aufzeichnung) und sind ein zentrales Werkzeug in Linux-basierten Entwicklungsumgebungen. In dieser Arbeit fungiert ein Skript als Bindeglied zwischen der GUI und dem Python-\texttt{launch}-File der Pipeline: Beim Start werden die ROS~2-Umgebung geladen, die relevanten Workspaces gesourced und das zentrale Launch-File ausgeführt, das alle erforderlichen Knoten in definierter Reihenfolge aktiviert.
+Bash-Skripte automatisieren wiederkehrende Aufgaben (Workspace laden, Launch starten, Aufzeichnung) und sind ein zentrales Werkzeug in Linux-basierten Entwicklungsumgebungen. In dieser Arbeit fungiert ein Skript als Bindeglied zwischen der GUI und dem Python-\texttt{launch}-File der Verarbeitungskette: Beim Start werden die ROS~2-Umgebung geladen, die relevanten Workspaces gesourced und das zentrale Launch-File ausgeführt, das alle erforderlichen Knoten in definierter Reihenfolge aktiviert.
 
 %\subsection*{ROS~2 CLI und Monitoring}
 %Zur Inspektion der Laufzeitumgebung werden \texttt{ros2}-Werkzeuge genutzt: \texttt{topic list/info/hz/bw/delay}, \texttt{node list/info}, \texttt{interface show}, \texttt{doctor}. Sie unterstützen Durchsatz-/Latenzschätzung, Interface-Inspektion und Grunddiagnostik.
@@ -1049,7 +1051,9 @@ Für das betrachtete System wird eine Ende-zu-Ende-Latenz von weniger als \(100\
 Die Auslastung der Rechen- und Speicherressourcen wird für jeden Knoten unter repräsentativer Last erfasst. Optimierungsmaßnahmen wie ein angepasstes Datenlayout, die Vermeidung unnötiger Kopien oder die Vorallokation von Puffern werden dokumentiert und quantitativ bewertet. Zur Analyse kommen Werkzeuge wie \texttt{ros2 topic hz}, \texttt{ros2 topic bw}, \texttt{ros2 topic delay} sowie Systemprofiler (\texttt{top}/\texttt{htop}) zum Einsatz. Für Variantenvergleiche werden die Ergebnisse in Form persistenter Artefakte (z.\,B. CSV- oder JSON-Dateien) abgelegt.
 
 \chapter{Vorverarbeitung}
+\label{chap:vorverarbeitung}
 \section{CropBox-Filter}
+\label{sec:cropbox}
 
 \subsection{Prinzip}
 Zur Begrenzung der Punktwolke auf einen relevanten Bereich wird der \textit{CropBox-Filter} der 
@@ -1115,6 +1119,7 @@ während rechts nur der relevante Bereich nach Anwendung des CropBox-Filters zu 
 
 
 \section{VoxelGrid-Filter}
+\label{sec:voxelgrid}
 
 \subsection{Prinzip}
 Der \textit{VoxelGrid-Filter} reduziert die Punktanzahl, indem der Raum in kubische Voxel der
@@ -1175,7 +1180,7 @@ ohne dass dabei wichtige Strukturen der Szene verloren gehen.
 \chapter{Bodensegmentierung}
 \label{chap:bodensegmentierung}
 
-Die Bodensegmentierung ist ein essenzieller Vorverarbeitungsschritt innerhalb der Pipeline zur Objekterkennung. 
+Die Bodensegmentierung ist ein essenzieller Vorverarbeitungsschritt innerhalb der Verarbeitungskette zur Objekterkennung. 
 Ihr Ziel besteht darin, Bodenpunkte zuverlässig von Hindernissen und anderen Objekten zu trennen, um die nachfolgenden Schritte – insbesondere die Cluster- und Objekterkennung – zu erleichtern. 
 Im Folgenden werden zunächst die Anforderungen an die Bodensegmentierung beschrieben, anschließend verschiedene Methoden anhand definierter Bewertungskriterien verglichen und abschließend die in dieser Arbeit implementierte Methode vorgestellt.
 
@@ -1498,6 +1503,7 @@ Als Ergebnis ergibt sich eine Punktwolke, die frei von Bodenpunkten ist (siehe A
 \end{figure}
 
 \chapter{Cluster-Extraktion und Ermittlung von Bounding-Boxes}
+\label{chap:clustering}
 \label{chap:cluster_extraction}
 
 Nach der Entfernung der Bodenpunkte (vgl. Kapitel~\ref{chap:bodensegmentierung}) werden die verbleibenden Punktwolken in zusammenhängende Punktmengen (Cluster) gruppiert und mit Begrenzungsboxen beschrieben. Ziel ist eine in Echtzeit lauffähige, robuste Objektbildung, die konsistente Boxen (Lage, Abmessungen) für die nachgelagerte Verfolgung bereitstellt.
@@ -1619,7 +1625,7 @@ In dieser Arbeit wird \textbf{AABB} verwendet. Hauptgründe sind die hohe Stabil
 \section{Implementierung}
 \label{sec:implementierung_cluster_boxes}
 
-Die Umsetzung erfolgt auf Basis von PCL und ROS~2 als durchgängige Verarbeitungskette. Auf dem Topic \texttt{/obstacle\_points} wird die \emph{EuclideanClusterExtraction} mit einer KdTree-Struktur angewendet, um Punktwolken in einzelne Objekte zu segmentieren. Die resultierenden Cluster werden anschließend sowohl als Marker für RViz visualisiert als auch in Form eines \texttt{vision\_msgs/Detection3DArray} veröffentlicht. Die Pipeline ist darauf ausgelegt, deterministische Latenzen und eine robuste Plausibilisierung der Objekte sicherzustellen.
+Die Umsetzung erfolgt auf Basis von PCL und ROS~2 als durchgängige Verarbeitungskette. Auf dem Topic \texttt{/obstacle\_points} wird die \emph{EuclideanClusterExtraction} mit einer KdTree-Struktur angewendet, um Punktwolken in einzelne Objekte zu segmentieren. Die resultierenden Cluster werden anschließend sowohl als Marker für RViz visualisiert als auch in Form eines \texttt{vision\_msgs/Detection3DArray} veröffentlicht. Die Verarbeitungskette ist darauf ausgelegt, deterministische Latenzen und eine robuste Plausibilisierung der Objekte sicherzustellen.
 
 Als Eingabe dient das Topic \texttt{/obstacle\_points} mit dem Nachrichtentyp \texttt{sensor\_msgs/PointCloud2} unter Verwendung des \emph{SensorDataQoS}-Profils. Als Ausgabe werden die geschätzten Objektboxen in einem \texttt{vision\_msgs/Detection3DArray} bereitgestellt, welches Zentrum, Ausmaße und optional die Orientierung umfasst. Zusätzlich erfolgt eine parallele Veröffentlichung als RViz-Marker zur visuellen Kontrolle. Für den Sensorpfad wird ein \emph{BestEffort}-Profil mit \emph{KeepLast} (Tiefe \(\leq 4\)) verwendet, während die Ergebnis-Topics zuverlässig (\emph{reliable}) übertragen werden. Eine harte Obergrenze \texttt{max\_clusters} sowie die Vorallokation der Speicherstrukturen verhindern Latenzspitzen bei dichter Punktbelegung.
 
@@ -1629,7 +1635,7 @@ Die Kombination aus Voxel-Downsampling, KdTree-Suche und einer festen Maximalzah
 
 \section{Ergebnis}
 \label{sec:ergebnis_cluster_boxes}
-In den Experimenten liefert die Pipeline konsistente Boxen bei moderatem Rechenaufwand. Die AABB-Wahl erweist sich als robust gegenüber variabler Punktdichte und Teilokklusion; OBB bietet dagegen Vorteile bei stark orientierten, elongierten Objekten, ist jedoch empfindlicher und teurer.
+In den Experimenten liefert die Verarbeitungskette konsistente Boxen bei moderatem Rechenaufwand. Die AABB-Wahl erweist sich als robust gegenüber variabler Punktdichte und Teilokklusion; OBB bietet dagegen Vorteile bei stark orientierten, elongierten Objekten, ist jedoch empfindlicher und teurer.
 
 Abbildung~\ref{fig:clustering_result} zeigt den Cluster eines detektierten Pkw mit AABB-Dimensionen.
 
@@ -1801,8 +1807,8 @@ Abbildung~\ref{fig:tracking_result} zeigt den Cluster eines detektierten Pkw mit
 \chapter{Test und Bewertung}
 \label{chap:test_und_bewertung}
 
-In diesem Kapitel werden die Testergebnisse der entwickelten Umfelderkennungs-Pipeline vorgestellt und bewertet. 
-Die Pipeline wurde vollständig in ROS~2 umgesetzt und besteht aus den in Abbildung~\ref{fig:ros2-pipeline-alltopics} gezeigten Modulen: 
+In diesem Kapitel werden die Testergebnisse der entwickelten Umfelderkennungs-Verarbeitungskette vorgestellt und bewertet. 
+Die Verarbeitungskette wurde vollständig in ROS~2 umgesetzt und besteht aus den in Abbildung~\ref{fig:ros2-pipeline-alltopics} gezeigten Modulen: 
 \textit{Crop-Box-Filter}, \textit{VoxelGrid-Filter}, \textit{RANSAC-Bodensegmentierung}, \textit{Cluster-Extraktion} sowie \textit{Objektverfolgung (Tracking)}. 
 Die Konfiguration erfolgte über das Launch-File \textit{ouster\_pipeline.launch.py}, welches alle Module innerhalb des gemeinsamen Namensraums \textit{/pipeline} startet.
 
@@ -2008,9 +2014,9 @@ könnte in zukünftigen Arbeiten zu einer weiteren Verbesserung führen.
 \section{Bewertung des Algorithmus}
 
 \subsection{Echtzeitfähigkeit}
-Mit Systemzeitstempeln (\texttt{use\_sim\_time=false}) wurde eine end-to-end-Latenz der gesamten Pipeline von durchschnittlich \(\approx 51\,\mathrm{ms}\) gemessen. Nach einer kurzen Anlaufphase von rund \(114\,\mathrm{ms}\) stabilisierte sich die Latenz im Bereich von \(50\)–\(56\,\mathrm{ms}\) (Messfenster \(n \approx 100\)). Die Teilstrecken betrugen: \textit{crop}→\textit{voxel} \(\approx 45\)–\(50\,\mathrm{ms}\), \textit{voxel}→\textit{ransac} \(\approx 1{,}7\,\mathrm{ms}\), \textit{ransac}→\textit{cluster} \(\approx 0{,}3\,\mathrm{ms}\) und \textit{cluster}→\textit{track} \(\approx 3{,}7\,\mathrm{ms}\). Damit entfällt der Schwerpunkt der Laufzeit klar auf die Vorverarbeitung bis einschließlich Voxelisierung.
+Mit Systemzeitstempeln (\texttt{use\_sim\_time=false}) wurde eine end-to-end-Latenz der gesamten Verarbeitungskette von durchschnittlich \(\approx 51\,\mathrm{ms}\) gemessen. Nach einer kurzen Anlaufphase von rund \(114\,\mathrm{ms}\) stabilisierte sich die Latenz im Bereich von \(50\)–\(56\,\mathrm{ms}\) (Messfenster \(n \approx 100\)). Die Teilstrecken betrugen: \textit{crop}→\textit{voxel} \(\approx 45\)–\(50\,\mathrm{ms}\), \textit{voxel}→\textit{ransac} \(\approx 1{,}7\,\mathrm{ms}\), \textit{ransac}→\textit{cluster} \(\approx 0{,}3\,\mathrm{ms}\) und \textit{cluster}→\textit{track} \(\approx 3{,}7\,\mathrm{ms}\). Damit entfällt der Schwerpunkt der Laufzeit klar auf die Vorverarbeitung bis einschließlich Voxelisierung.
 
-Unter diesen Bedingungen ist die Pipeline für eine Echtzeitverarbeitung mit \(10\,\mathrm{Hz}\) (Periodendauer \(100\,\mathrm{ms}\)) mit deutlicher Reserve geeignet. Für \(20\,\mathrm{Hz}\) (Periodendauer \(50\,\mathrm{ms}\)) liegt die Latenz dagegen grenzwertig nahe am verfügbaren Zeitbudget. Moderate Optimierungen in der Vorverarbeitung (z.\,B. effizientere Speicherzugriffe, Reduktion unnötiger Kopien oder Anpassung der Voxel-Parameter) können weitere Reserve schaffen und den Stabilitätsbereich für höhere Frequenzen erweitern.
+Unter diesen Bedingungen ist die Verarbeitungskette für eine Echtzeitverarbeitung mit \(10\,\mathrm{Hz}\) (Periodendauer \(100\,\mathrm{ms}\)) mit deutlicher Reserve geeignet. Für \(20\,\mathrm{Hz}\) (Periodendauer \(50\,\mathrm{ms}\)) liegt die Latenz dagegen grenzwertig nahe am verfügbaren Zeitbudget. Moderate Optimierungen in der Vorverarbeitung (z.\,B. effizientere Speicherzugriffe, Reduktion unnötiger Kopien oder Anpassung der Voxel-Parameter) können weitere Reserve schaffen und den Stabilitätsbereich für höhere Frequenzen erweitern.
 
 \subsection{Ressourcennutzung (CPU/RAM)}
 Eine Messung über \(12\,\mathrm{s}\) (\(19\) Stichproben im \(0{,}5\,\mathrm{s}\)-Intervall) ergab eine mittlere Gesamtauslastung von \(38{,}80\,\%\) CPU sowie einen durchschnittlichen Arbeitsspeicherverbrauch von \(193{,}18\,\mathrm{MB}\) (RSS). Die CPU-Last verteilte sich auf die Teilkomponenten wie folgt: 
@@ -2027,7 +2033,7 @@ Der Speicherverbrauch pro Prozess lag zwischen \(24\)–\(51\,\mathrm{MB}\):
 \textit{Clustering} \(50{,}12\,\mathrm{MB}\) 
 und \textit{Tracking} \(23{,}75\,\mathrm{MB}\). 
 
-Damit konzentriert sich die Rechenlast eindeutig auf die Vorverarbeitung (Crop/Voxel). Segmentierung und Clustering fallen moderat aus, während das Tracking nur einen sehr geringen Ressourcenbedarf aufweist. Insgesamt verbleibt eine deutliche CPU-Reserve bei moderater RAM-Belegung, sodass die Pipeline problemlos auf typischer Embedded- oder Fahrzeughardware betrieben werden kann.
+Damit konzentriert sich die Rechenlast eindeutig auf die Vorverarbeitung (Crop/Voxel). Segmentierung und Clustering fallen moderat aus, während das Tracking nur einen sehr geringen Ressourcenbedarf aufweist. Insgesamt verbleibt eine deutliche CPU-Reserve bei moderater RAM-Belegung, sodass die Verarbeitungskette problemlos auf typischer Embedded- oder Fahrzeughardware betrieben werden kann.
 
 
 \subsection{Integrierbarkeit in der GUI}
