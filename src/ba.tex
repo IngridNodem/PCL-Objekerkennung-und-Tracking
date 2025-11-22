@@ -531,31 +531,69 @@ Bash-Skripte automatisieren wiederkehrende Aufgaben (Workspace laden, Launch sta
 \section{Überblick über das Gesamtsystem}
 \subsection{Anforderungen an den Algorithmus}
 
-Die vom Ouster~OS1 erfassten Sensordaten bilden die Grundlage für eine Messkette, die relevante Objekte des Umfelds erkennt und strukturiert ausgibt. Ziel ist eine Objektliste mit Position, Orientierung und Abmessungen.
+Die Punktwolken des Ouster~OS1 bilden die Grundlage einer Verarbeitungskette, die relevante Objekte im Umfeld extrahiert und nachverfolgt. Die hohe Winkelauflösung des Sensors ermöglicht eine präzise Rekonstruktion lokaler Geometrien \parencite{OusterOS1}, erfordert jedoch eine robuste Vorverarbeitung: Boden- und Störanteile müssen entfernt, die Punktdichte kontrolliert reduziert und gleichzeitig ausreichende Detailinformationen für verlässliche Bounding Boxes bewahrt werden.
 
-Für eine zuverlässige Objekterkennung ist eine geeignete Aufbereitung der Rohdaten erforderlich. Bodenpunkte und Störsignale sind zu entfernen; die Punktdichte ist zu reduzieren, ohne die Geometrie relevanter Objekte wesentlich zu verfälschen. Die Parameter der Schritte müssen anpassbar bleiben, um unterschiedliche Szenarien abbilden zu können.
+Diese Schritte folgen den Empfehlungen der Fahrzeugautomatisierungs-Literatur, die deterministische Filterung und kontrollierte Latenz als Beitrag zur funktionalen Sicherheit hervorhebt \parencite{Arnold2019Survey,Macenski2022ROS2}. Eine Bodenentfernung senkt die Falsch-Positiv-Rate und verbessert die Selektivität beim Clustering \parencite{gomes2023survey}; konfigurierbare Parameter erleichtern die Adaption an unterschiedliche Szenarien wie dichten Verkehr, freie Flächen oder geneigte Fahrbahnen.
 
-Die Verarbeitung erfolgt unter Echtzeitbedingungen: Alle Prozesse sind innerhalb einer festen Zeitspanne abzuschließen, damit Ergebnisse kontinuierlich bereitgestellt werden (Ziel-Gesamtlatenz \(<100\,\text{ms}\) bei \(10\,\text{Hz}\)). Ein ressourcenschonender Betrieb auf Standardhardware ist sicherzustellen. Ergebnisse werden maschinenlesbar und zur schnellen Kontrolle im Terminal ausgegeben; zudem ist die Integration in die bestehende GUI vorgesehen.
+Um den Einsatz auf Standardhardware zu ermöglichen und die Reproduzierbarkeit sicherzustellen, wird eine End-to-End-Latenz unter \(100\,\text{ms}\) bei \(10\,\text{Hz}\) angestrebt, verbunden mit moderater CPU/RAM-Auslastung und klar definierten ROS~2-Nachrichten für maschinen- wie terminallesbare Ausgaben. Die Einbindung in die bestehende GUI des Projekts \emph{Carception~X} (IFZN) stellt darüber hinaus Kompatibilität mit den vorhandenen Betriebsmodi (Sensor, Sensor+PC, Echtzeitbetrieb) sicher.\footnote{\url{https://www.th-nuernberg.de/einrichtungen-gesamt/in-institute/institut-fuer-fahrzeugtechnik/projekte/}}
 
-Die wichtigsten Anforderungen an die entwickelte Messkette sind in Tabelle~\ref{tab:anforderungen_messkette} zusammengefasst.
+Die detaillierten Anforderungen und dazugehörigen Messkriterien sind in Tabelle~\ref{tab:anforderungen_messkette} zusammengefasst.
 
 \begin{table}[H]
-  \centering
-  \begin{tabular}{|c|p{12cm}|}
-    \hline
-    \textbf{Nr.} & \textbf{Anforderung} \\ \hline
-    1 & Eingabe: Sensordaten des Ouster~OS1-LiDAR \\ \hline
-    2 & Ausgabe: Objektliste mit Position, Orientierung und Abmessungen \\ \hline
-    3 & Entfernung von Bodenpunkten und Störsignalen \\ \hline
-    4 & Reduzierung der Punktwolkendichte zur Rechenoptimierung \\ \hline
-    5 & Anpassbare Parameter für unterschiedliche Umgebungen \\ \hline
-    6 & Echtzeitverarbeitung: Latenz \textless{}100\,ms bei 10\,Hz Sensorrate \\ \hline
-    7 & Ressourcenschonender Betrieb auf Standardhardware \\ \hline
-    8 & Maschinenlesbare und terminalbasierte Ergebnisausgabe \\ \hline
-    9 & Integration in die bestehende grafische Benutzeroberfläche (GUI) \\ \hline
-  \end{tabular}
-  \caption{Anforderungen an die Messkette zur Umfelderkennung}
-  \label{tab:anforderungen_messkette}
+\centering
+\begin{tabularx}{\textwidth}{|c|X|X|}
+\hline
+\textbf{Nr.} & \textbf{Anforderung} & \textbf{Messkriterium} \\
+\hline
+
+1 &
+OS1-Punktwolken werden empfangen &
+Topic \texttt{/ouster/points}; Rate $\geq 10$ Hz \\[0.15cm]
+\hline
+
+2 &
+Objektliste mit Pose und Abmessungen &
+Topic \texttt{/tracks\_raw} (\texttt{vision\_msgs/Detection3DArray}) \\[0.15cm]
+\hline
+
+3 &
+Bodenpunkte und Störsignale entfernen &
+Topic \texttt{/obstacle\_points} ohne Bodenanteile \\[0.15cm]
+\hline
+
+4 &
+Reduzierte Punktdichte ohne wesentlichen Geometrieverlust &
+Konfigurierbare Voxelgröße; stabile FPS \\[0.15cm]
+\hline
+
+5 &
+Laufzeitparameter anpassbar &
+Parameter via Launch setzbar \\[0.15cm]
+\hline
+
+6 &
+End-to-End-Latenz <100 ms bei 10 Hz &
+Zeitstempel-Differenz Ein-/Ausgang; stabile 10 Hz \\[0.15cm]
+\hline
+
+7 &
+Stabiler Betrieb auf Standardhardware &
+CPU/RAM-Auslastung $\leq 60\,\%$ bei stabilen $10\,\mathrm{Hz}$ \\[0.15cm]
+\hline
+
+8 &
+Maschinen- und terminallesbare Ausgabe &
+Definierte ROS-Nachrichten + kompakte Konsole \\[0.15cm]
+\hline
+
+9 &
+Integration in bestehende GUI &
+Algorithmus ausführbar bei Moden Sensor, Sensor+PC und Echtzeitanwendung \\[0.05cm]
+\hline
+
+\end{tabularx}
+\caption{Anforderungen an die Verarbeitungsstrecke mit zugehörigen Messkriterien}
+\label{tab:anforderungen_messkette}
 \end{table}
 
 \subsection{Datenerfassung}

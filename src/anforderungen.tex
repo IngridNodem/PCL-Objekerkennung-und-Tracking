@@ -1,0 +1,94 @@
+% !TeX program = pdflatex
+\documentclass[12pt,a4paper]{article}
+
+% Packages
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[ngerman]{babel}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{hyperref}
+\usepackage{tabularx}
+\usepackage{csquotes}
+\usepackage[backend=biber,style=authoryear,sorting=nyt,maxbibnames=99]{biblatex}
+\addbibresource{literatur.bib}
+
+\geometry{left=25mm,right=20mm,top=20mm,bottom=25mm}
+\onehalfspacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\begin{document}
+
+\section*{Anforderungen an den Algorithmus}
+
+Die Punktwolken des Ouster~OS1 bilden die Grundlage einer Verarbeitungskette, die relevante Objekte im Umfeld extrahiert und nachverfolgt. Die hohe Winkelauflösung des Sensors ermöglicht eine präzise Rekonstruktion lokaler Geometrien \parencite{OusterOS1}, erfordert jedoch eine robuste Vorverarbeitung: Boden- und Störanteile müssen entfernt, die Punktdichte kontrolliert reduziert und gleichzeitig ausreichende Detailinformationen für verlässliche Bounding Boxes bewahrt werden.
+
+Diese Schritte folgen den Empfehlungen der Fahrzeugautomatisierungs-Literatur, die deterministische Filterung und kontrollierte Latenz als Beitrag zur funktionalen Sicherheit hervorhebt \parencite{Arnold2019Survey,Macenski2022ROS2}. Eine Bodenentfernung senkt die Falsch-Positiv-Rate und verbessert die Selektivität beim Clustering \parencite{gomes2023survey}; konfigurierbare Parameter erleichtern die Adaption an unterschiedliche Szenarien wie dichten Verkehr, freie Flächen oder geneigte Fahrbahnen.
+
+Um den Einsatz auf Standardhardware zu ermöglichen und die Reproduzierbarkeit sicherzustellen, wird eine End-to-End-Latenz unter \(100\,\text{ms}\) bei \(10\,\text{Hz}\) angestrebt, verbunden mit moderater CPU/RAM-Auslastung und klar definierten ROS~2-Nachrichten für maschinen- wie terminallesbare Ausgaben. Die Einbindung in die bestehende GUI des Projekts \emph{Carception~X} (IFZN) stellt darüber hinaus Kompatibilität mit den vorhandenen Betriebsmodi (Sensor, Sensor+PC, Echtzeitbetrieb) sicher.\footnote{\url{https://www.th-nuernberg.de/einrichtungen-gesamt/in-institute/institut-fuer-fahrzeugtechnik/projekte/}}
+
+Die detaillierten Anforderungen und dazugehörigen Messkriterien sind in Tabelle~\ref{tab:anforderungen_messkette} zusammengefasst.
+
+\begin{table}[h]
+\centering
+\begin{tabularx}{\textwidth}{|c|X|X|}
+\hline
+\textbf{Nr.} & \textbf{Anforderung} & \textbf{Messkriterium} \\
+\hline
+
+1 &
+OS1-Punktwolken werden empfangen &
+Topic \texttt{/ouster/points}; Rate $\geq 10$ Hz \\[0.15cm]
+\hline
+
+2 &
+Objektliste mit Pose und Abmessungen &
+Topic \texttt{/tracks\_raw} (\texttt{vision\_msgs/Detection3DArray}) \\[0.15cm]
+\hline
+
+3 &
+Bodenpunkte und Störsignale entfernen &
+Topic \texttt{/obstacle\_points} ohne Bodenanteile \\[0.15cm]
+\hline
+
+4 &
+Reduzierte Punktdichte ohne wesentlichen Geometrieverlust &
+Konfigurierbare Voxelgröße; stabile FPS \\[0.15cm]
+\hline
+
+5 &
+Laufzeitparameter anpassbar &
+Parameter via Launch setzbar \\[0.15cm]
+\hline
+
+6 &
+End-to-End-Latenz <100 ms bei 10 Hz &
+Zeitstempel-Differenz Ein-/Ausgang; stabile 10 Hz \\[0.15cm]
+\hline
+
+7 &
+Stabiler Betrieb auf Standardhardware &
+CPU/RAM-Auslastung $\leq 60\,\%$ bei stabilen $10\,\mathrm{Hz}$ \\[0.15cm]
+\hline
+
+8 &
+Maschinen- und terminallesbare Ausgabe &
+Definierte ROS-Nachrichten + kompakte Konsole \\[0.15cm]
+\hline
+
+9 &
+Integration in bestehende GUI &
+Algorithmus ausführbar bei Moden Sensor, Sensor+PC und Echtzeitanwendung \\[0.05cm]
+\hline
+
+\end{tabularx}
+\caption{Anforderungen an die Verarbeitungsstrecke mit zugehörigen Messkriterien}
+\label{tab:anforderungen_messkette}
+\end{table}
+
+\printbibliography
+
+\end{document}
