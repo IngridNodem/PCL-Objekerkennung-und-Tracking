@@ -1016,7 +1016,7 @@ Kodierung: in der Regel little-endian (\texttt{is\_bigendian = false}). Speicher
 
 \subsection{Point Cloud Library (PCL)}
 \label{chap:pcl}
-Die \emph{Point Cloud Library (PCL)} bildet die Grundlage der Umfelderkennung. Sie stellt effiziente Verfahren zur Filterung, Segmentierung, Clusterbildung und geometrischen Modellierung bereit (vgl. \cite{pcl_docs_2025}). In ROS~2 erfolgt die Einbindung über \texttt{pcl\_conversions} und ggf. \texttt{pcl\_ros}; \texttt{sensor\_msgs/PointCloud2} wird bidirektional in \texttt{pcl::PointCloud<T>} konvertiert.
+Die \emph{Point Cloud Library (PCL)} bildet die Grundlage der Umfelderkennung. Sie ist eine freie C++-Bibliothek (BSD-Lizenz), die ursprünglich 2011 bei Willow~Garage als Teil des ROS-Ökosystems entstand und seitdem von der Community rund um Open~Perception und industrielle Anwender weiterentwickelt wird (vgl. \cite{pcl_docs_2025}). PCL bietet eine umfangreiche Sammlung modularer Algorithmen: Punktfilterung (Downsampling, Zuschneiden, Rauschunterdrückung), Normalen- und Merkmalsextraktion, RANSAC-basierte Segmentierung, Registrierung (z.\,B. ICP), Oberflächenrekonstruktion, Nachbarschaftssuchen auf k-d-Baum/Octree-Basis, Clusteranalyse sowie Visualisierung und Dateiformate (PCD). In ROS~2 erfolgt die Einbindung über \texttt{pcl\_conversions} und ggf. \texttt{pcl\_ros}; \texttt{sensor\_msgs/PointCloud2} wird bidirektional in \texttt{pcl::PointCloud<T>} konvertiert.
 
 \subsection{Genutzte Module und Algorithmen}
 \begin{itemize}
