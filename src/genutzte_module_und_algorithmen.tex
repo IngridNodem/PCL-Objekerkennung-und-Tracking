@@ -1,0 +1,30 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[ngerman]{babel}
+\usepackage{csquotes}
+\usepackage{amsmath}
+\usepackage{hyperref}
+
+\title{Genutzte Module und Algorithmen}
+\author{PCL-Objekterkennung und Tracking}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Genutzte Module und Algorithmen}
+Die Verarbeitungskette stützt sich auf etablierte PCL-Module, die in ROS~2 stabil verfügbar sind und nachvollziehbare Laufzeiteigenschaften besitzen:
+\begin{itemize}
+  \item \textbf{Filter}: \texttt{CropBox}/\texttt{PassThrough} begrenzen den Arbeitsbereich auf das relevante Fahrumfeld und reduzieren die Punktzahl frühzeitig (siehe Abschnitt \enquote{CropBox-Filter}); \texttt{VoxelGrid} homogenisiert die Punktdichte und senkt den Rechenaufwand nachgelagerter Schritte ohne signifikanten Geometrieverlust (siehe Abschnitt \enquote{VoxelGrid}). Auf zusätzliche Ausreißerfilter wie \texttt{StatisticalOutlierRemoval} wurde zugunsten geringerer Latenz verzichtet, da das Ouster-Rohsignal im Testumfeld stabil genug war (Vorverarbeitungsstufe).
+  \item \textbf{Segmentierung}: Eine plane RANSAC-Segmentierung trennt Boden- von Hindernispunkten. \texttt{pcl::SACSegmentation} mit \texttt{SACMODEL\_PLANE} ist robust gegenüber Ausreißern, erfordert nur wenige Parameter (Abstands- und Iterationsschranken) und lässt sich effizient in Echtzeit ausführen. Die methodische Begründung und Parametertabellen stehen im Abschnitt zur Bodensegmentierung.
+  \item \textbf{Clustering}: \texttt{EuclideanClusterExtraction} auf Basis eines \texttt{pcl::search::KdTree} gruppiert die bodenfreien Punkte. Der Ansatz liefert reproduzierbare Ergebnisse, benötigt nur \(\varepsilon\)-Nachbarschaft sowie minimale und maximale Clustergröße als Stellgrößen und ist in zahlreichen LiDAR-Verarbeitungsketten erprobt. Die konkrete Umsetzung und Parameterstudie stehen im Abschnitt zur Clusterung.
+  \item \textbf{Konvertierung}: \texttt{pcl::fromROSMsg}/\texttt{pcl::toROSMsg} sowie \texttt{pcl\_conversions} bilden die Brücke zwischen ROS~2-Nachrichten und PCL-Datenstrukturen. Sie sind erforderlich, damit die oben genannten PCL-Algorithmen in den ROS-Knoten der Vorverarbeitung, Bodensegmentierung und Clusterung arbeiten können.
+\end{itemize}
+\textbf{Performance}: Durch Vorallokation (z.\,B. Puffergrößen für KdTree und Clusterlisten), die Vermeidung redundanter Kopien und die Wahl leichter Punkttypen wie \texttt{pcl::PointXYZI} wird eine konstante Verarbeitung bei 10~Hz ermöglicht; die Wirkung der Einstellungen wird in den Abschnittsteilen zu Vorverarbeitung und Clustering gemessen und diskutiert.
+
+Die genannten Module tauchen entlang der gesamten Verarbeitungskette wieder auf: Die Filterstufe bereitet die Daten für die RANSAC-Bodensegmentierung vor; deren Ergebnis dient als Ausgangspunkt für die Cluster-Extraktion und Bounding-Box-Ermittlung. Dadurch ist nachvollziehbar, warum jede Komponente ausgewählt wurde und wie sie mit den nachfolgenden Modulen interagiert.
+
+F\"ur Entwicklung und Ausf\"uhrung wird \textbf{Ubuntu~22.04~LTS (Jammy Jellyfish)} verwendet. Als Referenzplattform f\"ur ROS~2 erm\"oglicht Ubuntu eine nahtlose Integration von Bibliotheken, Treibern und Werkzeugen (vgl. \cite{ubuntu\_docs\_2025}). Die Distribution bietet stabile C++/Python-Toolchains, hohe Sicherheit und breite Unterst\"utzung in wissenschaftlicher wie industrieller Softwareentwicklung. Die enge Verzahnung mit der eingesetzten ROS-Distribution \emph{Humble~Hawksbill} vereinfacht die Einrichtung der Abh\"angigkeiten. Die aktive Entwicklergemeinschaft sorgt durch regelm\"a\ss{}ige Updates, umfassende Dokumentation und eine gro\ss{}e Auswahl an Open-Source-Paketen f\"ur einen reibungslosen Entwicklungsprozess. Dank der modularen Struktur von Linux l\"asst sich die Arbeitsumgebung flexibel an die spezifischen Anforderungen der Sensorintegration und der ROS-Module anpassen.
+
+\end{document}
