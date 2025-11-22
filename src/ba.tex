@@ -1088,6 +1088,13 @@ Das Konzept ist in Tabelle~\ref{tab:cropbox_params} zusammengefasst.
   \label{tab:cropbox_params}
 \end{table}
 
+Das Zuschneidevolumen bezieht sich auf das Sensorkoordinatensystem des Ouster-LiDARs
+und folgt der in ROS etablierten Konvention nach REP~103: \(x\) zeigt in Fahrtrichtung,
+\(y\) nach links und \(z\) nach oben; der Ursprung liegt im LiDAR-Frame auf Fahrzeughöhe.
+Die Vektoren \texttt{min\_bound} und \texttt{max\_bound} geben damit den minimalen bzw.
+maximalen Wert entlang dieser Achsen in Metern an und definieren eine achsenparallele
+Box, innerhalb derer Punkte beibehalten werden.
+
 Der \texttt{crop\_box\_node} wurde so implementiert, dass er sowohl Pflichtfelder 
 (\texttt{x}, \texttt{y}, \texttt{z}) als auch optionale Felder wie 
 \texttt{intensity} (FLOAT32/UINT16) und \texttt{ring} erkennt.  
@@ -1099,6 +1106,14 @@ durch dynamische Re-Konfiguration via \texttt{set\_parameters}, ohne dass
 die ROS~2-Verbindungen neu aufgebaut werden müssen.
 
 Da sich im Messbereich Gebäude und weitere störende Objekte befanden, welche die Anzahl falscher Detektionen signifikant erhöhen konnten, wurden die Grenzen des \texttt{crop\_box\_node} sukzessive angepasst. Durch iterative Parameteroptimierung ergaben sich folgende final verwendete Werte: \texttt{min\_bound = [-10.0, -6.0, -3.0]} sowie \texttt{max\_bound = [10.0, 6.0, 5.0]}.
+Physikalisch orientieren sich diese Grenzen an der Testumgebung: Mit \(\pm10\,\text{m}\)
+in \(x\)-Richtung wird der relevante Bereich vor und hinter dem Fahrzeug für Manöver im
+innerstädtischen Geschwindigkeitsbereich erfasst, ohne Gebäude an weit entfernten
+Fassaden mitzunehmen. \(\pm6\,\text{m}\) in \(y\)-Richtung decken eine Fahrspur sowie
+Gegen- oder Parkspur ab (typisch \(3{-}3{,}5\,\text{m}\) je Spur) und schließen Gehwege
+ein, während die Vertikalgrenzen von \(-3\,\text{m}\) bis \(5\,\text{m}\) sowohl den
+Fahrbahnbereich unterhalb des Sensors als auch überhängende Objekte wie Lkw-Aufbauten
+oder niedrige Brücken berücksichtigen.
 
 \subsection{Ergebnis}
 Abbildung~\ref{fig:cropbox_compare} zeigt die Wirkung des Filters im Vergleich: 
