@@ -1616,11 +1616,13 @@ Nach der Entfernung der Bodenpunkte (vgl. Kapitel~\ref{chap:bodensegmentierung})
 
 \section{Prinzip}
 \label{sec:prinzip_cluster_boxes}
-Zwei Punkte \(p_i=(x_i,y_i,z_i)^\top\) und \(p_j\) gehören demselben Cluster an, wenn sie in einem geeigneten Nachbarschaftsbegriff als verbunden gelten. Anschaulich entsteht so ein Nachbarschaftsgraph, dessen Zusammenhangskomponenten die gesuchten Cluster bilden. Im gängigen euklidischen Ansatz bildet die euklidische Distanz
+Zwei Punkte \(p_i=(x_i,y_i,z_i)^\top\) und \(p_j\) gehören demselben Cluster an, wenn sie in einem geeigneten Nachbarschaftsbegriff als verbunden gelten. Daraus lässt sich ein ungerichteter Graph \(G=(V,E)\) konstruieren, dessen Knoten \(V\) die Punkte und dessen Kanten \(E\) die Paarverbindungen darstellen. Die Zusammenhangskomponenten dieses Graphen entsprechen den Clustern; Traversierungen (BFS/DFS) über einen k-d-Baum liefern in \(O(n \log n)\) die Komponenten \parencite{rusu2011pcl,pcl2025euclideancluster}. Im gängigen euklidischen Ansatz bildet die Distanz
 \[
  d(p_i,p_j) = \sqrt{(x_i-x_j)^2+(y_i-y_j)^2+(z_i-z_j)^2}
 \]
-die Grundlage; Punkte werden über Nachbarschaftsschwellen und eine Suche im k-d-Baum zu Komponenten zusammengefasst. Dabei ist zu beachten, dass LiDAR-Punktwolken eine von der Entfernung abhängige, anisotrope Punktdichte aufweisen (winkelbasiertes Abtastgitter). Deshalb beeinflussen Vorverarbeitung (Voxelgröße) und die Wahl der Verknüpfungsschwelle \(\varepsilon\) die Fragmentierung/Verschmelzung besonders stark (vgl. Parametrierung unten). Für jede Komponente werden anschließend eine Lage (Zentrum) und Abmessungen über eine Begrenzungsbox ermittelt. Die resultierenden Objekte werden als \emph{Detektionen} publiziert und dienen dem Tracking. Abbildung~\ref{fig:cluster_principle} skizziert das Vorgehen.
+die Grundlage; eine feste Verknüpfungsschwelle \(\varepsilon\) definiert die Kanten von \(G\). LiDAR-Punktwolken besitzen aufgrund ihres winkelbasierten Abtastgitters eine von der Entfernung abhängige, anisotrope Punktdichte \parencite{himmelsbach2010fast}. Deshalb beeinflussen Vorverarbeitung (Voxelgröße) und die Wahl von \(\varepsilon\) die Fragmentierung/Verschmelzung besonders stark: Ein zu kleiner Schwellenwert lässt weit entfernte Objekte zerfallen, ein zu großer führt zum Verschmelzen benachbarter Objekte im Nahbereich. Abbildung~\ref{fig:cluster_principle} skizziert das Vorgehen und verdeutlicht, dass die Clusterung die eigentliche Objektbildung für die nachgelagerte Verfolgung bereitstellt.
+
+Für jede identifizierte Komponente werden im Anschluss Lage (Zentrum) und Ausdehnung über Begrenzungsboxen bestimmt. Achsenparallele Boxen (AABB) greifen auf Min-/Max-Koordinaten zurück, orientierte Boxen (OBB) nutzen Trägheitstensor oder Hauptachsentransformation (PCA), um die Orientierung der Punktverteilung widerzuspiegeln \parencite{pcl2025momentofinertia}. Beide Varianten liefern damit ein abstrahiertes, metrisches Objektmodell, das als \emph{Detektion} publiziert wird und die Initialisierung der Tracking-Stufe ermöglicht.
 
 \begin{figure}[H]
   \centering
