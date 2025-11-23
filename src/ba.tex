@@ -1230,10 +1230,23 @@ Das Funktionsprinzip entspricht der gängigen Downsampling-Strategie in der Lite
 
 \subsection{Implementierung}
 Der \textit{VoxelFilterNode} liest die
-zuvor per \textit{CropBox} zugeschnittene Punktwolke auf \texttt{points\_cropped}, führt die
-Voxelisierung mit der Parametergröße \texttt{voxel\_size} durch und publiziert die
-downsamplete Punktwolke auf \texttt{points\_voxel}. Die wichtigsten Startparameter sind in
-Tabelle~\ref{tab:voxel_params} zusammengefasst.
+zuvor per \textit{CropBox} zugeschnittene Punktwolke auf \texttt{points\_cropped}, setzt in
+der PCL-Implementierung \texttt{pcl::VoxelGrid<pcl::PointXYZI>} die Blattgröße
+\texttt{voxel\_size} in allen drei Achsen und führt anschließend die Unterabtastung aus.
+Dadurch wird pro belegtem Voxel exakt ein Punkt in die ausgegebene, unterabgetastete
+Punktwolke \texttt{points\_voxel} übernommen; die Rechenkomplexität sinkt damit auf
+\(\mathcal{O}(n_\text{voxel})\), was
+insbesondere die nachgelagerte k-d-Baum-Suche beim Clustering entlastet. Eine zu große
+Voxelkante würde jedoch feine Strukturen (z.\,B. Fahrradspeichen oder dünne Leitpfosten)
+verschmieren, während eine zu kleine Kante kaum Rechenzeit spart und die Cluster-Parameter
+\(\varepsilon\) anheben würde (vgl. Abschnitt~\ref{chap:clustering}).
+
+Die Startwahl \texttt{voxel\_size} = \SI{0.20}{\meter} orientiert sich sowohl an Literatur als
+auch an den Tests aus Kapitel~\ref{chap:test_und_bewertung}. Lyu~u.\,a. \parencite{lyu2024voxel} untersuchen das
+Voxel-Downsampling in urbanen Karten und zeigen, dass Blattgrößen im Bereich
+\SI{0.15}{\meter}--\SI{0.25}{\meter} das Rauschen signifikant reduzieren, ohne Fußgänger und
+Fahrräder zu verlieren; \SI{0.20}{\meter} erweist sich dort als stabiler Kompromiss. Die wichtigsten Startparameter
+sind in Tabelle~\ref{tab:voxel_params} zusammengefasst.
 
 % préambule : \usepackage{booktabs} (optionnel, pour un rendu plus pro)
 \begin{table}[H]
