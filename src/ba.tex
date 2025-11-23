@@ -1197,6 +1197,23 @@ Kantenlänge $l=\texttt{voxel\_size}$ diskretisiert wird und pro Voxel nur ein r
 (z.\,B. der erste oder ein Schwerpunkt) beibehalten wird. Dadurch sinken Datenrate und
 Rechenaufwand nachgelagerter Schritte (Bodenebensegmentierung, Clustering, Tracking), bei
 gleichzeitiger Kontrolle des Informationsverlustes über die Wahl von $l$.
+Mathematisch erfolgt zunächst eine Quantisierung der Punktkoordinaten $(x,y,z)$ auf ganzzahlige
+Gitterindizes $(i,j,k)$ über
+\begin{equation}
+  (i,j,k) = \left(\left\lfloor \tfrac{x}{l} \right\rfloor, \left\lfloor \tfrac{y}{l} \right\rfloor, \left\lfloor \tfrac{z}{l} \right\rfloor\right),
+  \label{eq:voxel_index}
+\end{equation}
+wodurch alle Punkte innerhalb eines Voxels dieselben Indizes teilen. Für jedes belegte Voxel wird
+genau ein Repräsentant behalten. In der vorliegenden Implementierung ist das der erste verarbeitete
+Punkt pro Voxel; alternativ könnte der Schwerpunkt
+\begin{equation}
+  \bar{p}_v = \tfrac{1}{|V|} \sum_{p \in V} p
+  \label{eq:voxel_centroid}
+\end{equation}
+als repräsentativer Punkt gewählt werden. Beide Varianten begrenzen die Anzahl der verbleibenden
+Punkte auf höchstens ein Sample pro Voxel und machen den Aufwand proportional zur Anzahl belegter
+Voxel. Die Wahl der Voxelkante $l$ steuert damit direkt den Kompromiss zwischen Detailtreue und
+Rechenaufwand.
 Das Funktionsprinzip entspricht der gängigen Downsampling-Strategie in der Literatur
 (vgl. Abbildung~\ref{fig:voxel_principle}), siehe z.\,B. die Darstellung in \emph{Applied Sciences}
 (2024)\footnote{Abbildung nach Quelle: \url{https://www.mdpi.com/2076-3417/14/8/3160}.}.
