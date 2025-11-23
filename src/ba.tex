@@ -983,17 +983,33 @@ Ouster~OS1-Daten werden als \texttt{sensor\_msgs/PointCloud2} publiziert. Tabell
 
 \begin{table}[H]
   \centering
-  \begin{tabular}{|l|l|}
+  \small % réduit la taille
+  \setlength{\tabcolsep}{6pt} % réduit l'espace horizontal
+  \renewcommand{\arraystretch}{1.05} % compacte verticalement
+
+  \begin{tabular}{|p{2.2cm}|p{13cm}|}
     \hline
     \textbf{Feld} & \textbf{Bedeutung} \\ \hline
-    \texttt{x, y, z} & Kartesische Koordinaten in Metern im \texttt{frame\_id} (Sensor- oder Fahrzeugrahmen). \newline \emph{Koordinatensystem:} rechtsdrehend gemäß REP~103, d.\,h. \(x\) zeigt vorwärts, \(y\) nach links, \(z\) nach oben. \\ \hline
-    \texttt{intensity} & Reflektierte Signalstärke ohne physikalische Einheit; vom Treiber auf \texttt{uint16} skaliert. Kalibrierung und automatische Verstärkung sind sensorspezifisch, daher sind Werte nur innerhalb eines Scans zuverlässig vergleichbar. \\ \hline
-    \texttt{ring} & Vertikaler Kanalindex des LiDAR (Laser/Detektor-Paar). Beim eingesetzten OS1-64: \(64\) diskrete Ringe von \(0\) (unterster Strahl) bis \(63\) (oberster Strahl); andere Modellvarianten besitzen entsprechend weniger oder mehr Ringe. \\ \hline
-    \texttt{time} & Zeitversatz eines Punktes relativ zu \texttt{header.stamp} in Sekunden; dient der intra-scan Motion Compensation. \\ \hline
+
+    \texttt{x, y, z} &
+    Kartesische Koordinaten (m) im \texttt{frame\_id}. 
+    Rechtsdrehendes System nach REP~103: \(x\) vorwärts, \(y\) links, \(z\) oben. \\ \hline
+
+    \texttt{intensity} &
+    Reflektierte Signalstärke (\texttt{uint16}); abhängig von Sensorkalibrierung und daher nur innerhalb eines Scans vergleichbar. \\ \hline
+
+    \texttt{ring} &
+    Vertikaler Kanalindex (Laser/Detektor). Beim OS1-64: 64 Ringe von 0 (unten) bis 63 (oben). \\ \hline
+
+    \texttt{time} &
+    Zeitversatz eines Punktes relativ zu \texttt{header.stamp} (s); wichtig für Motion Compensation innerhalb eines Scans. \\ \hline
+
   \end{tabular}
+
   \caption{Zentrale Felder von \texttt{sensor\_msgs/PointCloud2} für den Ouster~OS1.}
   \label{tab:pointcloud2-fields}
 \end{table}
+
 
 Alle Felder werden typischerweise little-endian kodiert (\texttt{is\_bigendian = false}). Das Speicherlayout folgt einem linearen Puffer \texttt{data} mit \texttt{point\_step} (Byte pro Punkt) und \texttt{row\_step} (Byte pro Zeile). Die Dimensionen \texttt{width}/\texttt{height} beschreiben eine 2D-Anordnung: Bei rotierenden LiDARs entspricht \texttt{height} der Ringanzahl, \texttt{width} der Punktzahl pro Umdrehung. \texttt{is\_dense} signalisiert, ob \enquote{NaN}-Einträge vorkommen. Eine organisierte Wolke (Ring~\(\times\) Azimut) ermöglicht effiziente nachbarschaftsbasierte Filter und Segmentierung sowie ringweise Verarbeitung (z.\,B. Bodenfilter nur auf unteren Ringen).
 
@@ -1019,7 +1035,7 @@ Bash-Skripte automatisieren wiederkehrende Aufgaben (Workspace laden, Launch sta
 \begin{enumerate}
   \item Laden der ROS~2-Umgebung (\texttt{source /opt/ros/humble/setup.bash}) und des projektinternen Workspace (\texttt{source \$\{WORKSPACE\}/install/setup.bash}) über \texttt{set -euo pipefail}, damit Fehler frühzeitig abbrechen.
   \item Übergabe benutzerdefinierter Parameter (z.\,B. Topic-Namen, Ausgabeordner, Logging-Level) aus der GUI via Shell-Argumente; diese werden an das Python-Launch-File durchgereicht.
-  \item Start des zentralen Launch-Files (\texttt{ros2 launch ...}) als Hintergrundprozess; über \texttt{trap} wird eine saubere Terminierung (\texttt{SIGINT}/\texttt{SIGTERM}) gewährleistet und \texttt{ros2 bag record} optional parallel aktiviert.
+  \item Start des zentralen Launch-Files (\texttt{ros2 launch...}) als Hintergrundprozess
   \item Persistente Ablage von Logs und Bags in einer datierten Ordnerstruktur (z.\,B. \texttt{logs/\$\{DATE\}}) sowie Ausgabe standardisierter Statusmeldungen (\texttt{echo}, \texttt{printf}).
 \end{enumerate}
   Dadurch werden alle erforderlichen Knoten in definierter Reihenfolge aktiviert, die GUI entlastet und ein reproduzierbarer Start der Verarbeitungskette ermöglicht (inklusive optionaler Aufzeichnung und definierter Bereinigung bei Abbruch). Der Ablauf orientiert sich an den offiziellen ROS~2-Empfehlungen für Launch-Dateien und Bash-Wrapper-Skripte\parencite{ros2_launch_docs}.
@@ -1064,7 +1080,7 @@ Der \textit{CropBox-Filter} begrenzt eine Punktwolke auf eine achsenparallel aus
 \end{align}
 gilt, wobei \(\mathbf{R}\in\mathbb{R}^{3\times4}\) die ersten drei Zeilen der PCL-internen Transformationsmatrix sind, \(\mathbf{t}\) eine optionale Translation darstellt und \(\mathbf{b}_\text{min/max}=[x_{\min/\max},y_{\min/\max},z_{\min/\max}]^\top\) die parametrisierte Box definieren. Punkte, die diese Ungleichung nicht erfüllen, werden verworfen. Die Operation besitzt eine lineare Laufzeit \(\mathcal{O}(|\mathcal{P}|)\) und reduziert das Datenvolumen vor nachgelagerten Schritten signifikant (vgl. \cite{rusu2011pcl,pcl_cropbox_2025}). Durch die optionale Transformationsmatrix lassen sich zusätzlich gekippte Sensorkoordinaten oder Fahrzeugversätze berücksichtigen, wodurch die AABB effektiv einer beliebig orientierten Bounding Box im globalen Rahmen entspricht \cite{pcl_docs_2025}.
 
-Die Auswahl der Grenzen folgt in dieser Arbeit einem systematischen Verfahren: Zunächst wurde eine großzügige Box \(\mathbf{b}_\text{min}=[-20,-15,-3]^\top\), \(\mathbf{b}_\text{max}=[20,15,5]^\top\) definiert, um alle relevanten Rückläufer sicher zu erfassen. Anschließend erfolgte eine schrittweise Schrumpfung entlang \(x\), \(y\) und \(z\) in \(0{,}5\,\mathrm{m}\)-Schritten. Bewertet wurde jede Konfiguration anhand (i) Detektionspräzision nach dem Clustering (Anteil falsch positiver Objekte), (ii) verbleibender Punktzahl sowie (iii) Anteil abgeschnittener Fahrbahnränder in RViz. Dieses Vorgehen entspricht der iterativen ROI-Abgrenzung, wie sie in LiDAR-Pipelines zur Falsch-Alarm-Reduktion empfohlen wird \cite{hu2013robust,himmelsbach2010fast}. Die finalen Grenzen \(\mathbf{b}_\text{min}=[-10,-6,-3]^\top\) und \(\mathbf{b}_\text{max}=[10,6,5]^\top\) lieferten den besten Kompromiss aus reduzierter Punktzahl (\(-57\,\%\)) und stabiler Objektabdeckung im urbanen Messfeld.
+Die Auswahl der Grenzen folgt in dieser Arbeit einem systematischen Verfahren: Zunächst wurde eine großzügige Box \(\mathbf{b}_\text{min}=[-20,-15,-3]^\top\), \(\mathbf{b}_\text{max}=[20,15,5]^\top\) definiert, um alle relevanten Rückläufer sicher zu erfassen. Anschließend erfolgte eine schrittweise Schrumpfung entlang \(x\), \(y\) und \(z\) in \(0{,}5\,\mathrm{m}\)-Schritten. Bewertet wurde jede Konfiguration anhand (i) Detektionspräzision nach dem Clustering (Anteil falsch positiver Objekte), (ii) verbleibender Punktzahl sowie (iii) Anteil abgeschnittener Fahrbahnränder in RViz. Dieses Vorgehen entspricht der iterativen ROI-Abgrenzung, wie sie in LiDAR-Pipelines zur Falsch-Alarm-Reduktion empfohlen wird \cite{hu2013robust,himmelsbach2010fast}. Die finalen Grenzen \(\mathbf{b}_\text{min}=[-10,-6,-3]^\top\) und \(\mathbf{b}_\text{max}=[10,6,5]^\top\) lieferten den besten Kompromiss aus reduzierter Punktzahl und stabiler Objektabdeckung im urbanen Messfeld.
 
 \subsection{Implementierung}
 Im Rahmen dieser Arbeit wurde der \texttt{crop\_box\_node} in C++ unter ROS~2
@@ -1134,7 +1150,7 @@ Da sich im Messbereich Gebäude und weitere störende Objekte befanden, welche d
  konnten, wurden die Grenzen des \texttt{crop\_box\_node} sukzessive angepasst. Durch iterative Parameteroptimierung ergaben sich
  folgende final verwendete Werte: \texttt{min\_bound = [-10.0, -6.0, -3.0]} sowie \texttt{max\_bound = [10.0, 6.0, 5.0]}.
 
-\subsection{Verifikation und Tests}
+\subsection{Test und Ergebnis}
 Die Wirkung des CropBox-Filters wird nicht allein über Visualisierungen überprüft, sondern durch eine
 schrittweise Verifikation. Dafür wird das aufgezeichnete ROS~2-Bag einer T-Kreuzung auf ebenem Asphaltboden
 (bewusst gewählt, um symmetrische Sichtfelder und eine klare Bodenreferenz zu erhalten) mehrfach wiedergegeben.
@@ -1159,7 +1175,6 @@ ein, während die Vertikalgrenzen von \(-3\,\text{m}\) bis \(5\,\text{m}\) sowoh
 Fahrbahnbereich unterhalb des Sensors als auch überhängende Objekte wie Lkw-Aufbauten
 oder niedrige Brücken berücksichtigen.
 
-\subsection{Ergebnis}
 Abbildung~\ref{fig:cropbox_compare} zeigt die Wirkung des Filters im Vergleich:
 Links ist die ursprüngliche Punktwolke mit vollständiger Umgebung dargestellt,
 während rechts nur der relevante Bereich nach Anwendung des CropBox-Filters zu sehen ist. 
@@ -1225,9 +1240,7 @@ ohne dass dabei wichtige Strukturen der Szene verloren gehen.
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{Bilder/voxel_compare.png}
-  \caption{Vergleich nach \textit{CropBox} (links) und nach \textit{VoxelGrid-Filter} (rechts).
-  Das Downsampling reduziert die Punktdichte deutlich, bewahrt jedoch die wesentliche
-  Geometrie für die nachfolgenden Schritte.}
+  \caption{Vergleich nach \textit{CropBox} (links) und nach \textit{VoxelGrid-Filter} (rechts)}
   \label{fig:voxel_compare}
 \end{figure}
 
@@ -2110,8 +2123,6 @@ Damit konzentriert sich die Rechenlast eindeutig auf die Vorverarbeitung (Crop/V
 \chapter{Quellcodeauszug CropBox-Node}
 Die vollständige C++-Implementierung des CropBox-Filters ist in Listing~\ref{lst:cropbox_node}
 aufgeführt.
-
-\lstinputlisting[language=C++,caption={C++-Implementierung des \texttt{crop\_box\_node} in ROS~2},label=lst:cropbox_node]{ouster_cpp/src/crop_box_node.cpp}
 
 \label{LastPage}
 \end{document}
