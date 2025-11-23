@@ -1339,19 +1339,27 @@ Bodensegmentierung erfordert.
 Gleichzeitig muss die Verarbeitung der Sensordaten in Echtzeit erfolgen, 
 um eine kontinuierliche Umfeldwahrnehmung und gegebenenfalls eine sichere Fahrzeugführung 
 zu gewährleisten.  
-Da in praktischen Anwendungen häufig nur begrenzte Rechenressourcen zur Verfügung stehen, 
-ist auch der Rechenaufwand ein entscheidender Faktor für die Auswahl geeigneter Verfahren.  
-Diese vier Kriterien bilden somit die Grundlage für eine objektive Bewertung 
+Da in praktischen Anwendungen häufig nur begrenzte Rechenressourcen zur Verfügung stehen,
+ist auch der Rechenaufwand ein entscheidender Faktor für die Auswahl geeigneter Verfahren.
+Diese vier Kriterien bilden somit die Grundlage für eine objektive Bewertung
 und den methodischen Vergleich der in dieser Arbeit betrachteten Ansätze.
+
+Die sechs Anforderungen aus Tabelle~\ref{tab:anforderungen_bodensegmentierung} werden in Tabelle~\ref{tab:bewertungskriterien}
+zu vier Bewertungskriterien zusammengeführt, indem inhaltlich verwandte Punkte gebündelt werden:
+\begin{itemize}
+    \item \textbf{Robustheit} fasst die Leistungsbewertung bei steigenden Hindernissen, unebenem Gelände und spärlichen Daten zusammen,
+    weil alle drei Aspekte die Widerstandsfähigkeit gegenüber unterschiedlichen Gelände- und Sensordichtevariationen abprüfen.
+    \item \textbf{Genauigkeit} nimmt den Aspekt der korrekten Trennung von Boden- und Nicht-Bodenpunkten aus der Segmentierungsrobustheit auf,
+    um die resultierende Segmentierungsqualität klar zu bewerten.
+    \item \textbf{Echtzeitfähigkeit} und \textbf{Rechenaufwand} bleiben als eigenständige Kriterien erhalten,
+    da sie die Laufzeit- und Ressourcenanforderungen unabhängig von den Szenarioeigenschaften adressieren.
+\end{itemize}
 
 \section{Methoden der Bodensegmentierung}
 \label{chap:bodenmethoden}
 
-Die Bodensegmentierung ist ein wesentlicher Verarbeitungsschritt in der Umfeldwahrnehmung autonomer Fahrzeuge. 
-Ihr Ziel ist es, die Bodenpunkte in einer LiDAR-Punktwolke zuverlässig von Objekten und Hindernissen zu trennen, 
-um Navigations- und Objekterkennungsalgorithmen zu entlasten. 
-Nach~\cite{gomes2023survey} lassen sich die gängigen Verfahren zur Bodensegmentierung 
-in fünf Hauptkategorien einteilen (siehe Abbildung~\ref{fig:boden_taxonomie}): 
+Nach~\cite{gomes2023survey} lassen sich die gängigen Verfahren zur Bodensegmentierung
+in fünf Hauptkategorien einteilen (siehe Abbildung~\ref{fig:boden_taxonomie}):
 
 \begin{itemize}
     \item 2.5D-Gitterbasierte Verfahren
