@@ -7,7 +7,6 @@
 \usepackage[utf8]{inputenc}
 \usepackage[ngerman]{babel}
 \usepackage{lmodern}
-\usepackage{geometry}
 \usepackage{setspace}
 \usepackage{hyperref}
 \usepackage{graphicx}
@@ -29,16 +28,15 @@
 \usepackage{amsmath}
 \usepackage{float}
 \usepackage{pgf-pie}
-\usepackage{booktabs} 
 \usepackage{siunitx}
 \usepackage{pgfplots}
+\usepackage[a4paper, left=3cm, right=2cm, top=2cm, bottom=3cm]{geometry}
 \pgfplotsset{compat=1.18}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{6pt}
 \lstset{basicstyle=\ttfamily\small, numbers=left, numbersep=5pt, frame=single, breaklines=true}
 
 % ---------- Page Setup ----------
-\geometry{left=30mm,right=20mm,top=20mm,bottom=30mm}
 \onehalfspacing
 \setkomafont{sectioning}{\normalfont\bfseries}
 \setkomafont{disposition}{\normalfont\bfseries}
@@ -46,33 +44,11 @@
 
 % ---------- Header / Footer ----------
 \pagestyle{fancy}
-\fancyhf{}
-\fancyfoot[C]{\thepage\ / \pageref{LastPage}}
-\renewcommand{\headrulewidth}{0pt}
-
-% --- Seitenränder ---
-\usepackage[a4paper, left=3cm, right=2cm, top=2cm, bottom=3cm]{geometry}
-
-% --- Kopf- und Fußzeilen ---
-\usepackage{fancyhdr}
-\usepackage{graphicx} % Für das Logo
-\usepackage{lastpage} % Für "Seite X von Y" falls benötigt
-
-% --- Stil für alle Seiten ---
-\pagestyle{fancy}
-
-% Kopfzeile leeren
 \fancyhead{}
 \fancyfoot{}
-
-% --- Kopfzeile: links = Kapitelname, rechts = Logo ---
 \fancyhead[L]{\nouppercase{\leftmark}} % aktueller Kapitelname
 \fancyhead[R]{\includegraphics[height=1cm]{Bilder/TH_Nuernberg_Logo.png}} % passe den Pfad an!
-
-% --- Fußzeile: Seitenzahlen zentriert ---
-\fancyfoot[C]{\thepage}
-
-% --- Linien unter/über Kopf- und Fußzeile ---
+\fancyfoot[C]{\thepage\ / \pageref{LastPage}}
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\footrulewidth}{0pt}
 
@@ -107,9 +83,6 @@
 \setcounter{tocdepth}{3} % (optionnel : pour qu'elles apparaissent aussi dans la table des matières)
 
 % --- TikZ für Flussdiagramme ---
-\usepackage[utf8]{inputenc}  % encodage
-\usepackage[T1]{fontenc}     % caractères accentués
-\usepackage[ngerman]{babel}  % ou [french] selon la langue
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, arrows, positioning}
 
@@ -165,7 +138,7 @@
 \end{titlepage}
 \cleardoublepage
 
-% ====== Prüfungsrechtliche ErklÃ¤rung ======
+% ====== Prüfungsrechtliche Erklärung ======
 \chapter*{Prüfungsrechtliche Erklärung}
 Hiermit versichere ich, dass ich die vorliegende Bachelorarbeit selbstständig verfasst und keine anderen als die angegebenen Quellen und Hilfsmittel benutzt habe. Alle Stellen, die wörtlich oder sinngemäß aus veröffentlichten oder nicht veröffentlichten Quellen entnommen wurden, sind als solche kenntlich gemacht. Diese Arbeit wurde in gleicher oder ähnlicher Form noch keiner anderen Prüfungsbehörde vorgelegt.\\[1.2cm]
 \textbf{Nürnberg, \abgabedatum}\\[0.8cm]
