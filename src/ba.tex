@@ -1757,7 +1757,7 @@ Abbildung~\ref{fig:clustering_result} zeigt den Cluster eines detektierten Pkw m
 \chapter{Objektverfolgung}
 \section{Prinzip}
 
-Zur Verfolgung erkannter Objekte wird ein zweidimensionaler Kalman-Filter mit anschließender Zuordnung der Detektionen mittels Ungarischem Algorithmus eingesetzt. Im Folgenden wird zunächst der Kalman-Filter und anschließend das Zuordnungsverfahren erläutert.
+Zur Verfolgung erkannter Objekte wird ein zweidimensionaler Kalman-Filter mit anschließender Zuordnung der Detektionen mittels Ungarischem Algorithmus eingesetzt. Der Tracking-Zyklus folgt dabei einem festgelegten Schema: (1) \textbf{Prädiktion} aller bestehenden Tracks anhand eines Bewegungsmodells, (2) \textbf{Gating} neuer Detektionen über Mahalanobis-Distanzen, (3) \textbf{globale Zuordnung} per ungarischem Algorithmus und (4) \textbf{Track-Management}. Letzteres umfasst die Initialisierung neuer Spuren aus nicht zugeordneten Detektionen, das Fortführen bestehender Tracks ohne Messung für eine begrenzte \textit{Time-to-Live} sowie das Löschen überalterter Tracks. Durch die Beschränkung auf eine 2D-Bewegungsebene wird Rechenaufwand eingespart, während Höhenvariationen bereits in der Clustering-Stufe kontrolliert werden. Im Folgenden wird zunächst der Kalman-Filter und anschließend das Zuordnungsverfahren erläutert.
 
 \subsection{2D-Kalman-Filter}
 Der Kalman-Filter schätzt den Zustandsvektor eines Objekts und aktualisiert ihn bei jeder neuen Messung (\cite{kalman1960}). Im hier verwendeten 2D-Modell lautet der Zustandsvektor
@@ -1783,7 +1783,7 @@ wobei $\Delta t$ die Zeitdifferenz zwischen zwei Messungen darstellt. Die Kovari
 \[
 \mathbf{P}_{k|k-1} = \mathbf{F}\,\mathbf{P}_{k-1|k-1}\,\mathbf{F}^T + \mathbf{Q}
 \]
-fortgeschrieben, wobei $\mathbf{Q}$ das Prozessrauschen modelliert und Beschleunigungen oder Modellabweichungen abdeckt.
+fortgeschrieben, wobei $\mathbf{Q}$ das Prozessrauschen modelliert und Beschleunigungen oder Modellabweichungen abdeckt. In der Implementierung wird $\mathbf{Q}$ auf Basis der empirisch beobachteten Geschwindigkeitsänderungen gewählt (typisch $\sigma_a \approx 1\,\mathrm{m/s^2}$), um kurzfristige Manöver abzufangen, ohne dass der Filter instabil wird.
 
 Liegt eine neue Detektion vor, wird der Filter aktualisiert. Die erwartete Messung wird über
 \[
@@ -1820,7 +1820,7 @@ Die normierte Innovationsgröße
 \[
 d^2 = \mathbf{y}_k^T\,\mathbf{S}_k^{-1}\,\mathbf{y}_k
 \]
-entspricht dem Mahalanobis-Abstand und dient als statistisches Maß, ob eine Messung konsistent zu einem Track passt. Große Abweichungen führen zur Ablehnung der Zuordnung (\textit{Gating}) (\cite{bar2004estimation}).
+entspricht dem Mahalanobis-Abstand und dient als statistisches Maß, ob eine Messung konsistent zu einem Track passt. Große Abweichungen führen zur Ablehnung der Zuordnung (\textit{Gating}) (\cite{bar2004estimation}). Als Gate wird ein $\chi^2$-Schwellwert (typisch $d^2 \leq 9$ für 95~\% Konfidenz in 2D) genutzt. Nicht geupdatete Tracks behalten ihre Prädiktion, ihre Kovarianz wächst jedoch, wodurch der Gate-Radius über die Zeit zunimmt und späte Wiedererkennungen erleichtert.
 
 \subsection{Datenassoziation mit dem Ungarischen Algorithmus}
 
