@@ -1,0 +1,122 @@
+\subsubsection{Gerade Strecke, Stand (1\,Minute, 0\,km/h)}
+\label{subsec:gerade_strecke_stand}
+
+Ziel dieses Tests ist es, das Verhalten der Verarbeitungskette bei einer statischen Szene zu bewerten und dabei insbesondere Sensorstabilität, Grundlatenz und Grundfrequenz zu untersuchen. Der Versuch wurde auf einer geraden Strecke im Stand (\(0\,\mathrm{km/h}\)) mit einer Dauer von \(60\,\mathrm{s}\) durchgeführt.
+
+\paragraph*{Detektionen}
+Während des Tests wurden über die Logausgaben des \texttt{tracking\_node} insgesamt
+\(\,18\,\)~Detektionen der Klasse \emph{Pkw} und \(\,4\,\)~Detektionen der Klasse \emph{Fahrradfahrer} registriert, d.\,h. insgesamt \(\,22\,\)~Tracks in einer weitgehend statischen Szene. Dies deutet darauf hin, dass der Tracker bei nahezu unbewegten Objekten vergleichsweise häufig neue IDs vergibt. Dies wird durch die Auswertung des \texttt{ids\_probe} bestätigt: die Geburtsraten liegen typischerweise zwischen ca.~\(24\) und \(74\)~Tracks pro Minute, bei gleichzeitig kurzen medianen Lebensdauern (\(t_\text{med} \approx 0{,}3{-}2{,}4\,\mathrm{s}\)).
+
+\paragraph*{Ressourcenauslastung}
+Die mittlere CPU- und Speicherauslastung der einzelnen Knoten wurde mit dem Werkzeug \texttt{resource\_probe.py} über die Testdauer von \(60\,\mathrm{s}\) erfasst. Tabelle~\ref{tab:stand_resource_usage} fasst die Ergebnisse zusammen.
+
+\begin{table}[H]
+  \centering
+  \caption{Ressourcenauslastung der Verarbeitungskette (Gerade Strecke, Stand, 60\,s)}
+  \label{tab:stand_resource_usage}
+  \begin{tabular}{lrr}
+    \toprule
+    \textbf{Knoten} & \textbf{avg CPU [\%]} & \textbf{avg RSS [MB]} \\
+    \midrule
+    \texttt{crop\_box\_node}           & 11.60 &  38.24 \\
+    \texttt{voxel\_filter\_node}       &  3.54 &  27.19 \\
+    \texttt{ransac\_ground\_node}      &  6.44 &  53.66 \\
+    \texttt{cluster\_extraction\_node} &  8.39 &  52.94 \\
+    \texttt{tracking\_node}            &  1.90 &  24.57 \\
+    \midrule
+    \textbf{Gesamt}                    & 31.87 & 196.60 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Die Verarbeitungskette nutzt im Mittel nur rund \(32\,\%\) der verfügbaren CPU-Leistung und etwa \(200\,\mathrm{MB}\) Hauptspeicher. Damit verbleibt ein deutlicher Sicherheitsabstand zu typischen Echtzeitanforderungen auf dem verwendeten Versuchslaptop.
+
+\paragraph*{Frequenzen und Frame-Loss}
+Die Eingangs- und Ausgangsfrequenzen sowie mögliche Frame-Verluste wurden mit dem Werkzeug \texttt{frame\_loss\_probe.py} und den ROS-2-Metriken (\texttt{ros2 topic hz}) untersucht. Für den Sensor-Input \texttt{/ouster/points} ergibt sich eine mittlere Rate von etwa
+\(\,2{,}5\,\mathrm{Hz}\), während das Ausgabe-Topic \texttt{/tracks\_raw} mit ca.
+\(\,1{,}8\,\mathrm{Hz}\) arbeitet. Die \emph{pass\%}-Werte entlang der Verarbeitungskette (\texttt{crop\_box} \(\rightarrow\) \texttt{voxel\_filter} \(\rightarrow\) \texttt{ransac\_ground} \(\rightarrow\) \texttt{cluster\_extraction} \(\rightarrow\) \texttt{tracking}) liegen überwiegend im Bereich von \(80{-}100\,\%\). Die gemeldeten \emph{gaps} betragen in den meisten Intervallen \(0\); nur vereinzelt treten Lücken von einem Frame auf. Insgesamt zeigt sich damit ein stabiler Betrieb ohne systematische Frame-Verluste.
+
+\paragraph*{Latenz}
+Die End-to-End-Latenzen wurden mit dem Werkzeug \texttt{latency\_probe.py} anhand der Zeitdifferenzen zwischen den Topics \texttt{/points\_cropped}, \texttt{/points\_voxel}, \texttt{/obstacle\_points}, \texttt{/detections\_raw} und \texttt{/tracks\_raw} bestimmt. Typische mittlere Latenzwerte liegen bei
+\begin{itemize}[noitemsep]
+  \item \(\text{crop} \rightarrow \text{voxel}\): ca.~\(32{-}38\,\mathrm{ms}\),
+  \item \(\text{voxel} \rightarrow \text{ransac}\): ca.~\(22\,\mathrm{ms}\),
+  \item \(\text{ransac} \rightarrow \text{cluster}\): ca.~\(2{-}2{,}5\,\mathrm{ms}\),
+  \item \(\text{cluster} \rightarrow \text{track}\): ca.~\(27{-}30\,\mathrm{ms}\).
+\end{itemize}
+Die daraus resultierende End-to-End-Latenz \(\text{crop} \rightarrow \text{track}\) beträgt im Mittel etwa \(86\,\mathrm{ms}\) und stabilisiert sich gegen Ende der Messung bei rund \(81\,\mathrm{ms}\). Damit wird die geforderte Grenze von \(100\,\mathrm{ms}\) klar unterschritten.
+
+\paragraph*{Bewertung}
+Zusammenfassend zeigt der Test „Gerade Strecke, Stand“, dass die Verarbeitungskette unter statischen Bedingungen stabil arbeitet, keine nennenswerten Frame-Verluste aufweist und sowohl Ressourcenverbrauch als auch End-to-End-Latenz im geforderten Bereich liegen. Auffällig ist lediglich die relativ hohe Anzahl an Track-Geburten bei kurzen Lebensdauern in einer im Wesentlichen konstanten Szene, was auf Optimierungspotential bei den Tracking-Parametern (z.\,B. Lebensdauer von Tracks, Positionsschwellen) hinweist, jedoch die Erfüllung der Echtzeitanforderungen nicht beeinträchtigt.
+
+\subsubsection{Kurve (Urban, ca.\ 40\,km/h)}
+
+Ziel dieses Tests war die Überprüfung, ob die Verarbeitungskette auch bei Fahrt mit ca.\ 40\,km/h in einer innerstädtischen Kurve eine stabile Datenrate und Latenz ohne längere Aussetzer erreicht.
+
+\paragraph*{Ressourcenauslastung}
+Die mit \texttt{resource\_probe.py} gemessene mittlere CPU-Auslastung der Verarbeitungsnodes liegt bei insgesamt
+\(\approx 31{,}4\,\%\). Der \texttt{crop\_box\_node} weist mit rund \(17{,}9\,\%\) den höchsten Anteil auf, während
+\texttt{voxel\_filter\_node}, \texttt{ransac\_ground\_node}, \texttt{cluster\_extraction\_node} und
+\texttt{tracking\_node} jeweils unter \(5\,\%\) bleiben. Der durchschnittliche Hauptspeicherbedarf der Kette beträgt
+\(\approx 198\,\text{MB}\). Damit liegen CPU- und Speicherlast im unkritischen Bereich, sodass auch bei höheren
+Umgebungsanforderungen noch Reserven bestehen.
+
+\paragraph*{Latenzverhalten}
+Das Latenztool \texttt{latency\_probe} ermittelt für die einzelnen Verarbeitungsschritte die folgenden mittleren
+Laufzeiten:
+\begin{itemize}
+  \item \texttt{crop\_box\_node} $\rightarrow$ \texttt{voxel\_filter\_node}: \(14{,}05\,\text{ms}\) (\(n = 146\)),
+  \item \texttt{voxel\_filter\_node} $\rightarrow$ \texttt{ransac\_ground\_node}: \(7{,}36\,\text{ms}\) (\(n = 146\)),
+  \item \texttt{ransac\_ground\_node} $\rightarrow$ \texttt{cluster\_extraction\_node}: \(3{,}06\,\text{ms}\) (\(n = 145\)),
+  \item \texttt{cluster\_extraction\_node} $\rightarrow$ \texttt{tracking\_node}: \(14{,}81\,\text{ms}\) (\(n = 145\)).
+\end{itemize}
+Für die gesamte Verarbeitungskette vom Eingang der zugeschnittenen Punktwolke bis zur Ausgabe der Tracks ergibt sich
+damit eine mittlere End-to-End-Latenz von
+\[
+  t_{\text{crop}\rightarrow\text{track}} \approx 39{,}14\,\text{ms} \quad (n = 145),
+\]
+die deutlich unter einem typischen Zielwert von \(100\,\text{ms}\) liegt. Die Verarbeitung kann somit auch im
+Fahrszenario \emph{Kurve} als echtzeitfähig eingestuft werden.
+
+\paragraph*{Datenrate und Aussetzer}
+Die mittlere Verarbeitungsrate der Punktwolken bzw.\ Zwischenstufen beträgt im Test
+\(\approx 3{,}7\,\text{Hz}\). Die gemessenen Perioden liegen zwischen \(0{,}154\,\text{s}\) und \(0{,}793\,\text{s}\)
+bei einer Standardabweichung von \(\approx 0{,}095\,\text{s}\), was auf einen überwiegend gleichmäßigen Ablauf ohne
+längere Aussetzer hinweist.
+
+Für das Track-Topic (\emph{``tracks raw''}) ergibt sich eine mittlere Ausgaberate von etwa \(1{,}8\,\text{Hz}\).
+Die Perioden liegen überwiegend im Bereich von \(\approx 0{,}3\,\text{s}\), erreichen vereinzelt jedoch Werte bis
+\(1{,}44\,\text{s}\). Insgesamt bleibt die Track-Ausgabe damit hinreichend stabil, zeigt aber im Vergleich zur
+Verarbeitungsrate der Punktwolken gelegentliche längere Intervalle, die auf interne Pufferungen oder
+Verarbeitungsjitter im Tracking hinweisen können.
+
+\subsubsection{Innenstadtfahrt mit Steigung (3~min, 30~km/h)}
+
+Ziel dieses Versuchs war es, die Stabilität von Latenz und Datenrate unter innerstädtischen Bedingungen mit Steigungsanteil zu überprüfen und längere Aussetzer der Verarbeitungskette auszuschließen. Die mit dem \texttt{latency\_probe} aufgezeichneten Messwerte zeigen für die einzelnen Verarbeitungsstufen mittlere Latenzen von etwa
+\(21{,}1\,\text{ms}\) (\texttt{crop\_box\_node}~\(\rightarrow\)~\texttt{voxel\_filter\_node}),
+\(2{,}7\,\text{ms}\) (\texttt{voxel\_filter\_node}~\(\rightarrow\)~\texttt{ransac\_ground\_node}),
+\(0{,}23\,\text{ms}\) (\texttt{ransac\_ground\_node}~\(\rightarrow\)~\texttt{cluster\_extraction\_node}) und
+\(6{,}0\,\text{ms}\) (\texttt{cluster\_extraction\_node}~\(\rightarrow\)~\texttt{tracking\_node}).
+Die End-to-End-Latenz von \texttt{crop\_box\_node} zu \texttt{tracking\_node} liegt im Mittel bei rund
+\(30\,\text{ms}\) und nimmt während der Messung leicht ab, sodass der geforderte Grenzwert von
+\(100\,\text{ms}\) mit deutlicher Reserve eingehalten wird.
+
+Der Ressourcenverbrauch der Kette bleibt mit einer durchschnittlichen CPU-Last von
+\(\approx 12{,}3\,\%\) und einem Gesamtspeicherbedarf von rund \(200\,\text{MB}\) auf dem Versuchsrechner moderat. Keiner der Nodes sticht als Engpass hervor; die Last verteilt sich im Wesentlichen auf
+\texttt{crop\_box\_node}, \texttt{ransac\_ground\_node} und \texttt{cluster\_extraction\_node}.
+
+Die mit \texttt{ros2 topic hz} gemessene Frequenz der Verarbeitungsdaten (z.\,B.\ \texttt{/detections\_raw}) liegt stabil bei etwa \(3{,}3\) bis \(3{,}4\,\text{Hz}\) mit geringen Schwankungen
+(Intervalldauer \(\approx 0{,}3\,\text{s}\), maximale beobachtete Lücke \(\approx 0{,}36\,\text{s}\)).
+Das Tracking-Topic erreicht nach der Initialisierungsphase eine effektive Aktualisierungsrate von
+rund \(2\,\text{Hz}\). Ein in den Messdaten ausgewiesener maximaler Abstand von
+\(55{,}5\,\text{s}\) ist als einzelner Start-Ausreißer zu interpretieren und deutet nicht auf wiederkehrende Aussetzer im laufenden Betrieb hin. Insgesamt erfüllt die Verarbeitungskette damit das Ziel einer stabilen Latenz und Datenrate ohne längere Unterbrechungen auch unter innerstädtischen Fahrbedingungen.
+
+\section*{Ergebnisse – Kreuzung (50\,km/h, 3\,min, Bodenwellen/Steigung)}
+
+Im Szenario \emph{Kreuzung} mit einer Fahrgeschwindigkeit von \(50\,\text{km/h}\) wurde das Verhalten der Verarbeitungskette unter kombinierter Rotation, Fahrbahnunebenheiten und wechselnder Objektgeometrie untersucht. Die Verarbeitungsgeschwindigkeit zeigt über die gesamte Versuchsdauer eine konstante Frequenz von rund \(3.21{-}3.24\,\text{Hz}\). Gleichzeitig nimmt die Standardabweichung der Intervallzeiten kontinuierlich ab (von ca.\ \(0.072\,\text{s}\) auf \(0.057\,\text{s}\)), was auf eine zunehmende Stabilisierung der Pipeline trotz dynamischer Fahrsituation hinweist.
+
+Die gemessenen Latenzen der einzelnen Verarbeitungsschritte bleiben ebenfalls über den gesamten Versuch sehr stabil. Die Hauptanteile entfallen erwartungsgemäß auf die Kombination aus \texttt{CropBox} und \texttt{VoxelGrid}, die im Bereich von \(15.4{-}17.3\,\text{ms}\) liegen. Die folgenden Schritte --- RANSAC-Bodensegmentierung und Cluster-Extraktion --- weisen jeweils sehr geringe Laufzeiten auf (unter \(2\,\text{ms}\) bzw.\ \(0.5\,\text{ms}\)). Die resultierende End-zu-End-Latenz zwischen Eingangspunktwolke und Tracking-Output beträgt konstant \(21{-}24\,\text{ms}\), was für die getestete Geschwindigkeit ein robustes Reaktionsverhalten sicherstellt.
+
+Bei den Tracking-Outputs (\texttt{tracks\_raw}) treten kurzzeitige Frequenzabfälle sowie erhöhte Varianzen auf, die zeitlich mit Bodenwellen und Steigungen zusammenfallen. Diese Effekte sind plausibel auf temporäre Punktwolkenverzerrungen zurückzuführen, welche die Stabilität der Clusterbildung beeinflussen. Der schnelle Wiederanstieg der Frequenz zeigt jedoch, dass die Trackingkomponente insgesamt reibungsfrei weiterarbeiten kann und keine nachhaltige Instabilität entsteht.
+
+Insgesamt bestätigt dieses Szenario, dass die Verarbeitungskette auch unter erhöhten dynamischen Anforderungen eine konsistente Boxenbildung und weitgehend stabile ID-Kontinuität ermöglicht.
