@@ -117,7 +117,9 @@ Im Szenario \emph{Kreuzung} mit einer Fahrgeschwindigkeit von \(50\,\text{km/h}\
 
 Die gemessenen Latenzen der einzelnen Verarbeitungsschritte bleiben ebenfalls über den gesamten Versuch sehr stabil. Die Hauptanteile entfallen erwartungsgemäß auf die Kombination aus \texttt{CropBox} und \texttt{VoxelGrid}, die im Bereich von \(15.4{-}17.3\,\text{ms}\) liegen. Die folgenden Schritte --- RANSAC-Bodensegmentierung und Cluster-Extraktion --- weisen jeweils sehr geringe Laufzeiten auf (unter \(2\,\text{ms}\) bzw.\ \(0.5\,\text{ms}\)). Die resultierende End-zu-End-Latenz zwischen Eingangspunktwolke und Tracking-Output beträgt konstant \(21{-}24\,\text{ms}\), was für die getestete Geschwindigkeit ein robustes Reaktionsverhalten sicherstellt.
 
-Bei den Tracking-Outputs (\texttt{tracks\_raw}) treten kurzzeitige Frequenzabfälle sowie erhöhte Varianzen auf, die zeitlich mit Bodenwellen und Steigungen zusammenfallen. Diese Effekte sind plausibel auf temporäre Punktwolkenverzerrungen zurückzuführen, welche die Stabilität der Clusterbildung beeinflussen. Der schnelle Wiederanstieg der Frequenz zeigt jedoch, dass die Trackingkomponente insgesamt reibungsfrei weiterarbeiten kann und keine nachhaltige Instabilität entsteht.
+Bei den Tracking-Outputs (\texttt{tracks\_raw}) ergibt die Auswertung der Frequenzmessungen einen mittleren Wert von \(\approx 3{,}21\,\text{Hz}\) (Mittel der gleitenden Fenster), wobei kurzzeitige Abfälle bis rund \(3{,}15\,\text{Hz}\) zeitlich mit Bodenwellen und Steigungen zusammenfallen. Diese Effekte sind plausibel auf temporäre Punktwolkenverzerrungen zurückzuführen, welche die Stabilität der Clusterbildung beeinflussen. Der schnelle Wiederanstieg der Frequenz zeigt jedoch, dass die Trackingkomponente insgesamt reibungsfrei weiterarbeiten kann und keine nachhaltige Instabilität entsteht.
+
+Die mit \texttt{resource\_probe.py} erhobenen Ressourcenwerte liegen im moderaten Bereich: Über die Versuchszeit von \(180\,\text{s}\) wurde eine mittlere CPU-Auslastung der Verarbeitungskette von \(\approx 15{,}2\,\%\) bei einem Gesamtspeicherbedarf von rund \(\approx 202\,\text{MB}\) gemessen. Damit verbleiben ausreichende Reserven, um auch unter dynamischen Fahrzuständen Lastspitzen abzufangen.
 
 Insgesamt bestätigt dieses Szenario, dass die Verarbeitungskette auch unter erhöhten dynamischen Anforderungen eine konsistente Boxenbildung und weitgehend stabile ID-Kontinuität ermöglicht.
 
@@ -133,3 +135,52 @@ Auch die Topic-Frequenzen zeigten ein stabiles Verhalten. Die Eingangsfrequenz d
 
 Insgesamt zeigt dieses Szenario, dass die Bodensegmentierung und die gesamte Verarbeitungskette auch bei Fahrbahnunebenheiten und im urbanen Umfeld robust und performant arbeiten. Weder die Latenzen noch die Datenraten weisen kritische Schwankungen auf, sodass die Anforderungen an eine stabile, echtzeitfähige Verarbeitung erfüllt werden.
 
+
+\begin{table}[H]
+  \centering
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \renewcommand{\arraystretch}{0.95}
+  \begin{tabular}{|p{3.4cm}|p{3.1cm}|p{2.1cm}|p{2.1cm}|p{2.1cm}|}
+    \hline
+    \textbf{Szenario} & \textbf{CPU / RSS} & \textbf{mittlere Latenz} & \textbf{f\_in} & \textbf{f\_out} \\
+    \hline
+
+    Gerade Strecke, Stand &
+    32\,\% / 197\,MB &
+    86\,ms (stabil 81\,ms) &
+    2.5\,Hz &
+    1.8\,Hz \\
+    \hline
+
+    Kurve, 40\,km/h (Urban) &
+    31.4\,\% / 198\,MB &
+    39\,ms &
+    3.7\,Hz &
+    1.8\,Hz \\
+    \hline
+
+    Innenstadt + Steigung, 30\,km/h &
+    12.3\,\% / 200\,MB &
+    30\,ms &
+    3.3--3.4\,Hz &
+    2\,Hz \\
+    \hline
+
+    Kreuzung, 50\,km/h &
+    n.\,a. &
+    21--24\,ms &
+    3.21--3.24\,Hz &
+    kurze Einbrüche bis \(\approx 3{,}15\,\text{Hz}\)  \\
+    \hline
+
+    Urban, 50\,km/h (Unebene Fläche) &
+    11.7\,\% / 200\,MB &
+    20--26\,ms &
+    3.2\,Hz &
+    3.0\,Hz \\
+    \hline
+  \end{tabular}
+  \caption{Vergleichende Übersicht der Messgrößen je Szenario}
+  \label{tab:szenario_ueberblick}
+\end{table}

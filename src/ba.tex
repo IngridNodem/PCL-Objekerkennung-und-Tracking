@@ -2117,8 +2117,61 @@ Werte über 0{,}3\,m führten zu einem erkennbaren Informationsverlust bei klein
 
 Die gewählten Parameterwerte entsprechen somit einem ausgewogenen Kompromiss zwischen 
 Echtzeitfähigkeit und Segmentierungsqualität.  
-Eine dynamische Parametrierung, die sich an die lokale Punktdichte oder Geländebedingungen anpasst, 
+Eine dynamische Parametrierung, die sich an die lokale Punktdichte oder Geländebedingungen anpasst,
 könnte in zukünftigen Arbeiten zu einer weiteren Verbesserung führen.
+
+\section{Test im Fahrbetrieb}
+
+Die im Fahrbetrieb gemessenen Kenngrößen zu Ressourcennutzung, Latenz sowie Eingangs- und Ausgangsfrequenzen der Verarbeitungskette sind in Tabelle~\ref{tab:fahrbetrieb_ueberblick} zusammengefasst.
+
+\begin{table}[H]
+  \centering
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \renewcommand{\arraystretch}{0.95}
+  \begin{tabular}{|p{3.4cm}|p{3.1cm}|p{2.1cm}|p{2.1cm}|p{2.1cm}|}
+    \hline
+    \textbf{Szenario} & \textbf{CPU / RSS} & \textbf{mittlere Latenz} & \textbf{f\_in} & \textbf{f\_out} \\
+    \hline
+
+    Gerade Strecke, Stand &
+    32\,\% / 197\,MB &
+    86\,ms (stabil 81\,ms) &
+    2.5\,Hz &
+    1.8\,Hz \\
+    \hline
+
+    Kurve, 40\,km/h (Urban) &
+    31.4\,\% / 198\,MB &
+    39\,ms &
+    3.7\,Hz &
+    1.8\,Hz \\
+    \hline
+
+    Innenstadt + Steigung, 30\,km/h &
+    12.3\,\% / 200\,MB &
+    30\,ms &
+    3.3--3.4\,Hz &
+    2\,Hz \\
+    \hline
+
+    Kreuzung, 50\,km/h &
+    n.\,a. &
+    21--24\,ms &
+    3.21--3.24\,Hz &
+    kurze Einbrüche bis \(\approx 3{,}15\,\text{Hz}\)  \\
+    \hline
+
+    Urban, 50\,km/h (Unebene Fläche) &
+    11.7\,\% / 200\,MB &
+    20--26\,ms &
+    3.2\,Hz &
+    3.0\,Hz \\
+    \hline
+  \end{tabular}
+  \caption{Vergleichende Übersicht der Messgrößen je Szenario}
+  \label{tab:fahrbetrieb_ueberblick}
+\end{table}
 
 \section{Bewertung des Algorithmus}
 
