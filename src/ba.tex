@@ -2055,16 +2055,6 @@ Die Konfiguration erfolgte über das Launch-File \textit{ouster\_pipeline.launch
 Das System lief auf einem Ubuntu~22.04-Rechner mit ROS~2~Humble und einem AMD Ryzen 5 Prozessor (8~Kerne, 16~Threads). 
 Zur Visualisierung und qualitativen Analyse wurde \textit{RViz} eingesetzt.  
 
-\section{Testumgebung}
-\label{sec:testumgebung}
-
-Für die Evaluierung der entwickelten Messkette wurden eigens aufgezeichnete LiDAR-Datensätze des Ouster~OS1-Sensors verwendet.  
-Die Aufnahmen erfolgten in verschiedenen urbanen Szenarien auf dem Campusgelände der Technischen Hochschule Nürnberg, 
-darunter Parkflächen, Zufahrtsstraßen und Bereiche mit Fußgänger- und Fahrzeugverkehr.  Das Wetter am Tag war weder sonnig noch wolkenverhangen.
-Ziel dieser Datensätze war es, typische Objekte und Strukturen einer realen Verkehrsumgebung – 
-wie Personen, Fahrradfahrer, Pkw und Lkw – unter realistischen Bedingungen zu erfassen.  
-Die Sensordaten wurden mit einer festen Sensorrate von 10\,Hz aufgenommen und als \textit{ROS\,2\,Bag}-Dateien gespeichert.
-
 \section{Parameterstudie}
 \label{sec:parameterstudie}
 
@@ -2301,6 +2291,16 @@ Real & 13 & 0 & 1 & 5 & 19 \\
 
 
 \section{Test im Fahrbetrieb}
+
+\subsection{Testumgebung}
+\label{sec:testumgebung}
+
+Für die Evaluierung der entwickelten Messkette wurden eigens aufgezeichnete LiDAR-Datensätze des Ouster~OS1-Sensors verwendet.
+Die Aufnahmen erfolgten in verschiedenen urbanen Szenarien auf dem Campusgelände der Technischen Hochschule Nürnberg,
+darunter Parkflächen, Zufahrtsstraßen und Bereiche mit Fußgänger- und Fahrzeugverkehr.  Das Wetter am Tag war weder sonnig noch wolkenverhangen.
+Ziel dieser Datensätze war es, typische Objekte und Strukturen einer realen Verkehrsumgebung –
+wie Personen, Fahrradfahrer, Pkw und Lkw – unter realistischen Bedingungen zu erfassen.
+Die Sensordaten wurden mit einer festen Sensorrate von 10\,Hz aufgenommen und als \textit{ROS\,2\,Bag}-Dateien gespeichert.
 
 \begin{table}[H]
   \centering
