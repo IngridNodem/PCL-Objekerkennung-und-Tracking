@@ -708,8 +708,8 @@ Um den Einsatz auf Standardhardware zu ermöglichen und die Reproduzierbarkeit s
 
 Die detaillierten Anforderungen und dazugehörigen Messkriterien sind in Tabelle~\ref{tab:anforderungen_messkette} zusammengefasst.
 
-\begin{table}[H]
-\centering
+  \begin{table}[H]
+    \centering
 \begin{tabularx}{\textwidth}{|c|X|X|}
 \hline
 \textbf{Nr.} & \textbf{Anforderung} & \textbf{Messkriterium} \\
@@ -1866,11 +1866,13 @@ Die Umsetzung erfolgt als ROS~2\,--\,Knoten \texttt{tracking\_node}. Eingänge s
     \texttt{max\_missed} & [Frame] & Löschschwelle ohne Zuordnung (6\,--\,10) \\ \hline
     \texttt{max\_size\_L,W,H} & [m] & Plausibilitätsobergrenzen (z.\,B. L\,\(\leq\,8\), W\,\(\leq\,5\), H\,\(\leq\,4.2\)) \\ \hline
   \end{tabular}
-  \caption{Wesentliche Parameter des Trackers .}
-  \label{tab:tracking_params}
-\end{table}
+    \caption{Wesentliche Parameter des Trackers .}
+    \label{tab:tracking_params}
+  \end{table}
 
-Die folgenden Größenbereiche (nach Bodenentfernung) dienen sowohl der Plausibilisierung als auch der heuristischen Klassenbestimmung. Sie wurden in den Versuchen verwendet und haben sich als robuste Grenzen für typische Straßenszenen erwiesen. Dabei wurde die Bodenentfernung betrachtet.
+  Die Wahl der Startwerte folgt gängigen Empfehlungen aus der Tracking-Literatur. Für das \texttt{gate\_dist\_max} wird ein euklidischer Gate-Radius von rund 4~m genutzt, was bei typischen Positionsvarianzen ($\sigma \approx 1.5$--$2$~m) in etwa einem 95\,\%-Konfidenzintervall des Mahalanobis-Gates entspricht und damit den in \textcite{bar2004tracking,blackman1999design} empfohlenen Kompromiss zwischen Fehlassoziationen und Wiedererkennung abdriftender Tracks abbildet. \texttt{max\_missed}\,$=10$ erlaubt es einem Track, bei der hier verwendeten Sensorrate von 10~Hz etwa eine Sekunde ohne Messung zu überbrücken (z.\,B. bei kurzzeitigen Abschattungen), liegt damit im oberen Bereich der in \textcite{bewley2016sort} vorgeschlagenen Time-to-Live von 1~s, führt in Tests aber zu deutlich stabileren Trajektorien in dichtem Verkehr. \texttt{min\_hits}\,$=2$ stellt sicher, dass neue Spuren mindestens zweimal bestätigt werden müssen, bevor sie als valide Track-IDs ausgegeben werden; dies folgt der Heuristik von \textcite{bewley2016sort}, wonach eine niedrige Bestätigungsschwelle Reaktionsgeschwindigkeit wahrt, aber Einzelmessungen und Sensorartefakte unterdrückt.
+
+  Die folgenden Größenbereiche (nach Bodenentfernung) dienen sowohl der Plausibilisierung als auch der heuristischen Klassenbestimmung. Sie wurden in den Versuchen verwendet und haben sich als robuste Grenzen für typische Straßenszenen erwiesen. Dabei wurde die Bodenentfernung betrachtet.
 
 \begin{table}[H]
   \centering
