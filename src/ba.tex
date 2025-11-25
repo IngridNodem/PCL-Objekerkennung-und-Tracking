@@ -1418,15 +1418,8 @@ Ein ähnlicher Ansatz teilt die Punktwolke in konzentrische Zonen auf und passt 
 wobei die \textit{Principal Component Analysis (PCA)} eingesetzt wird, um die Hauptrichtung der Punktverteilung zu bestimmen und daraus die bestmögliche Ebenenorientierung zu berechnen \cite{lim2020fast}.  
 Dieser Ansatz erreicht eine hohe Präzision (F1-Score $\approx 0.93$) bei gleichzeitigem Echtzeitverhalten.
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\textwidth]{Bilder/plane_fitting.png}
-  \caption{Visuelle Darstellung einer orthogonalen Distanzklassifizierung (~\cite{gomes2023survey})}
-  \label{fig:plane_fitting}
-\end{figure}
-
-\textbf{Linienextraktion:}  
-Ein auf lokalen Linienanpassungen basierendes Verfahren modelliert die entlang eines Laserstrahls erfassten Punkte als nahezu linearen Verlauf \cite{himmelsbach2010fast}.  
+\textbf{Linienextraktion:}
+Ein auf lokalen Linienanpassungen basierendes Verfahren modelliert die entlang eines Laserstrahls erfassten Punkte als nahezu linearen Verlauf \cite{himmelsbach2010fast}.
 Dieses Verfahren ist recheneffizient und eignet sich für Echtzeitverarbeitung, weist jedoch Schwächen in stark unebenem oder komplexem Gelände auf.
 
 \textbf{Gaussian Process Regression (GPR):}  
@@ -1504,8 +1497,19 @@ Dieses Verfahren erreicht eine mittlere Intersection-over-Union (IoU) von 83,6\,
 \subsection{Zusammenfassung}
 % ============================
 
-Tabelle~\ref{tab:vergleich_bodenmethoden} fasst die wesentlichen Eigenschaften der vorgestellten Bodensegmentierungsmethoden zusammen.  
+Tabelle~\ref{tab:vergleich_bodenmethoden} fasst die wesentlichen Eigenschaften der vorgestellten Bodensegmentierungsmethoden zusammen.
 Sie verdeutlicht die jeweiligen Stärken und Grenzen der Ansätze sowie ihre typischen Einsatzgebiete in der mobilen Robotik und Umfelderkennung.
+
+Das RANSAC-Verfahren zeichnet sich durch eine hohe Robustheit gegenüber Ausreißern aus und liefert eine präzise Anpassung planarer Bodenflächen.
+Im Vergleich zu rasterbasierten oder morphologischen Methoden ermöglicht es eine genauere Modellierung, erfordert jedoch einen höheren Rechenaufwand und eine sorgfältige Parametrierung, um eine stabile Echtzeitverarbeitung zu gewährleisten.
+Aufgrund seiner Balance zwischen Präzision und algorithmischer Einfachheit wurde RANSAC als Grundlage für die in dieser Arbeit implementierte Bodensegmentierung ausgewählt.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{Bilder/plane_fitting.png}
+  \caption{Visuelle Darstellung einer orthogonalen Distanzklassifizierung (~\cite{gomes2023survey})}
+  \label{fig:plane_fitting}
+\end{figure}
 
 \begin{table}[H]
 \centering
@@ -1547,11 +1551,6 @@ Lernbasierte Verfahren & Sehr hohe Genauigkeit, anpassungsfähig durch Training 
   \caption{Vergleich der in Abschnitt~\ref{chap:bodenmethoden} beschriebenen Bodensegmentierungsmethoden nach Echtzeitfähigkeit, Robustheit, Genauigkeit und Rechenaufwand (nach~\cite{gomes2023survey}).}
   \label{tab:boden-methodenvergleich-ransac}
 \end{table}
-
-
-Das RANSAC-Verfahren zeichnet sich durch eine hohe Robustheit gegenüber Ausreißern aus und liefert eine präzise Anpassung planarer Bodenflächen.  
-Im Vergleich zu rasterbasierten oder morphologischen Methoden ermöglicht es eine genauere Modellierung, erfordert jedoch einen höheren Rechenaufwand und eine sorgfältige Parametrierung, um eine stabile Echtzeitverarbeitung zu gewährleisten.  
-Aufgrund seiner Balance zwischen Präzision und algorithmischer Einfachheit wurde RANSAC als Grundlage für die in dieser Arbeit implementierte Bodensegmentierung ausgewählt.
 
 \section{Implementierung}
 
