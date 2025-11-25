@@ -120,3 +120,16 @@ Die gemessenen Latenzen der einzelnen Verarbeitungsschritte bleiben ebenfalls ü
 Bei den Tracking-Outputs (\texttt{tracks\_raw}) treten kurzzeitige Frequenzabfälle sowie erhöhte Varianzen auf, die zeitlich mit Bodenwellen und Steigungen zusammenfallen. Diese Effekte sind plausibel auf temporäre Punktwolkenverzerrungen zurückzuführen, welche die Stabilität der Clusterbildung beeinflussen. Der schnelle Wiederanstieg der Frequenz zeigt jedoch, dass die Trackingkomponente insgesamt reibungsfrei weiterarbeiten kann und keine nachhaltige Instabilität entsteht.
 
 Insgesamt bestätigt dieses Szenario, dass die Verarbeitungskette auch unter erhöhten dynamischen Anforderungen eine konsistente Boxenbildung und weitgehend stabile ID-Kontinuität ermöglicht.
+
+
+\subsubsection{Urbanes Gebiet bei 50\,km/h (Unebene Fahrbahn)}
+\label{sec:urban_50kmh}
+
+Der Test im urbanen Umfeld bei etwa \(50\,\text{km/h}\) diente der Überprüfung der Robustheit der Bodensegmentierung unter realistischen Bedingungen mit Fahrbahnunebenheiten. Die Messung der Ressourcen mittels \texttt{resource\_probe.py} zeigte eine sehr geringe Gesamtauslastung der Verarbeitungskette: Die CPU-Last aller Knoten lag im Mittel bei lediglich \(11{,}7\,\%\), der gesamte Speicherbedarf bei rund \(200\,\text{MB}\). Einzelne Knoten wie \texttt{crop\_box\_node} oder \texttt{cluster\_extraction\_node} erreichten jeweils nur wenige Prozentpunkte Auslastung, sodass ausreichende Leistungsreserven bestehen.
+
+Die Latenzmessungen mit \texttt{latency\_probe.py} verdeutlichen, dass die Ende-zu-Ende-Verarbeitung selbst in diesem dynamischen Szenario stabil bleibt. Die Verzögerung von \texttt{crop\_box} bis \texttt{tracking} bewegte sich im stationären Zustand im Bereich von etwa \(20\)–\(26\,\text{ms}\). Zwar steigen die Latenzen einzelner Schritte wie \texttt{ransac\_ground} oder \texttt{cluster\_extraction}, wenn durch unebene Fahrbahn oder zusätzliche Objekte mehr Punktdaten verarbeitet werden müssen, jedoch bleiben diese Effekte moderat und beeinträchtigen die Gesamtlatenz nicht kritisch.
+
+Auch die Topic-Frequenzen zeigten ein stabiles Verhalten. Die Eingangsfrequenz des Sensors \texttt{/ouster/points} pendelte sich auf etwa \(3{,}2\,\text{Hz}\) ein, wobei die Standardabweichung im Zeitverlauf abnahm und somit eine zunehmende Stabilität der Datenrate belegte. Die Ausgangsfrequenz der Tracks (\texttt{/bench/tracks\_raw}) lag im Mittel bei rund \(3{,}0\,\text{Hz}\). Größere maximale Intervalle sind hier durch das Publikationsverhalten bedingt: \texttt{tracks\_raw} sendet nur dann Nachrichten, wenn tatsächlich verfolgte Objekte vorhanden sind, sodass Phasen ohne erkannte Ziele als lange Intervalle in der Frequenzmessung erscheinen.
+
+Insgesamt zeigt dieses Szenario, dass die Bodensegmentierung und die gesamte Verarbeitungskette auch bei Fahrbahnunebenheiten und im urbanen Umfeld robust und performant arbeiten. Weder die Latenzen noch die Datenraten weisen kritische Schwankungen auf, sodass die Anforderungen an eine stabile, echtzeitfähige Verarbeitung erfüllt werden.
+
