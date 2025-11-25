@@ -2079,175 +2079,173 @@ Die Messungen wurden in drei realen Szenarien durchgeführt:
 
 Als Bodenwahrheit (``Realwert'') dienten zum einen Kameraaufnahmen im Vorderbereich, zum anderen das 360° LiDAR-Datenbild für rückwärtige Objekte. Bewertet wurden jeweils die Klassen \textit{PKW}, \textit{Mensch}, \textit{Fahrradfahrer} und \textit{LKW} sowie die Gesamtdetektionen.
 
-\subsection{Variation von voxel\_size}
-Eine feinere Voxelgröße erhöht die Punktdichte und Detailtreue, führt allerdings zu mehr Rauschen und Zusatzobjekten. Gröbere Voxel hingegen glätten Bodenfehler, können aber kleine Objekte verschmelzen. Tabelle~\ref{tab:voxel_parked} zeigt exemplarisch die Ergebnisse im Szenario~S1 (geparkte Fahrzeuge):
+\subsection{S1: Geparkte Fahrzeuge auf einer ebenen Fahrbahn}
 
 \begin{table}[H]
 \centering
-\caption{Detektionen in S1 (Geparkte Fahrzeuge) bei Variation von voxel\_size.}
-\label{tab:voxel_parked}
 \begin{tabular}{c|c|c|c|c|c}
-\toprule
-voxel\_size & PKW & Mensch & Fahrradfahrer & LKW & Gesamt \\
-\midrule
+\hline
+\textbf{voxel\_size} & \textbf{PKW} & \textbf{Mensch} & \textbf{Fahrradfahrer} & \textbf{LKW} & \textbf{Gesamt} \\
+\hline
 0.10 & 12 & 3 & 3 & 0 & 18 \\
 0.15 & 15 & 1 & 3 & 2 & 21 \\
-0.20 & \textbf{15} & \textbf{0} & \textbf{1} & 1 & \textbf{17} \\
+0.20 & \textbf{15} & \textbf{0} & \textbf{1} & \textbf{1} & \textbf{17} \\
 0.25 & 15 & 0 & 1 & 2 & 18 \\
-\midrule
+\hline
 Real & 15 & 0 & 1 & 3 & 19 \\
-\bottomrule
+\hline
 \end{tabular}
+\caption{Detektionen pro Klasse für unterschiedliche voxel\_size-Werte (Geparkte Autos).}
+\label{tab:geparkt_voxel}
 \end{table}
 
-In S1 erzielt \textbf{voxel\_size = 0.20 m} die geringste Abweichung vom Realbild: Alle PKW werden erkannt, der einzige Fahrradfahrer erscheint korrekt und es entstehen keine falschen Mensch-Detektionen.
-
-Die Ergebnisse werden in Abbildung~\ref{fig:voxel_klasse_geparkt} und \ref{fig:voxel_total_geparkt} dargestellt.
-
-% --- Insert the PGFPlots figures for voxel_size (Geparkte Autos) ---
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    width=0.85\linewidth,
-    height=0.48\linewidth,
-    grid=both,
-    xlabel={\textbf{voxel\_size (m)}},
-    ylabel={\textbf{Anzahl Detektionen}},
-    xmin=0.09, xmax=0.26,
-    ymin=0,
-    legend pos=north east,
-    title={Detektionen pro Klasse vs.\ voxel\_size (Geparkte Autos)}
-]
-    \addplot+[mark=o] coordinates {(0.10,12) (0.15,15) (0.20,15) (0.25,15)};
-    \addlegendentry{PKW}
-
-    \addplot+[mark=o] coordinates {(0.10,3) (0.15,1) (0.20,0) (0.25,0)};
-    \addlegendentry{Mensch}
-
-    \addplot+[mark=o] coordinates {(0.10,3) (0.15,3) (0.20,1) (0.25,1)};
-    \addlegendentry{Fahrradfahrer}
-
-    \addplot+[mark=o] coordinates {(0.10,0) (0.15,2) (0.20,1) (0.25,2)};
-    \addlegendentry{LKW}
-\end{axis}
-\end{tikzpicture}
-\caption{Detektionen pro Klasse bei Variation von voxel\_size (Geparkte Autos).}
-\label{fig:voxel_klasse_geparkt}
-\end{figure}
-
-% Total
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    width=0.75\linewidth,
-    height=0.44\linewidth,
-    grid=both,
-    xlabel={\textbf{voxel\_size (m)}},
-    ylabel={\textbf{Gesamtzahl Detektionen}},
-    xmin=0.09, xmax=0.26,
-    ymin=0,
-    legend pos=north east,
-    title={Gesamtdetektionen vs.\ voxel\_size (Geparkte Autos)}
-]
-    \addplot+[mark=*] coordinates {(0.10,18) (0.15,21) (0.20,17) (0.25,18)};
-    \addlegendentry{Total}
-\end{axis}
-\end{tikzpicture}
-\caption{Gesamtzahl aller Detektionen in Abhängigkeit der Voxelgröße (Geparkte Autos).}
-\label{fig:voxel_total_geparkt}
-\end{figure}
-
-Die Szenarien S2 und S3 bestätigen diese Bewertung: Voxelgrößen $\le$ 0.15\,m erzeugen deutlich mehr Bodenartefakte, wohingegen $>$ 0.25\,m kleine Objektkanten glätten. \textbf{voxel\_size = 0.20 m} stellt daher den besten Kompromiss dar.
-
-\subsection{Variation von distance\_threshold}
-Der Parameter \textit{distance\_threshold} beeinflusst die Punktfusion innerhalb der Cluster. Kleine Werte erzeugen vermehrt Split-Objekte, große Werte führen zu Verschmelzungen. Für S1 ergibt sich folgendes Bild (vgl. Tabelle~\ref{tab:distance_parked}):
-
-% Distance table (example)
 \begin{table}[H]
 \centering
-\caption{Detektionen in S1 bei Variation von distance\_threshold (voxel\_size = 0.20 m).}
-\label{tab:distance_parked}
 \begin{tabular}{c|c|c|c|c|c}
-\toprule
-distance\_threshold & PKW & Mensch & Fahrradfahrer & LKW & Gesamt \\
-\midrule
+\hline
+\textbf{distance\_threshold} & \textbf{PKW} & \textbf{Mensch} & \textbf{Fahrradfahrer} & \textbf{LKW} & \textbf{Gesamt} \\
+\hline
 0.10 & 16 & 0 & 1 & 1 & 18 \\
-0.15 & \textbf{15} & \textbf{0} & \textbf{1} & 1 & \textbf{17} \\
-0.20 & 17 & 0 & 1 & 2 & 20 \\
+0.15 & 15 & 0 & 1 & 1 & 17 \\
+0.20 & \textbf{17} & \textbf{0} & \textbf{1} & \textbf{2} & \textbf{20} \\
 0.25 & 16 & 0 & 1 & 1 & 18 \\
-\midrule
+\hline
 Real & 15 & 0 & 1 & 3 & 19 \\
-\bottomrule
+\hline
 \end{tabular}
+\caption{Detektionen pro Klasse für unterschiedliche distance\_threshold-Werte (Geparkte Autos, voxel\_size = 0.20\,m).}
+\label{tab:geparkt_distance}
 \end{table}
-
-Ein \textbf{distance\_threshold von 0.15\,m} liefert die stabilsten Ergebnisse. Kürzere Abstände erzeugen Zusatzobjekte, während größere Werte einzelne PKW verschmelzen. Die weiteren Szenarien bestätigen dieses Ergebnis.
-
-\subsection{Variation von cluster\_tolerance}
-Die \textit{cluster\_tolerance} bestimmt den Abstand, ab dem Punktgruppen als getrennte Objekte gelten. Im Szenario S3 (geneigte Fahrbahn) sind Ergebnisse in Tabelle~\ref{tab:cluster_slope} dargestellt:
 
 \begin{table}[H]
 \centering
-\caption{Detektionen in S3 (Unebene Fläche) bei Variation von cluster\_tolerance, voxel\_size = 0.20 m.}
-\label{tab:cluster_slope}
 \begin{tabular}{c|c|c|c|c|c}
-\toprule
-cluster\_tolerance & PKW & Mensch & Fahrradfahrer & LKW & Gesamt \\
-\midrule
-0.3 & 16 & 3 & 5 & 1 & 25 \\
-0.5 & \textbf{16} & \textbf{1} & \textbf{2} & 1 & \textbf{20} \\
-0.7 & 17 & 1 & 1 & 2 & 21 \\
-0.9 & 13 & 1 & 0 & 2 & 16 \\
-\midrule
-Real & 13 & 0 & 1 & 5 & 19 \\
-\bottomrule
+\hline
+\textbf{cluster\_tolerance} & \textbf{PKW} & \textbf{Mensch} & \textbf{Fahrradfahrer} & \textbf{LKW} & \textbf{Gesamt} \\
+\hline
+0.30 & 19 & 0 & 4 & 1 & 24 \\
+0.50 & \textbf{17} & \textbf{0} & \textbf{1} & \textbf{1} & \textbf{19} \\
+0.70 & 8  & 0 & 1 & 2 & 11 \\
+0.90 & 7  & 0 & 1 & 2 & 10 \\
+\hline
+Real & 15 & 0 & 1 & 3 & 19 \\
+\hline
 \end{tabular}
+\caption{Detektionen pro Klasse für unterschiedliche Werte der cluster\_tolerance (Geparkte Autos, voxel\_size = 0{,}15\,m, distance\_threshold = 0{,}20\,m).}
+\label{tab:geparkt_cluster_tolerance}
 \end{table}
 
-Werte unter 0.3 erzeugen starke Übersegmentierung, während 0.9 m zu Fusionsfehlern führt (Verlust kleiner Objekte). \textbf{cluster\_tolerance = 0.5\,m} zeigt den besten Kompromiss in allen Szenen.
+\subsection{S2 – Kreuzung}
+
+\begin{table}[H]
+  \centering
+  \caption{Anzahl Detektionen pro Klasse für unterschiedliche Voxelgrößen (Kreuzung).}
+  \begin{tabular}{|l|c|c|c|c|c|}
+    \hline
+    \textbf{voxel\_size (m)} & \textbf{PKW} & \textbf{Mensch} & \textbf{Fahrradfahrer} & \textbf{LKW} & \textbf{Gesamt} \\
+    \hline
+    0.10 & 11 & 13 & 2 & 1 & 27 \\
+    0.15 & 13 & 12 & 1 & 1 & 27 \\
+    0.20 & 13 &  2 & 0 & 1 & 16 \\
+    0.25 & 14 &  0 & 0 & 1 & 15 \\
+    \hline
+    Real &  9 &  3 & 1 & 1 & 14 \\
+    \hline
+  \end{tabular}
+  \label{tab:kreuzung_voxel_size}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \caption{Anzahl Detektionen pro Klasse für unterschiedliche \texttt{distance\_threshold}-Werte (Kreuzung, voxel\_size = 0.15\,m).}
+  \begin{tabular}{|l|c|c|c|c|c|}
+    \hline
+    \textbf{distance\_threshold (m)} & \textbf{PKW} & \textbf{Mensch} & \textbf{Fahrradfahrer} & \textbf{LKW} & \textbf{Gesamt} \\
+    \hline
+    0.10 & 15 & 12 & 1 & 1 & 29 \\
+    0.15 & 14 & 12 & 1 & 1 & 28 \\
+    0.20 & 14 &  9 & 1 & 1 & 25 \\
+    0.25 & 14 &  9 & 1 & 1 & 25 \\
+    \hline
+    Real &  9 &  3 & 1 & 1 & 14 \\
+    \hline
+  \end{tabular}
+  \label{tab:kreuzung_distance_threshold}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \caption{Anzahl Detektionen pro Klasse für unterschiedliche \texttt{cluster\_tolerance}-Werte (Kreuzung, voxel\_size = 0.15\,m, distance\_threshold = 0.20\,m).}
+  \begin{tabular}{|l|c|c|c|c|c|}
+    \hline
+    \textbf{cluster\_tolerance (m)} & \textbf{PKW} & \textbf{Mensch} & \textbf{Fahrradfahrer} & \textbf{LKW} & \textbf{Gesamt} \\
+    \hline
+    0.30 &  8 &  8 & 4 & 1 & 21 \\
+    0.50 & 14 &  9 & 1 & 1 & 25 \\
+    0.70 & 17 &  8 & 1 & 1 & 27 \\
+    0.90 & 16 &  8 & 1 & 1 & 26 \\
+    \hline
+    Real &  9 &  3 & 1 & 1 & 14 \\
+    \hline
+  \end{tabular}
+  \label{tab:kreuzung_cluster_tolerance}
+\end{table}
+
+\subsection{S3 – Unebene Fahrbahn}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{c|c|c|c|c|c}
+\hline
+\textbf{voxel\_size} & \textbf{PKW} & \textbf{Mensch} & \textbf{Fahrradfahrer} & \textbf{LKW} & \textbf{Gesamt} \\
+\hline
+0.10 & 15 & 7 & 3 & 0 & 25 \\
+0.15 & 15 & 7 & 2 & 1 & 25 \\
+0.20 & 15 & 1 & 2 & 1 & 19 \\
+0.25 & 16 & 0 & 2 & 1 & 19 \\
+\hline
+Real & 13 & 0 & 1 & 5 & 19 \\
+\hline
+\end{tabular}
+\caption{Anzahl Detektionen pro Klasse für verschiedene voxel\_size (Unebene Fläche).}
+\end{table}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{c|c|c|c|c|c}
+\hline
+\textbf{distance\_threshold} & \textbf{PKW} & \textbf{Mensch} & \textbf{Fahrradfahrer} & \textbf{LKW} & \textbf{Gesamt} \\
+\hline
+0.10 & 18 & 1 & 2 & 1 & 22 \\
+0.15 & 15 & 1 & 2 & 1 & 19 \\
+0.20 & 14 & 1 & 3 & 1 & 19 \\
+0.25 & 14 & 1 & 3 & 1 & 19 \\
+\hline
+Real & 13 & 0 & 1 & 5 & 19 \\
+\hline
+\end{tabular}
+\caption{Anzahl Detektionen pro Klasse für verschiedene distance\_threshold (Unebene Fläche).}
+\end{table}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{c|c|c|c|c|c}
+\hline
+\textbf{cluster\_tolerance} & \textbf{PKW} & \textbf{Mensch} & \textbf{Fahrradfahrer} & \textbf{LKW} & \textbf{Gesamt} \\
+\hline
+0.30 & 16 & 3 & 5 & 1 & 25 \\
+0.50 & 16 & 1 & 2 & 1 & 20 \\
+0.70 & 17 & 1 & 1 & 2 & 21 \\
+0.90 & 13 & 1 & 0 & 2 & 16 \\
+\hline
+Real & 13 & 0 & 1 & 5 & 19 \\
+\hline
+\end{tabular}
+\caption{Anzahl Detektionen pro Klasse für verschiedene cluster\_tolerance (Unebene Fläche).}
+\end{table}
 
 \subsection{Fazit der Parameterstudie}
-Die Parameterstudie zeigt eindeutig, dass keine einzelne Stellgröße alle Szenen optimal abdeckt. Ein robuster Kompromiss über alle getesteten städtischen Umgebungen ergibt sich jedoch mit:
 
-\begin{itemize}
-    \item \textbf{voxel\_size = 0.20 m}
-    \item \textbf{distance\_threshold = 0.15 m}
-    \item \textbf{cluster\_tolerance = 0.50 m}
-\end{itemize}
-
-Diese Kombination minimiert Bodenartefakte, verhindert übermäßige Objektfusion und erhält gleichzeitig kleine Klassen (Fahrradfahrer) zuverlässig bei. Sie wird daher im weiteren Verlauf des Projekts für die Erkennung und Nachverfolgung eingesetzt.
-
-
-\begin{table}[H]
-\centering
-\renewcommand{\arraystretch}{1.2}
-\begin{tabularx}{\textwidth}{|l|c|X|c|}
-\hline
-\textbf{Parameter} & \textbf{Wertebereich} & \textbf{Kriterium} & \textbf{Optimales Ergebnis} \\ \hline
-\texttt{distance\_threshold} & 0–1{,}0\,m & Saubere Bodenentfernung, keine Objektverluste & 0{,}25\,m \\ \hline
-\texttt{voxel\_size} & 0{,}05–0{,}5\,m & Echtzeitfähigkeit, Detailerhalt & 0{,}2\,m \\ \hline
-\texttt{cluster\_tolerance} & 0{,}2–1{,}0\,m & Objekttrennung, keine Übersegmentierung & 0{,}5\,m \\ \hline
-\end{tabularx}
-\caption{Untersuchungsbereiche und ermittelte Optimalwerte der Hauptparameter.}
-\label{tab:param_study}
-\end{table}
-
-Die Untersuchungen zeigen, dass insbesondere die Parameter \texttt{distance\_threshold} und \texttt{voxel\_size} 
-einen maßgeblichen Einfluss auf die Gesamtergebnisse haben.  
-Ein zu kleiner Schwellenwert bei der Bodenentfernung (\textless{}0{,}15\,m) führt dazu, dass 
-Teile des Bodens als Objekte erkannt werden, während ein zu großer Wert (\textgreater{}0{,}4\,m) 
-relevante Objektpunkte entfernt.  
-Die Wahl von 0{,}25\,m erwies sich als stabiler Kompromiss.  
-Ähnlich zeigte sich bei der Voxelgröße, dass Werte zwischen 0{,}15\,m und 0{,}25\,m 
-eine gute Balance zwischen Rechenzeit und Detailgenauigkeit bieten.  
-Werte über 0{,}3\,m führten zu einem erkennbaren Informationsverlust bei kleinen Objekten (z.\,B. Fußgänger).
-
-Die gewählten Parameterwerte entsprechen somit einem ausgewogenen Kompromiss zwischen 
-Echtzeitfähigkeit und Segmentierungsqualität.  
-Eine dynamische Parametrierung, die sich an die lokale Punktdichte oder Geländebedingungen anpasst, 
-könnte in zukünftigen Arbeiten zu einer weiteren Verbesserung führen.
 
 \section{Bewertung des Algorithmus}
 
