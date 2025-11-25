@@ -1615,8 +1615,9 @@ Als Ergebnis ergibt sich eine Punktwolke, die frei von Bodenpunkten ist (siehe A
 
 Nach der Entfernung der Bodenpunkte (vgl. Kapitel~\ref{chap:bodensegmentierung}) werden die verbleibenden Punktwolken in zusammenhängende Punktmengen (Cluster) gruppiert und mit Begrenzungsboxen beschrieben. Ziel ist eine in Echtzeit lauffähige, robuste Objektbildung, die konsistente Boxen (Lage, Abmessungen) für die nachgelagerte Verfolgung bereitstellt.
 
-\section{Prinzip}
+\section{Cluster-Extraktion}
 \label{sec:prinzip_cluster_boxes}
+\label{sec:cluster_extraction}
 Zwei Punkte \(p_i=(x_i,y_i,z_i)^\top\) und \(p_j\) gehören demselben Cluster an, wenn sie in einem geeigneten Nachbarschaftsbegriff als verbunden gelten. Daraus lässt sich ein ungerichteter Graph \(G=(V,E)\) konstruieren, dessen Knoten \(V\) die Punkte und dessen Kanten \(E\) die Paarverbindungen darstellen. Die Zusammenhangskomponenten dieses Graphen entsprechen den Clustern; Traversierungen (BFS/DFS) über einen k-d-Baum liefern in \(O(n \log n)\) die Komponenten \parencite{rusu2011pcl,Douillard2011}. Im gängigen euklidischen Ansatz bildet die Distanz
 \[
  d(p_i,p_j) = \sqrt{(x_i-x_j)^2+(y_i-y_j)^2+(z_i-z_j)^2}
@@ -1635,9 +1636,7 @@ Für jede identifizierte Komponente werden im Anschluss Lage (Zentrum) und Ausde
   \label{fig:cluster_principle}
 \end{figure}
 
-\subsection{Cluster-Extraktion}
-\label{sec:cluster_extraction}
-In dieser Arbeit wird die euklidische Clusterung der \emph{Point Cloud Library (PCL)} eingesetzt (\texttt{pcl::EuclideanClusterExtraction}) in Verbindung mit einem k-d-Baum (\texttt{pcl::search::KdTree}) \parencite{pcl_docs_2025}. Der Ansatz ist in Echtzeit erprobt, skaliert gut mit der Punktzahl und benötigt nur wenige, gut interpretierbare Parameter:
+In dieser Arbeit wird die euklidische Clusterung der \emph{Point Cloud Library (PCL)} eingesetzt (\texttt{pcl::EuclideanClusterExtraction}) in Verbindung mit einem k-d-Baum (\texttt{pcl::search::KdTree}) \parencite{pcl_docs_2025}. Der Algorithmus folgt dem in der Literatur etablierten Ablauf: Aufbau eines Suchbaums, breadth-first/ depth-first Traversierung und komponentenweise Markierung der Punkte \parencite{Douillard2011,rusu2011pcl}. Gegenüber dichtebasierten Verfahren wie DBSCAN sind die Parameterzahl und die Rechenzeit deterministischer, was die Integration in eine Echtzeit-Pipeline erleichtert \parencite{Ester1996DBSCAN}. Zusätzlich ist das Verfahren trainingsfrei und benötigt nur wenige, gut interpretierbare Parameter:
 
 \begin{itemize}
   \item \textbf{\texttt{cluster\_tolerance}} \(\varepsilon\) [m]: maximaler euklidischer Punktabstand innerhalb eines Clusters (räumliche Verknüpfung).
@@ -1646,7 +1645,7 @@ In dieser Arbeit wird die euklidische Clusterung der \emph{Point Cloud Library (
 \end{itemize}
 
 Richtwerte im Zusammenspiel mit einem Voxel-Filter (Voxelkantenlänge \(\approx\)\SI{0.15}{\meter}–\SI{0.25}{\meter}):
-\(\varepsilon \in [\SI{0.3}{\meter},\SI{0.7}{\meter}]\), \texttt{min\_cluster\_size} \(\approx 30\)–\(60\), \texttt{max\_clusters} \(\approx 200\). Kleinere \(\varepsilon\) vermeiden Verschmelzen benachbarter Objekte, größere \(\varepsilon\) reduzieren Fragmentierung in der Ferne. Alternativen wie dichtebasierte Verfahren (DBSCAN/HDBSCAN) sind möglich, werden hier zugunsten der Echtzeitfähigkeit und einfachen Parametrik jedoch nicht eingesetzt \parencite{Ester1996DBSCAN}.
+\(\varepsilon \in [\SI{0.3}{\meter},\SI{0.7}{\meter}]\), \texttt{min\_cluster\_size} \(\approx 30\)–\(60\), \texttt{max\_clusters} \(\approx 200\). Solche Werte liegen im Bereich typischer Automotive-Studien, in denen \(\varepsilon\) zwischen \SI{0.4}{\meter} und \SI{0.8}{\meter} gewählt wird, um Fahrzeuge und Fußgänger bei mittlerer Voxelung zu trennen \parencite{himmelsbach2010fast,Douillard2011}. Kleinere \(\varepsilon\) vermeiden Verschmelzen benachbarter Objekte, größere \(\varepsilon\) reduzieren Fragmentierung in der Ferne. Alternativen wie dichtebasierte Verfahren (DBSCAN/HDBSCAN) sind möglich, werden hier zugunsten der Echtzeitfähigkeit und einfachen Parametrik jedoch nicht eingesetzt \parencite{Ester1996DBSCAN}.
 
 \paragraph{Ablauf (Algorithmus)}
 \begin{enumerate}
@@ -1657,9 +1656,9 @@ Richtwerte im Zusammenspiel mit einem Voxel-Filter (Voxelkantenlänge \(\approx\
 \end{enumerate}
 
 \paragraph{Praktische Aspekte}
-- \emph{Komplexität}: der Flaschenhals ist die Nachbarsuche; Voxel-Dowsampling reduziert \(n\) und beschleunigt die Suche signifikant.
-- \emph{Parameterkopplung}: sinnvolle Werte von \(\varepsilon\) korrelieren mit der Voxelgröße. Faustregel: \(\varepsilon\approx 2\dots 3\)\,\(\times\)\,\texttt{voxel\_size}.
-- \emph{Reichweiten-Adaption (optional)}: \(\varepsilon(r)=\alpha r+\beta\) kann Fernbereichs-Fragmentierung reduzieren; in dieser Arbeit verwenden wir für Determinismus und Einfachheit eine konstante \(\varepsilon\).
+- \emph{Komplexität}: der Flaschenhals ist die Nachbarsuche; Voxel-Dowsampling reduziert \(n\) und beschleunigt die Suche signifikant \parencite{rusu2011pcl}.
+- \emph{Parameterkopplung}: sinnvolle Werte von \(\varepsilon\) korrelieren mit der Voxelgröße. Faustregel: \(\varepsilon\approx 2\dots 3\)\,\(\times\)\,\texttt{voxel\_size}; bei anisotroper Punktdichte (winkelbasiertes Abtastgitter) verstärkt sich dieser Effekt \parencite{himmelsbach2010fast}.
+- \emph{Reichweiten-Adaption (optional)}: \(\varepsilon(r)=\alpha r+\beta\) kann Fernbereichs-Fragmentierung reduzieren, wie in Reichweiten-bewussten Segmentierungen gezeigt \parencite{bogoslavskyi2016fast}; in dieser Arbeit verwenden wir für Determinismus und Einfachheit eine konstante \(\varepsilon\).
 
 \begin{table}[H]
   \centering
