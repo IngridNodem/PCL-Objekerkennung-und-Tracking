@@ -2354,32 +2354,6 @@ Die im Fahrbetrieb gemessenen Kenngrößen zu Ressourcennutzung, Latenz sowie Ei
 
 \section{Bewertung des Algorithmus}
 
-\subsection{Echtzeitfähigkeit}
-Mit Systemzeitstempeln (\texttt{use\_sim\_time=false}) wurde eine end-to-end-Latenz der gesamten Verarbeitungskette von durchschnittlich \(\approx 51\,\mathrm{ms}\) gemessen. Nach einer kurzen Anlaufphase von rund \(114\,\mathrm{ms}\) stabilisierte sich die Latenz im Bereich von \(50\)–\(56\,\mathrm{ms}\) (Messfenster \(n \approx 100\)). Die Teilstrecken betrugen: \textit{crop}→\textit{voxel} \(\approx 45\)–\(50\,\mathrm{ms}\), \textit{voxel}→\textit{ransac} \(\approx 1{,}7\,\mathrm{ms}\), \textit{ransac}→\textit{cluster} \(\approx 0{,}3\,\mathrm{ms}\) und \textit{cluster}→\textit{track} \(\approx 3{,}7\,\mathrm{ms}\). Damit entfällt der Schwerpunkt der Laufzeit klar auf die Vorverarbeitung bis einschließlich Voxelisierung.
-
-Unter diesen Bedingungen ist die Verarbeitungskette für eine Echtzeitverarbeitung mit \(10\,\mathrm{Hz}\) (Periodendauer \(100\,\mathrm{ms}\)) mit deutlicher Reserve geeignet. Für \(20\,\mathrm{Hz}\) (Periodendauer \(50\,\mathrm{ms}\)) liegt die Latenz dagegen grenzwertig nahe am verfügbaren Zeitbudget. Moderate Optimierungen in der Vorverarbeitung (z.\,B. effizientere Speicherzugriffe, Reduktion unnötiger Kopien oder Anpassung der Voxel-Parameter) können weitere Reserve schaffen und den Stabilitätsbereich für höhere Frequenzen erweitern.
-
-\subsection{Ressourcennutzung (CPU/RAM)}
-Eine Messung über \(12\,\mathrm{s}\) (\(19\) Stichproben im \(0{,}5\,\mathrm{s}\)-Intervall) ergab eine mittlere Gesamtauslastung von \(38{,}80\,\%\) CPU sowie einen durchschnittlichen Arbeitsspeicherverbrauch von \(193{,}18\,\mathrm{MB}\) (RSS). Die CPU-Last verteilte sich auf die Teilkomponenten wie folgt: 
-\textit{crop\_box\_node} \(14{,}45\,\%\), 
-\textit{voxel\_filter\_node} \(17{,}77\,\%\), 
-\textit{ransac\_ground\_node} \(1{,}87\,\%\), 
-\textit{cluster\_extraction\_node} \(4{,}21\,\%\) 
-und \textit{tracking\_node} \(0{,}50\,\%\).
-
-Der Speicherverbrauch pro Prozess lag zwischen \(24\)–\(51\,\mathrm{MB}\): 
-\textit{crop\_box} \(43{,}37\,\mathrm{MB}\), 
-\textit{voxel} \(25{,}02\,\mathrm{MB}\), 
-\textit{RANSAC} \(50{,}93\,\mathrm{MB}\), 
-\textit{Clustering} \(50{,}12\,\mathrm{MB}\) 
-und \textit{Tracking} \(23{,}75\,\mathrm{MB}\). 
-
-Damit konzentriert sich die Rechenlast eindeutig auf die Vorverarbeitung (Crop/Voxel). Segmentierung und Clustering fallen moderat aus, während das Tracking nur einen sehr geringen Ressourcenbedarf aufweist. Insgesamt verbleibt eine deutliche CPU-Reserve bei moderater RAM-Belegung, sodass die Verarbeitungskette problemlos auf typischer Embedded- oder Fahrzeughardware betrieben werden kann.
-
-
-\subsection{Integrierbarkeit in der GUI}
-
-
 
 % ====== 8 Zusammenfassung und Ausblick ======
 \chapter{Zusammenfassung und Ausblick}
