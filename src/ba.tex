@@ -1913,6 +1913,135 @@ Abbildung~\ref{fig:tracking_result} zeigt den Cluster eines detektierten Pkw mit
   \label{fig:tracking_result}
 \end{figure}
 
+\chapter{Integration in der GUI}
+
+\section{Anforderungen: Bestehende Funktionen und notwendige Erweiterungen}
+
+Die bestehende IFZN-GUI basiert auf der modularen und erweiterbaren Architektur nach Wendel \cite{Wendel2025} und stellt bereits eine vollständig funktionierende Bedienoberfläche für verschiedene Sensorsysteme bereit. Zu den vorhandenen Funktionen gehören:
+
+\begin{itemize}
+    \item eine stabile GUI-Struktur zur Steuerung und Überwachung von Sensoren,
+    \item die Nutzung zentraler Bash-Skripte und Launch-Files zum Starten der Sensorik,
+    \item die Unterstützung mehrerer Betriebsmodi (Embedded PC + Laptop, Laptop mit Sensoren, Laptop),
+    \item grundlegende Funktionen wie Messdatenaufzeichnung, Wiedergabe von ROS~2-Bag-Dateien und Visualisierung in RViz,
+    \item eine automatisierte Startlogik über MATLAB und \texttt{tmux} für bestehende Sensorketten.
+\end{itemize}
+
+Diese Infrastruktur bildet die Grundlage für die Integration des Ouster~OS1 und ermöglicht eine Erweiterung ohne grundlegende Anpassung der bestehenden Bedienphilosophie.
+
+Zur vollständigen Integration des Ouster~OS1 in die GUI müssen zusätzliche Komponenten ergänzt werden, die in der ursprünglichen Anwendung nicht enthalten waren:
+
+\begin{enumerate}
+    \item \textbf{Einbindung des Ouster-Treibers:}  
+    Ergänzung und Anpassung des \texttt{sensor.launch.xml}, um den Ouster-Treiber in die bestehende Startlogik einzubetten.
+
+    \item \textbf{Integration der Nodes der Verarbeitungskette:}  
+    Die im Rahmen dieser Arbeit entwickelte Verarbeitungskette erfordert die Einbindung folgender ROS~2-Nodes:
+    \begin{itemize}
+        \item \texttt{crop\_box\_node},
+        \item \texttt{voxel\_filter\_node},
+        \item \texttt{ground\_segmentation\_node},
+        \item \texttt{cluster\_extraction\_node},
+        \item \texttt{tracking\_node}.
+    \end{itemize}
+
+    Diese Nodes müssen im \texttt{sensor.launch.xml} (unter , in den Aufzeichnungsskripten (\texttt{run\_aufzeichnung}) sowie in der MATLAB-App (\texttt{LiDAR\_Embedded\_PC.mlapp}) berücksichtigt werden.
+
+    \item \textbf{Erweiterung der Betriebsmodi:}  
+    Die GUI muss die neue Ouster-basierte Verarbeitungskette in allen drei vorhandenen Modi starten können.
+
+    \item \textbf{Automatisches Laden aller Abhängigkeiten:}  
+    Alle nötigen Umgebungsvariablen (\texttt{setup.bash}, Pfade, Domain-ID) müssen für die erweiterten Startabläufe hinterlegt werden.
+\end{enumerate}
+
+Damit wird die neue Sensorkette vollständig in das vorhandene GUI-System integriert und in allen Betriebsmodi nutzbar.
+
+\section{Umsetzung}
+
+Die Integration des neuen Verarbeitungspakets \texttt{ouster\_cpp} in die bestehende IFZN-GUI erforderte mehrere gezielte Anpassungen an der Dateistruktur, den Workspaces sowie den Startmechanismen der ROS\,2-Nodes. Ziel war es, die gesamte Verarbeitungskette -- bestehend aus den Modulen \emph{CropBox}, \emph{VoxelGrid}, \emph{RANSAC-Bodensegmentierung}, \emph{Cluster-Extraktion} und \emph{Tracking} -- in allen vorgesehenen Betriebsmodi nutzbar zu machen:  
+(1) Laptop,  
+(2) Laptop mit Sensor,  
+(3) Embedded-PC + Laptop.  
+Im Folgenden werden die vorgenommenen Schritte beschrieben.
+
+\subsection*{1.\ Vereinheitlichung der Workspace-Struktur}
+
+Zu Beginn befand sich das neue Paket \texttt{ouster\_cpp} in einem separaten Workspace, der im Rahmen der GUI jedoch nicht berücksichtigt wurde. Da die IFZN-GUI ausschließlich den zentralen Workspace unter  
+\texttt{Documents/Sensorik\_Astra/Ouster\_OS1/ros2\_ws}  
+synchronisiert und aus diesem sowohl lokal als auch auf dem Embedded-PC alle relevanten Nodes startet, wurde das Paket vollständig in diesen Haupt-Workspace überführt.
+
+Dies gewährleistet:
+\begin{itemize}
+  \item einen konsistenten Build-Prozess über alle Modi hinweg,
+  \item die automatische Verfügbarkeit des Pakets auf dem Embedded-PC durch die GUI-Synchronisation,
+  \item eine einheitliche Pfadstruktur für alle Startskripte.
+\end{itemize}
+
+\subsection*{2.\ Erweiterung des bestehenden Launch-Systems}
+
+Damit die vollständige Verarbeitungskette gemeinsam mit dem Ouster-Treiber (\texttt{os\_driver}) gestartet werden kann, wurde die zentrale Launch-Datei \texttt{sensor.launch.xml} des Pakets \texttt{ouster\_ros} erweitert.  
+Innerhalb des bestehenden Ouster-Namespaces wurde ein zusätzlicher Unter-Namespace \texttt{bench} angelegt und dort alle neuen Executables
+\texttt{crop\_box\_node}, \texttt{voxel\_filter\_node}, \texttt{ransac\_ground\_node}, \texttt{cluster\_extraction\_node}, \texttt{tracking\_node}
+als eigenständige \texttt{<node>}-Blöcke ergänzt.
+
+Damit werden sämtliche Verarbeitungsschritte automatisch aktiviert, sobald die GUI den Ouster-Sensor startet -- unabhängig vom gewählten Betriebsmodus.
+
+\subsection*{3.\ Anpassungen an den GUI-Startskripten}
+
+Die GUI nutzt mehrere tmux-basierte Startskripte, welche die benötigten Nodes abhängig vom Betriebsmodus ausführen.  
+Um die Funktionsfähigkeit der erweiterten Verarbeitungskette sicherzustellen, wurden folgende Anpassungen vorgenommen:
+
+\begin{itemize}
+  \item \textbf{Laptop- und Laptop-mit-Sensor-Modus:}  
+  Das Skript \texttt{run\_ouster\_os1.bash} wurde so belassen, dass es den zentralen Workspace kompiliert und anschließend die erweiterte \texttt{sensor.launch.xml} ausführt. Somit laufen der Ouster-Treiber und alle \texttt{ouster\_cpp}-Nodes lokal.
+
+  \item \textbf{Embedded-PC + Laptop:}  
+  Da die GUI beim Aufbau der Verbindung den zentralen Workspace automatisch auf den Embedded-PC überträgt, stehen dort alle Nodes ohne weitere Änderungen zur Verfügung. Beim Start werden dieselben Launch-Dateien via~SSH ausgeführt, sodass die identische Verarbeitungskette auf dem Embedded-PC ausgeführt wird.
+
+  \item \textbf{Aufzeichnungsmodus:}  
+  Auch im Skript \texttt{run\_aufzeichnungen.sh} wird der zentrale Workspace kompiliert und anschließend ein Launch-File (benchmark.launch.py) ausgeführt. Durch die Integration von \texttt{ouster\_cpp} in den Haupt-Workspace stehen alle Nodes ebenfalls für Aufzeichnungen bereit, ohne dass die Skripte separat erweitert werden mussten.
+\end{itemize}
+
+\subsection*{4.\ Sicherstellung der ROS\,2-Kompatibilität}
+
+Damit die GUI alle relevanten Nodes zuverlässig erkennen und überwachen kann, wurden folgende strukturelle Anforderungen erfüllt:
+
+\begin{itemize}
+  \item alle Executables sind über \texttt{install(TARGETS ...)} korrekt in den \texttt{install/}-Baum eingebunden,
+  \item sämtliche benötigten Abhängigkeiten (\texttt{rclcpp}, \texttt{sensor\_msgs}, \texttt{pcl\_conversions}, \texttt{vision\_msgs}, \texttt{Eigen3} usw.) sind im \texttt{package.xml} hinterlegt,
+  \item konsistente Namespaces (\texttt{/ouster/bench/...}) ermöglichen eine eindeutige Identifikation der Nodes mittels \texttt{ros2 node list}.
+\end{itemize}
+
+\section{Ergebnis und mögliche Ursachen der Einschränkungen}
+
+Die Integration des Verarbeitungspakets \texttt{ouster\_cpp} konnte für die Betriebsmodi \emph{Laptop} sowie \emph{Laptop mit Sensor} erfolgreich umgesetzt werden. In diesen Fällen wurden sämtliche Nodes korrekt kompiliert, durch die erweiterten Launch-Dateien gestartet und von der GUI erkannt, sodass die vollständige Verarbeitungskette funktionsfähig war.
+
+Im Modus \emph{Embedded-PC + Laptop} zeigte sich jedoch eine Einschränkung: Obwohl der zentrale Workspace korrekt auf den Embedded-PC übertragen wurde und die Nodes technisch startfähig waren, wurde der Ouster-Sensor von der GUI nicht als vollständig aktiviert erkannt. Dadurch konnte der Betriebsmodus nicht in den regulären Zustand \enquote{aktiv} übergehen.
+
+Eine mögliche Ursache für dieses Verhalten könnte in der internen Validierungslogik der GUI liegen. In der Klasse \texttt{LiDAR\_Embedded\_PC} wird für jeden Sensor eine Liste erwarteter Node-Namen geführt, beispielsweise
+\begin{quote}
+\texttt{ousteros1nodes = \{'/ouster/os\_driver'\}}.
+\end{quote}
+Diese Liste dient dazu, sicherzustellen, dass der Sensortreiber korrekt läuft. Für die erweiterten Verarbeitungsschritte des Pakets \texttt{ouster\_cpp} wurden zusätzliche Nodes wie
+\texttt{/ouster/bench/crop\_box\_node\_cpp},
+\texttt{/ouster/bench/voxel\_filter\_node\_cpp},
+\texttt{/ouster/bench/ransac\_ground\_node\_cpp},
+\texttt{/ouster/bench/cluster\_extraction\_node\_cpp}
+und
+\texttt{/ouster/bench/tracking\_node\_cpp}
+ergänzt.
+
+Es ist denkbar, dass die Einbindung dieser zusätzlichen Nodes in die GUI-interne Prüfliste dazu führte, dass der Embedded-PC-Modus die Aktivierung des Sensors nicht mehr bestätigte. Mögliche Gründe hierfür könnten sein:
+\begin{itemize}
+    \item zeitlich verzögertes Starten einzelner Nodes über die SSH-Verbindung,
+    \item unterschiedliche oder verschachtelte Namespaces, welche von der GUI nicht erwartungsgemäß ausgewertet werden,
+    \item oder ein generelles Missverhältnis zwischen der ursprünglichen GUI-Logik (ausgelegt auf genau eine Node pro Sensor) und einer erweiterten Verarbeitungskette mit mehreren abhängigen Nodes.
+\end{itemize}
+
+Es handelt sich dabei um Hypothesen, die das beobachtete Verhalten plausibel erklären könnten; sie konnten im Rahmen der Arbeit jedoch nicht abschließend verifiziert werden. Entscheidend ist, dass die technische Integration des Pakets \texttt{ouster\_cpp} selbst erfolgreich war und die Einschränkungen ausschließlich die GUI-Validierung im Modus \emph{Embedded-PC + Laptop} betreffen.
+
+Eine mögliche Weiterentwicklung der GUI könnte darin bestehen, die Aktivitätsprüfung flexibler zu gestalten oder lediglich die Minimalmenge notwendiger Nodes (z.\,B.\ den Treiber \texttt{os\_driver}) zu überprüfen, um komplexere Verarbeitungspipelines künftig vollständig zu unterstützen.
+
 \chapter{Test und Bewertung}
 \label{chap:test_und_bewertung}
 
