@@ -2092,6 +2092,43 @@ Die Messungen wurden in drei realen Szenarien durchgeführt:
 
 Als Bodenwahrheit (``Realwert'') dienten zum einen Kameraaufnahmen im Vorderbereich, zum anderen das 360° LiDAR-Datenbild für rückwärtige Objekte. Bewertet wurden jeweils die Klassen \textit{PKW}, \textit{Mensch}, \textit{Fahrradfahrer} und \textit{LKW} sowie die Gesamtdetektionen.
 
+Die in Tabelle~\ref{tab:startwerte_parameter} aufgeführten Werte blieben während der Variation von \textit{voxel\_size} unverändert und dienen als Referenz für die folgenden Auswertungen.
+
+\begin{table}[H]
+  \centering
+  \caption{Startwerte der Parameter vor der Parametrisierung}
+  \label{tab:startwerte_parameter}
+  \begin{tabular}{lll}
+    \toprule
+    \textbf{Node} & \textbf{Parameter} & \textbf{Wert} \\
+    \midrule
+
+    \texttt{crop\_box\_node\_cpp} \\
+      & \texttt{min\_bound}  & \([-10.0,\ -6.0,\ -3.0]\) \\
+      & \texttt{max\_bound}  & \([10.0,\ 6.0,\ 5.0]\) \\
+    \midrule
+
+    \texttt{ransac\_ground\_node\_cpp} \\
+      & \texttt{distance\_threshold} & 0.15 \\
+      & \texttt{max\_iterations}    & 1000 \\
+    \midrule
+
+    \texttt{cluster\_extraction\_node\_cpp} \\
+      & \texttt{cluster\_tolerance} & 0.50 \\
+      & \texttt{min\_cluster\_size} & 40 \\
+      & \texttt{max\_cluster\_size} & 8000 \\
+      & \texttt{max\_clusters}      & 200 \\
+      & \texttt{bbox\_type}         & aabb \\
+    \midrule
+
+    \texttt{tracking\_node\_cpp} \\
+      & \texttt{gate\_dist\_max} & 4.0 \\
+      & \texttt{max\_missed}    & 10 \\
+      & \texttt{min\_hits}      & 2 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
 \subsection{S1: Geparkte Fahrzeuge auf einer ebenen Fahrbahn}
 
 \begin{table}[H]
