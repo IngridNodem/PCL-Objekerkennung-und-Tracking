@@ -30,6 +30,8 @@ def generate_launch_description():
     minpts    = DeclareLaunchArgument('min_cluster_size', default_value='40')
     maxpts    = DeclareLaunchArgument('max_cluster_size', default_value='8000')
     maxcls    = DeclareLaunchArgument('max_clusters', default_value='200')
+    # BBox-Typ: aabb oder obb
+    bbox_type = DeclareLaunchArgument('bbox_type', default_value='aabb')
     gate_d    = DeclareLaunchArgument('gate_dist_max', default_value='4.0')
     min_hits  = DeclareLaunchArgument('min_hits', default_value='2')
     max_miss  = DeclareLaunchArgument('max_missed', default_value='10')
@@ -76,7 +78,8 @@ def generate_launch_description():
                           'detections_topic': 'detections_raw', 'cluster_tolerance': LaunchConfiguration('cluster_tolerance'),
                           'min_cluster_size': LaunchConfiguration('min_cluster_size'),
                           'max_cluster_size': LaunchConfiguration('max_cluster_size'),
-                          'max_clusters': LaunchConfiguration('max_clusters')}]),
+                          'max_clusters': LaunchConfiguration('max_clusters'),
+                          'bbox_type': LaunchConfiguration('bbox_type')}]),
 
         Node(package='ouster_cpp', executable='tracking_node', name='tracking_node_cpp', output='screen',
              parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time'), 'detections_topic': 'detections_raw',
@@ -95,6 +98,6 @@ def generate_launch_description():
 
     return LaunchDescription([
         ns_arg, bag_arg, rate_arg, secs_arg, start_off_arg, min_y_arg, max_y_arg, rmw_arg, use_sim_time_arg,
-        voxel, dist_thr, tol, minpts, maxpts, maxcls, gate_d, min_hits, max_miss,
+        voxel, dist_thr, tol, minpts, maxpts, maxcls, bbox_type, gate_d, min_hits, max_miss,
         *env, play_bag, pipeline, timed_shutdown
     ])

@@ -44,6 +44,11 @@ public:
     max_clusters_ = declare_parameter<int>("max_clusters", 200);             // maximale Anzahl Cluster pro Frame
 
     // -------------------------------
+    // Bounding-Box-Typ: "aabb" (Standard) oder "obb"
+    // -------------------------------
+    bbox_type_    = declare_parameter<std::string>("bbox_type", "aabb");
+
+    // -------------------------------
     // NEU: Größen-Filter (Meter)
     //   - zu kleine Objekte raus
     //   - Objekte größer als Lkw raus (Orientierungs-unabhängig, rein auf OBB/AABB-Dimensionen)
@@ -76,6 +81,7 @@ public:
     RCLCPP_INFO(get_logger(),
       "Groessenfilter: min[L,W,H]=[%.2f, %.2f, %.2f] m | max[L,W,H]=[%.2f, %.2f, %.2f] m",
       min_L_allowed_, min_W_allowed_, min_H_allowed_, max_L_allowed_, max_W_allowed_, max_H_allowed_);
+    RCLCPP_INFO(get_logger(), "BBox-Typ: %s", bbox_type_.c_str());
   }
 
 private:
@@ -148,18 +154,31 @@ private:
       if (cluster->empty()) continue;
 
       // ----------------------------
-      // AABB berechnen
+      // BBox berechnen (AABB oder OBB)
       // ----------------------------
       Eigen::Vector3f center;
       Eigen::Vector3f dims;
       Eigen::Quaternionf q(1,0,0,0);
 
-      // AABB (achsenparallel)
-      pcl::PointXYZ min_pt, max_pt;
-      pcl::getMinMax3D(*cluster, min_pt, max_pt);
-      center = 0.5f * (min_pt.getVector3fMap() + max_pt.getVector3fMap());
-      dims   = (max_pt.getVector3fMap() - min_pt.getVector3fMap());
-      q      = Eigen::Quaternionf::Identity();
+      if (bbox_type_ == "obb") {
+        // Oriented Bounding Box via MomentOfInertiaEstimation
+        pcl::MomentOfInertiaEstimation<PointT> moi;
+        moi.setInputCloud(cluster);
+        moi.compute();
+        Eigen::Vector3f min_obb, max_obb, pos_obb;
+        Eigen::Matrix3f rot_obb;
+        moi.getOBB(min_obb, max_obb, pos_obb, rot_obb);
+        center = pos_obb;
+        dims   = (max_obb - min_obb).cwiseAbs();
+        q      = Eigen::Quaternionf(rot_obb);
+      } else {
+        // AABB (achsenparallel)
+        pcl::PointXYZ min_pt, max_pt;
+        pcl::getMinMax3D(*cluster, min_pt, max_pt);
+        center = 0.5f * (min_pt.getVector3fMap() + max_pt.getVector3fMap());
+        dims   = (max_pt.getVector3fMap() - min_pt.getVector3fMap());
+        q      = Eigen::Quaternionf::Identity();
+      }
       
       // Numerische Stabilität: minimale Ausdehnung erzwingen (>= 5 cm)
       dims = dims.cwiseMax(Eigen::Vector3f(0.05f, 0.05f, 0.05f));
@@ -253,6 +272,7 @@ private:
   std::string input_topic_, marker_topic_, detections_topic_;
   double tol_;
   int min_size_pts_, max_size_pts_, max_clusters_;
+  std::string bbox_type_;
 
   // Größenfilter (Meter)
   double min_L_allowed_, min_W_allowed_, min_H_allowed_;
