@@ -1527,23 +1527,24 @@ Lernbasierte Verfahren & Sehr hohe Genauigkeit, anpassungsfähig durch Training 
   \centering
   \renewcommand{\arraystretch}{1.2}
   \resizebox{\textwidth}{!}{%
-    \begin{tabular}{|l|c|c|c|c|c|}
+    \begin{tabular}{|l|c|c|c|c|}
       \hline
-      \textbf{Methode} &
-      \textbf{Genauigkeit} &
-      \textbf{Rechenaufwand} &
-      \textbf{Robustheit} &
-      \textbf{Echtzeitfähig} &
-      \textbf{Geländeanpassung} \\
+      \textbf{Methode} & \textbf{Echtzeitfähigkeit} & \textbf{Robustheit} & \textbf{Genauigkeit} & \textbf{Rechenaufwand} \\
       \hline
-      Höhenbasierte Verfahren & Niedrig & Sehr gering & Niedrig & Ja & Nein \\ \hline
-      Rasterbasierte Verfahren & Mittel & Gering & Mittel & Ja & Teilweise \\ \hline
-      \textbf{RANSAC (Plane Fitting)} & \textbf{Hoch} & \textbf{Mittel bis hoch} & \textbf{Hoch} & \textbf{Eingeschränkt} & \textbf{Nein} \\ \hline
-      Morphologische Filter & Mittel & Gering & Mittel & Ja & Teilweise \\ \hline
-      ML-/DL-basierte Verfahren & Sehr hoch & Hoch & Hoch & Nein & Ja \\ \hline
+      2.5D-Gitterbasierte Verfahren & Hoch (Zellstatistiken pro Raster) & Mittel (stabil bei moderaten Höhenänderungen) & Mittel (verlustbehaftete 2.5D-Projektion) & Gering \\ \hline
+      RANSAC-Ebenenanpassung (Plane Fitting) & Mittel (Iterationsbudget begrenzt Laufzeit) & Hoch (ausreißerresistent) & Hoch (präzise Ebenenmodellierung) & Mittel bis hoch \\ \hline
+      Linienextraktion entlang Scanlinien & Hoch (lineare Fits pro Strahl) & Niedrig bis mittel (empfindlich auf unebenes Gelände) & Mittel & Sehr gering \\ \hline
+      Gaussian Process Regression (GPR) & Niedrig (aufwändige Kernelberechnung) & Hoch (passt sich lokalem Terrain an) & Hoch & Hoch \\ \hline
+      Kanalbasierte Verfahren (gradientenbasiert) & Hoch (schlanke Schwellenwertlogik) & Mittel (parametergängig, sensorgeometrieabhängig) & Mittel & Gering \\ \hline
+      Region-Growing / graphenbasiertes Clustering & Niedrig bis mittel (iterative Nachbarschaftsprüfung) & Mittel bis hoch (reduziert Fehlklassifikationen) & Hoch & Mittel bis hoch \\ \hline
+      Range-Image-Methoden & Hoch (2D-Nachbarschaften in Millisekunden) & Mittel (robust gegen Rauschen, sensibel bei Überhängen) & Mittel bis hoch & Gering bis mittel \\ \hline
+      Probabilistische Graphmodelle (MRF/CRF) & Niedrig (iterative Inferenz) & Hoch (konsistente Nachbarschaftsmodellierung) & Hoch & Hoch \\ \hline
+      Point-/Voxel-basierte Netze (PointNet, PointPillars) & Mittel (GPU-Echtzeit bei optimierter Implementierung) & Hoch (lernbasierte Generalisierung) & Sehr hoch & Hoch \\ \hline
+      Bildbasierte CNNs auf Range Images (z.B. RangeNet++) & Hoch (2D-CNN-Inferenz auf GPU) & Mittel bis hoch (robust auf strukturierten Projektionen) & Hoch & Mittel bis hoch \\ \hline
+      Spezialisierte Netze (GndNet) & Hoch (Inference $\approx$ 18\,ms/Frame) & Mittel bis hoch (geländeadaptiv trainierbar) & Hoch (IoU $\approx$ 84\,\%) & Mittel \\ \hline
     \end{tabular}%
   }
-  \caption{Vergleich der Methoden zur Bodensegmentierung nach Bewertungskriterien (nach~\cite{gomes2023survey}).}
+  \caption{Vergleich der in Abschnitt~\ref{chap:bodenmethoden} beschriebenen Bodensegmentierungsmethoden nach Echtzeitfähigkeit, Robustheit, Genauigkeit und Rechenaufwand (nach~\cite{gomes2023survey}).}
   \label{tab:boden-methodenvergleich-ransac}
 \end{table}
 
