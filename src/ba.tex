@@ -2077,6 +2077,18 @@ Die Messungen wurden in drei realen Szenarien durchgeführt:
     \item \textbf{S3 – Unebene Fahrbahn:} geneigte Fläche mit parkenden Fahrzeugen; bestätigt Robustheit der Bodensegmentierung und der Clusterbildung bei variierender Höhengeometrie.
 \end{itemize}
 
+\begin{table}[H]
+  \centering
+  \caption{Übersicht der verwendeten Messaufzeichnungen}
+  \begin{tabular}{|c|l|l|l|}
+    \hline
+    \textbf{Szenario} & \textbf{Beschreibung} & \textbf{Messaufzeichnung} & \textbf{Zeitraffer} \\ \hline
+    S1 & Geparkte Autos & 2025-10-15-VK-OL-006 & Start: 5s; run 10s \\ \hline
+    S2 & Kreuzung & 2025-10-15-VK-OL-007 & Start: 20s; run 10s \\ \hline
+    S3 & Unebene Fläche & 2025-10-15-VK-OL-004 & Start: 145s; run 10s \\ \hline
+  \end{tabular}
+\end{table}
+
 Als Bodenwahrheit (``Realwert'') dienten zum einen Kameraaufnahmen im Vorderbereich, zum anderen das 360° LiDAR-Datenbild für rückwärtige Objekte. Bewertet wurden jeweils die Klassen \textit{PKW}, \textit{Mensch}, \textit{Fahrradfahrer} und \textit{LKW} sowie die Gesamtdetektionen.
 
 \subsection{S1: Geparkte Fahrzeuge auf einer ebenen Fahrbahn}
