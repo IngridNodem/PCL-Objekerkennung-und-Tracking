@@ -1500,17 +1500,6 @@ Dieses Verfahren erreicht eine mittlere Intersection-over-Union (IoU) von 83,6\,
 Tabelle~\ref{tab:vergleich_bodenmethoden} fasst die wesentlichen Eigenschaften der vorgestellten Bodensegmentierungsmethoden zusammen.
 Sie verdeutlicht die jeweiligen Stärken und Grenzen der Ansätze sowie ihre typischen Einsatzgebiete in der mobilen Robotik und Umfelderkennung.
 
-Das RANSAC-Verfahren zeichnet sich durch eine hohe Robustheit gegenüber Ausreißern aus und liefert eine präzise Anpassung planarer Bodenflächen.
-Im Vergleich zu rasterbasierten oder morphologischen Methoden ermöglicht es eine genauere Modellierung, erfordert jedoch einen höheren Rechenaufwand und eine sorgfältige Parametrierung, um eine stabile Echtzeitverarbeitung zu gewährleisten.
-Aufgrund seiner Balance zwischen Präzision und algorithmischer Einfachheit wurde RANSAC als Grundlage für die in dieser Arbeit implementierte Bodensegmentierung ausgewählt.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\textwidth]{Bilder/plane_fitting.png}
-  \caption{Visuelle Darstellung einer orthogonalen Distanzklassifizierung (~\cite{gomes2023survey})}
-  \label{fig:plane_fitting}
-\end{figure}
-
 \begin{table}[H]
 \centering
 \renewcommand{\arraystretch}{1.2}
@@ -1551,6 +1540,31 @@ Lernbasierte Verfahren & Sehr hohe Genauigkeit, anpassungsfähig durch Training 
   \caption{Vergleich der in Abschnitt~\ref{chap:bodenmethoden} beschriebenen Bodensegmentierungsmethoden nach Echtzeitfähigkeit, Robustheit, Genauigkeit und Rechenaufwand (nach~\cite{gomes2023survey}).}
   \label{tab:boden-methodenvergleich-ransac}
 \end{table}
+
+\section{RANSAC-Verfahren}
+\label{sec:ransac_verfahren}
+
+Das \textit{Random Sample Consensus} (RANSAC) bietet eine robuste Ebenenabschätzung, indem es Ausreißer konsequent ignoriert und lediglich Punkte berücksichtigt, die innerhalb eines orthogonalen Abstands zur Modellhypothese liegen.
+Im Unterschied zu raster- oder morphologiebasierten Ansätzen entsteht so eine präzise Modellierung auch bei schrägen oder partiell verdeckten Fahrbahnen, zu Lasten eines moderaten Iterationsaufwands und einer sorgfältigen Schwellenwertwahl.
+Aufgrund dieses Gleichgewichts zwischen Genauigkeit und Implementierungskomplexität dient RANSAC in dieser Arbeit als Grundlage der Bodensegmentierung.
+
+Das Verfahren wiederholt folgende Schritte, bis entweder das Iterationsbudget ausgeschöpft ist oder ein Modell die gewünschte Sicherheit erreicht:
+\begin{enumerate}
+  \item \textbf{Stichprobenbildung:} Aus der Punktwolke werden minimal viele Punkte (\(n=3\) für Ebenen) zufällig gewählt, um einen ersten Ebenenvorschlag zu erzeugen.
+  \item \textbf{Modellhypothese:} Aus den Stichprobenpunkten wird eine Ebenengleichung \(a x + b y + c z + d = 0\) berechnet, die Normalenrichtung und Lage der Fahrbahn repräsentiert.
+  \item \textbf{Inlier-Prüfung:} Jeder Punkt wird über seinen orthogonalen Abstand
+    \[\mathrm{dist}(\mathbf{p}, \Pi) = \frac{|a x + b y + c z + d|}{\sqrt{a^2 + b^2 + c^2}}\]
+    zum Ebenenmodell bewertet. Punkte unterhalb des Schwellenwerts \texttt{distance\_threshold} gelten als Inlier.
+  \item \textbf{Bewertung und Wiederholung:} Die Hypothese mit den meisten Inliern wird gemerkt; anschließend werden neue Stichproben gezogen, bis die gewünschte Erfolgswahrscheinlichkeit erreicht ist. Aus dem Verhältnis von Inlier-Anteil \(w\) und Maximaliterationen \(k\) ergibt sich \(1-(1-w^n)^k\) als Wahrscheinlichkeit, mindestens eine ausreißerfreie Stichprobe gesehen zu haben.
+\end{enumerate}
+Die resultierende Ebene trennt Boden- von Hindernispunkten durch ihre senkrechte Distanz. Der iterative Stichprobencharakter geht auf den ursprünglichen RANSAC-Vorschlag von Fischler und Bolles zurück, der explizit eine robuste Parameterschätzung bei hohem Ausreißeranteil adressiert \parencite{fischler1981ransac}. Für Punktwolken und Ebenenextraktion wurde das Verfahren unter anderem von Schnabel et~al. für große 3D-Datensätze adaptiert \parencite{Schnabel2007Efficient}. Abbildung~\ref{fig:plane_fitting} zeigt die geometrische Interpretation dieser Distanzklassifizierung nach \textcite{gomes2023survey}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{Bilder/plane_fitting.png}
+  \caption{Visuelle Darstellung einer orthogonalen Distanzklassifizierung (~\cite{gomes2023survey})}
+  \label{fig:plane_fitting}
+\end{figure}
 
 \section{Implementierung}
 
