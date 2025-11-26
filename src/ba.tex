@@ -2324,6 +2324,18 @@ Real & 13 & 0 & 1 & 5 & 19 \\
 \caption{Anzahl Detektionen pro Klasse für verschiedene cluster\_tolerance (Unebene Fläche).}
 \end{table}
 
+Im Vergleich zu den ebenen Szenarien fällt auf, dass die geneigte Fahrbahn deutlich mehr Fehlalarme bei kleinen Objekten erzeugt:
+Schon bei \(\textit{voxel\_size} = 0{,}10\,\text{m}\) entstehen insgesamt 25 Detektionen, obwohl das Realbild nur 19 Objekte enthält,
+was auf ein überbetontes Rauschen in der höhenvariierenden Punktwolke schließen lässt. Größere Voxel glätten die Punktwolke und
+reduzieren so die Zahl fälschlicher Personen-Detektionen (von 7 auf 0), senken aber zugleich die Lkw-Erkennung, weil schräge
+Fahrzeugflanken in groben Voxeln zusammenfallen. Ähnlich zeigt das Bodensegment \(\textit{distance\_threshold}\), dass Werte oberhalb
+von \(0{,}15\,\text{m}\) die Gesamtzahl auf das Realniveau (19) stabilisieren, weil übermäßige Bodenpunkte entfernt werden, während
+zu kleine Schwellen (0{,}10\,\text{m}) Objekte in Bodenausreißer zerlegen. Bei der Clusterung trennt eine mittlere
+\(\textit{cluster\_tolerance}\) von \(0{,}50\,\text{m}\) die Fahrzeuge trotz Steigung am zuverlässigsten und vermeidet gleichzeitig die
+Übersegmentierung, die bei \(0{,}30\,\text{m}\) zu fünf Fahrrad-Fehldetektionen führt. Insgesamt bestätigen die geneigten Szenen, dass
+moderat gewählte Parameter die Höhenstreuung abfangen und die Detektionszahlen nahe an den Realwerten halten, ohne relevante
+Objektstrukturen zu verlieren.
+
 \subsection{Fazit der Parameterstudie}
 
 Die Studie belegt, dass moderate Werte für die Kernparameter die robustesten Ergebnisse liefern: Eine Voxelgröße von \(0{,}15\,\text{m}\) bis \(0{,}20\,\text{m}\) glättet Rauschen, ohne feine Objektstrukturen zu verlieren, \(\textit{distance\_threshold} = 0{,}15\,\text{m}\) verhindert Ausfransungen in geneigten Szenen und \(\textit{cluster\_tolerance}\) um \(0{,}50\,\text{m}\) trennt dicht beieinanderstehende Objekte zuverlässig, ohne sie zu übersegmentieren. Größere oder kleinere Abweichungen führten entweder zu übermäßiger Detektionszahl (Fehlalarme) oder zum Zusammenfallen benachbarter Objekte. Insgesamt bestätigt die Parameterstudie, dass die gewählte Pipeline mit konservativen Mittelwerten ein stabiles Gleichgewicht zwischen Präzision und Robustheit erreicht und damit eine gute Ausgangsbasis für den Einsatz im Fahrbetrieb bietet.
