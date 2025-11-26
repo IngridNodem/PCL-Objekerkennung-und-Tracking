@@ -149,7 +149,11 @@ Hiermit versichere ich, dass ich die vorliegende Bachelorarbeit selbstständig v
 \chapter*{Kurzfassung}
 \addcontentsline{toc}{chapter}{Kurzfassung}
 \noindent
-\textit{Hier Kurzzusammenfassung in deutscher Sprache einfügen.} % Placeholder
+Die vorliegende Arbeit entwickelt eine modular aufgebaute Verarbeitungsstrecke zur LiDAR-basierten Umfelderkennung für das Projektautomobil \textit{CarCeptionX}. Ausgangspunkt ist die bestehende ROS\,2-Messkette des Ouster~OS1, die im Rahmen dieser Arbeit um eine robuste Folge von Vorverarbeitungs-, Segmentierungs-, Cluster- und Trackingbausteinen erweitert wird. Ziel ist eine echtzeitfähige Erkennung relevanter Verkehrsteilnehmer ab einer Mindestgröße von \SI{0.5}{\meter} bei mindestens \SI{90}{\percent} Detektionsrate bei \SI{10}{\hertz} Ausführung.
+
+Das System umfasst eine rausch- und ausreißerreduzierende Vorverarbeitung, eine szenarienunabhängige Bodensegmentierung, die Bildung konsistenter Cluster mit zugehörigen Bounding-Boxen sowie ein darauf aufbauendes Objekt-Tracking. Sämtliche Schritte werden in ROS~2 implementiert, mit einheitlichen Schnittstellen versehen und hinsichtlich Ausführungsfrequenz, Latenz und Speicherbedarf untersucht. Für zentrale Algorithmen wie RANSAC-Bodenschätzung, Euclidean-Cluster-Extraction, DBSCAN und CV-Kalman-Filter werden Parameterstudien durchgeführt, um die Balance zwischen Genauigkeit und Rechenaufwand zu optimieren.
+
+In realen Messszenarien auf urbanen Teststrecken zeigt die Pipeline stabile Resultate: Die Bodensegmentierung trennt befahrbare Fläche und Hindernisse verlässlich, die Clusterbildung erzeugt weitgehend trennscharfe Objektboxen, und das Tracking liefert kohärente Trajektorien auch bei kurzzeitigen Abschattungen. Die Ausführungsraten liegen auf handelsüblicher Hardware im Bereich von \SIrange{10}{15}{\hertz}, womit die geforderten Echtzeitanforderungen erfüllt werden. Die Arbeit schließt mit einer Bewertung der erzielten Leistung und einem Ausblick auf Erweiterungen wie Sensorfusion, semantische Segmentierung und eine engere Integration in das Fahrzeugsystem.
 
 \cleardoublepage
 
