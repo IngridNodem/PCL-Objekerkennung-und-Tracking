@@ -2329,6 +2329,22 @@ Die Messfahrten wurden bewusst auf Strecken mit unterschiedlichen Kurvenradien, 
 um sowohl ruhige als auch dynamische Szenarien abzudecken. So konnte die Datenpipeline unter variierenden Bewegungsprofilen
 und Sichtbedingungen hinsichtlich Stabilität und Resilienz bewertet werden.
 
+Um reproduzierbare Ergebnisse zu erhalten, wurden fünf klar abgegrenzte Fahrszenarien definiert und jeweils für eine Minute
+aufgezeichnet. Jede Sequenz besitzt ein spezifisches Fahrprofil und Prüfziel, sodass Stabilität der Messkette ebenso wie die
+Robustheit der Segmentierung und das ID-Handling beobachtet werden konnten:
+\begin{enumerate}
+    \item \textbf{Gerade Strecke, Stand (0\,km/h):} Referenzlauf ohne Fahrzeugbewegung zur Ermittlung von Grundlatenz und -frequenz.
+          Ziel war eine stabile Hz/Latenz, Sensorstabilität, konsistente Boxen sowie ID-Kontinuität.
+    \item \textbf{Kurve, 40\,km/h (Urban/Innenstadt):} Dynamische Fahrt durch eine urbane Kurve, um die Stabilität von Frequenz
+          und Latenz ohne längere Aussetzer zu verifizieren.
+    \item \textbf{Innenstadt mit Steigung, 30\,km/h:} Leichte Steigungsfahrt in urbanem Umfeld. Prüft, ob die Pipeline auch bei
+          Gefälle-/Steigungslagen konstante Frequenzen und Latenzen liefert.
+    \item \textbf{Bodenwellen/Steigungen, 50\,km/h:} Schnellere Passage über unebenes Terrain, um die Robustheit der
+          Verarbeitungskette gegenüber Karosseriebewegungen und vertikalen Lastwechseln zu bewerten.
+    \item \textbf{Urban mit Verkehr, 50\,km/h:} Fahrt über unebenen Untergrund mit weiteren Verkehrsteilnehmern. Schwerpunkte
+          waren stabile Hz/Latenz und eine robuste Bodensegmentierung trotz Unebenheiten sowie bewegter Objekte.
+\end{enumerate}
+
 \begin{table}[H]
   \centering
   \caption{Parameterübersicht der Nodes im \texttt{benchmark.launch.py} für den Test im Fahrbetrieb}
