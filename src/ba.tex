@@ -704,7 +704,9 @@ Die Punktwolken des Ouster~OS1 bilden die Grundlage einer Verarbeitungskette, di
 
 Diese Schritte folgen den Empfehlungen der Fahrzeugautomatisierungs-Literatur, die deterministische Filterung und kontrollierte Latenz als Beitrag zur funktionalen Sicherheit hervorhebt \parencite{Arnold2019Survey,Macenski2022ROS2}. Eine Bodenentfernung senkt die Falsch-Positiv-Rate und verbessert die Selektivität beim Clustering \parencite{gomes2023survey}; konfigurierbare Parameter erleichtern die Adaption an unterschiedliche Szenarien wie dichten Verkehr, freie Flächen oder geneigte Fahrbahnen.
 
-Um den Einsatz auf Standardhardware zu ermöglichen und die Reproduzierbarkeit sicherzustellen, wird eine End-to-End-Latenz unter \(100\,\text{ms}\) bei \(10\,\text{Hz}\) angestrebt, verbunden mit moderater CPU/RAM-Auslastung und klar definierten ROS~2-Nachrichten für maschinen- wie terminallesbare Ausgaben. Die Einbindung in die bestehende GUI des Projekts \emph{Carception~X} \parencite{IFZN_Projekte} stellt darüber hinaus Kompatibilität mit den vorhandenen Betriebsmodi (Sensor, Sensor + PC, Sensor + PC + Embedded PC) sicher \parencite{Wendel2025}.
+Um den Einsatz auf Standardhardware zu ermöglichen und die Reproduzierbarkeit sicherzustellen, wird eine End-to-End-Latenz unter \(100\,\text{ms}\) bei \(10\,\text{Hz}\) angestrebt, verbunden mit moderater CPU/RAM-Auslastung und klar definierten ROS~2-Nachrichten für maschinen- wie terminallesbare Ausgaben. Standardhardware meint hier einen mobilen Rechner oder Embedded-PC mit mindestens 6 CPU-Kernen (\(\geq 2{,}5\,\text{GHz}\)), \(\geq 16\,\text{GB}\) RAM und ohne dedizierte GPU-Anforderungen. Die Einbindung in die bestehende GUI des Projekts \emph{Carception~X} \parencite{IFZN_Projekte} stellt darüber hinaus Kompatibilität mit den vorhandenen Betriebsmodi (Sensor, Sensor + PC, Sensor + PC + Embedded PC) sicher \parencite{Wendel2025}.
+
+Die Güte des Bodenfilters wird anhand zweier Größen bewertet: (1) Restbodenanteil, gemessen als Anteil verbleibender Bodenpunkte je Rasterzelle (\(2\,\text{m}\) \(\times\) \(2\,\text{m}\)) unter \(5\,\%\), (2) Verlust tragender Objektpunkte, gemessen als Reduktion der Stützpunkte innerhalb eines \(30\,\text{m}\) Frontbereichs um höchstens \(10\,\%\). "Ohne wesentlichen Geometrieverlust" bedeutet, dass die Punktdichte nach Downsampling mindestens \(70\,\%\) der Ausgangsdichte innerhalb eines \(3\,\text{m}\) \(\times\) \(3\,\text{m}\)-Gitters beträgt und die Bounding-Box-Kantenlänge maximal \(0{,}1\,\text{m}\) vom Referenzwert abweicht. Anpassbare Laufzeitparameter sind insbesondere Voxelgröße, RANSAC-Abstandsgrenze und Iterationen für die Bodenebene, Cluster-Toleranz sowie Minimal-/Maximalpunktzahlen pro Cluster; sie werden über Launch-Dateien oder \texttt{ros2 param set} verändert und ohne Neustart übernommen. Eine Echtzeitvisualisierung (z.\,B. in RViz2 oder der GUI) muss Rohdaten, Bodenfilter, Cluster und Tracks bei mindestens \(10\,\text{FPS}\) sichtbar machen.
 
 Die detaillierten Anforderungen und dazugehörigen Messkriterien sind in Tabelle~\ref{tab:anforderungen_messkette} zusammengefasst.
 
@@ -717,27 +719,27 @@ Die detaillierten Anforderungen und dazugehörigen Messkriterien sind in Tabelle
 
 1 &
 OS1-Punktwolken werden empfangen &
-Topic \texttt{/ouster/points}; Rate $\geq 10$ Hz \\[0.15cm]
+Topic \texttt{/ouster/points}; Rate $\geq 10$ Hz, Paketverlust $<1\,\%$ \\[0.15cm]
 \hline
 
 2 &
 Objektliste mit Pose und Abmessungen &
-Topic \texttt{/tracks\_raw} (\texttt{vision\_msgs/Detection3DArray}) \\[0.15cm]
+Aktualisierungsrate $\geq 10$ Hz; Track-IDs konsistent über $\geq 5$ Frames \\[0.15cm]
 \hline
 
 3 &
 Bodenpunkte und Störsignale entfernen &
-Topic \texttt{/obstacle\_points} ohne Bodenanteile \\[0.15cm]
+Restbodenanteil $<5\,\%$ je $2\,\text{m}$-Raster; Verlust tragender Objektpunkte $<10\,\%$ im Frontbereich \\[0.15cm]
 \hline
 
 4 &
 Reduzierte Punktdichte ohne wesentlichen Geometrieverlust &
-Konfigurierbare Voxelgröße; stabile FPS \\[0.15cm]
+Voxelgröße 5--10 cm; Punktdichte $\geq70\,\%$ im $3\,\text{m}$-Gitter; Kantenabweichung $<0{,}1$ m \\[0.15cm]
 \hline
 
 5 &
 Laufzeitparameter anpassbar &
-Parameter via Launch setzbar \\[0.15cm]
+Voxelgröße, RANSAC-Abstand/Iterationen, Cluster-Toleranz und Clustergrößen via Launch oder \texttt{ros2 param set} ohne Neustart \\[0.15cm]
 \hline
 
 6 &
@@ -747,17 +749,22 @@ Zeitstempel-Differenz Ein-/Ausgang; stabile 10 Hz \\[0.15cm]
 
 7 &
 Stabiler Betrieb auf Standardhardware &
-CPU/RAM-Auslastung $\leq 60\,\%$ bei stabilen $10\,\mathrm{Hz}$ \\[0.15cm]
+CPU/RAM-Auslastung $\leq 60\,\%$ auf 6-Kern-CPU (\(\geq 2{,}5\,\text{GHz}\), \(\geq 16\,\text{GB}\) RAM) bei stabilen $10\,\mathrm{Hz}$ \\[0.15cm]
 \hline
 
 8 &
 Maschinen- und terminallesbare Ausgabe &
-Definierte ROS-Nachrichten + kompakte Konsole \\[0.15cm]
+ROS-Themen mit dokumentierten Typen (\texttt{sensor\_msgs/PointCloud2}, \texttt{vision\_msgs/Detection3DArray}); Konsolenstatus $\leq 1$ Zeile/s \\[0.15cm]
 \hline
 
 9 &
 Integration in bestehende GUI &
 Algorithmus ausführbar bei den Moden Sensor, Sensor + PC, Sensor + PC + Embedded PC \\[0.05cm]
+\hline
+
+10 &
+Echtzeitvisualisierung &
+Darstellung von Rohdaten, Bodenfilter, Clustern und Tracks in RViz2/GUI mit $\geq 10\,\text{FPS}$ \\[0.05cm]
 \hline
 
 \end{tabularx}
