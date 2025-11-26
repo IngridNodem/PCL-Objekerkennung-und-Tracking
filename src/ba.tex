@@ -2471,7 +2471,15 @@ Messwerte, dass die Pipeline auch unter variierenden Umweltbedingungen performan
 weitergehende Funktionalitäten bietet.
 
 \section{Bewertung des Algorithmus}
+Die in Kapitel~\ref{chap:systemarchitektur} formulierten Anforderungen an den Algorithmus (Tabelle~\ref{tab:anforderungen_messkette}) lassen sich anhand der Messergebnisse weitgehend bestätigen. Im Folgenden werden die zentralen Kriterien zusammengefasst und den Beobachtungen aus den Fahrversuchen gegenübergestellt:
+\begin{itemize}
+  \item \textbf{Echtzeitfähigkeit (Anforderung~6):} Die gemessenen End-to-End-Latenzen liegen mit \(20{-}40\,\text{ms}\) deutlich unter der Zielmarke von \(100\,\text{ms}\). Selbst im ungünstigsten Szenario (Stillstand) bleibt die mittlere Latenz stabil bei rund \(81\,\text{ms}\), sodass die vorgegebene Ausführungsrate von \(10\,\text{Hz}\) eingehalten werden kann.
+  \item \textbf{Ressourceneffizienz und Stabilität (Anforderungen~7~\&~8):} Die CPU-Auslastung bleibt über alle Szenarien unter \(35\,\%\), der Speicherbedarf stabilisiert sich bei etwa \(200\,\text{MB}\). Damit werden die Grenzen für Standardhardware klar unterschritten und es besteht Reserve für zusätzliche Funktionen oder Debug-Ausgaben.
+  \item \textbf{Datenkonsistenz und Robustheit (Anforderungen~1--5):} Die Topics \texttt{/ouster/points}, \texttt{/detections\_raw} und \texttt{/tracks\_raw} werden ohne Paketverluste im Bereich \(3{-}3{,}7\,\text{Hz}\) publiziert, die Track-IDs bleiben in Bewegungsszenarien über mehrere Frames stabil. Downsampling und Bodensegmentierung erfüllen die geforderten Restbodenanteile (\(<5\,\%\)) und erhalten ausreichend Stützpunkte für robuste Bounding-Boxes, sodass die geometrische Genauigkeit der Objektrepräsentation gewahrt bleibt.
+  \item \textbf{Visualisierung und Integration (Anforderungen~9~\&~10):} Rohdaten, Bodenfilter, Cluster und Tracks lassen sich in \texttt{RViz2} sowie der bestehenden GUI ohne spürbare Verzögerung darstellen. Die Verarbeitung bleibt auch bei wechselnden Betriebsmodi (Sensor, Sensor~+~PC, Sensor~+~PC~+~Embedded~PC) stabil, wodurch die Einbettung in die bestehende Messumgebung sichergestellt ist.
+\end{itemize}
 
+Insgesamt erfüllt die entwickelte Pipeline die definierten funktionalen und nicht-funktionalen Anforderungen: Sie arbeitet echtzeitfähig, ressourcenschonend und robust gegenüber wechselnden Umgebungsbedingungen. Optimierungspotenzial besteht vor allem im Feintuning der Tracking-Schwellen, um kurzlebige Track-Geburten in statischen Szenen weiter zu reduzieren, ohne die Reaktionsfähigkeit in dynamischen Situationen zu beeinträchtigen.
 
 % ====== 8 Zusammenfassung und Ausblick ======
 \chapter{Zusammenfassung und Ausblick}
