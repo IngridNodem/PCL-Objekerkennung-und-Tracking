@@ -2318,6 +2318,9 @@ Ziel dieser Datensätze war es, typische Objekte und Strukturen einer realen Ver
 wie Personen, Fahrradfahrer, Pkw und Lkw – unter realistischen Bedingungen zu erfassen.
 Die Sensordaten wurden mit einer festen Sensorrate von 10\,Hz aufgenommen und als \textit{ROS\,2\,Bag}-Dateien gespeichert.
 Für die Auswertung im Fahrbetrieb kam dabei der Laptop mit der bestehenden GUI zum Einsatz (\textit{Microsoft Surface Book~3}).
+Die Messfahrten wurden bewusst auf Strecken mit unterschiedlichen Kurvenradien, Steigungen und Straßenbelägen durchgeführt,
+um sowohl ruhige als auch dynamische Szenarien abzudecken. So konnte die Datenpipeline unter variierenden Bewegungsprofilen
+und Sichtbedingungen hinsichtlich Stabilität und Resilienz bewertet werden.
 
 \begin{table}[H]
   \centering
@@ -2408,6 +2411,13 @@ Die im Fahrbetrieb gemessenen Kenngrößen zu Ressourcennutzung, Latenz sowie Ei
   \caption{Vergleichende Übersicht der Messgrößen je Szenario}
   \label{tab:fahrbetrieb_ueberblick}
 \end{table}
+
+Die Übersicht verdeutlicht, dass die gewählte Parametrierung im Fahrbetrieb zu stabilen Verarbeitungsketten führt:
+Selbst in dynamischen Szenarien wie Kurvenfahrten oder innerstädtischen Abschnitten bleibt die mittlere Latenz deutlich
+unter 90\,ms, während die Ausgangsfrequenz nur moderat hinter der Eingangsfrequenz zurückbleibt. Auffällige Abweichungen
+treten lediglich im Kreuzungsszenario auf, wo kurzzeitige Frequenzeinbrüche beobachtet wurden. Insgesamt zeigen die
+Messwerte, dass die Pipeline auch unter variierenden Umweltbedingungen performant arbeitet und genügend Reserven für
+weitergehende Funktionalitäten bietet.
 
 \section{Bewertung des Algorithmus}
 
