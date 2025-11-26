@@ -1943,7 +1943,7 @@ Abbildung~\ref{fig:tracking_result} zeigt den Cluster eines detektierten Pkw mit
 
 \section{Anforderungen: Bestehende Funktionen und notwendige Erweiterungen}
 
-Die bestehende IFZN-GUI basiert auf der modularen und erweiterbaren Architektur nach Wendel \cite{Wendel2025} und stellt bereits eine vollständig funktionierende Bedienoberfläche für verschiedene Sensorsysteme bereit. Zu den vorhandenen Funktionen gehören:
+Die bestehende IFZN-GUI folgt der modularen und erweiterbaren Architektur nach Wendel \cite{Wendel2025} und bietet bereits eine stabile Bedienoberfläche für verschiedene Sensorsysteme. Zu den vorhandenen Funktionen gehören:
 
 \begin{itemize}
     \item eine stabile GUI-Struktur zur Steuerung und Überwachung von Sensoren,
@@ -1953,9 +1953,7 @@ Die bestehende IFZN-GUI basiert auf der modularen und erweiterbaren Architektur 
     \item eine automatisierte Startlogik über MATLAB und \texttt{tmux} für bestehende Sensorketten.
 \end{itemize}
 
-Diese Infrastruktur bildet die Grundlage für die Integration des Ouster~OS1 und ermöglicht eine Erweiterung ohne grundlegende Anpassung der bestehenden Bedienphilosophie.
-
-Zur vollständigen Integration des Ouster~OS1 in die GUI müssen zusätzliche Komponenten ergänzt werden, die in der ursprünglichen Anwendung nicht enthalten waren:
+Diese Infrastruktur bildet die Grundlage für die Integration des Ouster~OS1 und kann ohne Bruch der bisherigen Bedienphilosophie erweitert werden. Für eine vollständige Einbindung sind jedoch noch zusätzliche Bausteine nötig, die im ursprünglichen Umfang nicht vorgesehen waren:
 
 \begin{enumerate}
     \item \textbf{Einbindung des Ouster-Treibers:}  
@@ -1971,7 +1969,7 @@ Zur vollständigen Integration des Ouster~OS1 in die GUI müssen zusätzliche Ko
         \item \texttt{tracking\_node}.
     \end{itemize}
 
-    Diese Nodes müssen im \texttt{sensor.launch.xml} (unter , in den Aufzeichnungsskripten (\texttt{run\_aufzeichnung}) sowie in der MATLAB-App (\texttt{LiDAR\_Embedded\_PC.mlapp}) berücksichtigt werden.
+    Diese Nodes müssen im \texttt{sensor.launch.xml}, in den Aufzeichnungsskripten (\texttt{run\_aufzeichnung}) sowie in der MATLAB-App (\texttt{LiDAR\_Embedded\_PC.mlapp}) hinterlegt werden.
 
     \item \textbf{Erweiterung der Betriebsmodi:}  
     Die GUI muss die neue Ouster-basierte Verarbeitungskette in allen drei vorhandenen Modi starten können.
@@ -1980,11 +1978,11 @@ Zur vollständigen Integration des Ouster~OS1 in die GUI müssen zusätzliche Ko
     Alle nötigen Umgebungsvariablen (\texttt{setup.bash}, Pfade, Domain-ID) müssen für die erweiterten Startabläufe hinterlegt werden.
 \end{enumerate}
 
-Damit wird die neue Sensorkette vollständig in das vorhandene GUI-System integriert und in allen Betriebsmodi nutzbar.
+Damit lässt sich die neue Sensorkette ohne Medienbruch in die vorhandene GUI einbetten und steht anschließend in allen Betriebsmodi bereit.
 
 \section{Umsetzung}
 
-Die Integration des neuen Verarbeitungspakets \texttt{ouster\_cpp} in die bestehende IFZN-GUI erforderte mehrere gezielte Anpassungen an der Dateistruktur, den Workspaces sowie den Startmechanismen der ROS\,2-Nodes. Ziel war es, die gesamte Verarbeitungskette -- bestehend aus den Modulen \emph{CropBox}, \emph{VoxelGrid}, \emph{RANSAC-Bodensegmentierung}, \emph{Cluster-Extraktion} und \emph{Tracking} -- in allen vorgesehenen Betriebsmodi nutzbar zu machen:  
+Die Integration des neuen Verarbeitungspakets \texttt{ouster\_cpp} in die bestehende IFZN-GUI vereinte mehrere gezielte Anpassungen an Dateistruktur, Workspaces und Startmechanismen der ROS\,2-Nodes. Ziel war es, die gesamte Verarbeitungskette -- bestehend aus den Modulen \emph{CropBox}, \emph{VoxelGrid}, \emph{RANSAC-Bodensegmentierung}, \emph{Cluster-Extraktion} und \emph{Tracking} -- in allen vorgesehenen Betriebsmodi nutzbar zu machen:
 (1) Laptop,  
 (2) Laptop mit Sensor,  
 (3) Embedded-PC + Laptop.  
