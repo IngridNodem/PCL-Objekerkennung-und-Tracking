@@ -184,3 +184,18 @@ Insgesamt zeigt dieses Szenario, dass die Bodensegmentierung und die gesamte Ver
   \caption{Vergleichende Übersicht der Messgrößen je Szenario}
   \label{tab:szenario_ueberblick}
 \end{table}
+
+\section{Bewertung des Algorithmus}
+\label{sec:bewertung_algorithmus}
+
+Die Auswertung der Versuchsreihen zeigt, dass der entwickelte Pipeline-Algorithmus die Anforderungen an Echtzeitfähigkeit, Ressourceneffizienz und Robustheit größtenteils erfüllt. Die wichtigsten Erkenntnisse lassen sich wie folgt zusammenfassen:
+\begin{itemize}
+  \item \textbf{Echtzeitfähigkeit:} In allen Szenarien bleiben die End-to-End-Latenzen deutlich unter der Zielmarke von \(100\,\mathrm{ms}\); vielfach liegen sie sogar im Bereich von \(20{-}40\,\mathrm{ms}\). Damit reagiert das System ausreichend schnell, um in typischen Fahrgeschwindigkeiten sichere Entscheidungen zu ermöglichen.
+  \item \textbf{Ressourceneffizienz:} Die CPU-Auslastung bleibt durchweg unter \(35\,\%\), der Speicherbedarf stabil um \(200\,\mathrm{MB}\). Somit existiert genügend Spielraum für zusätzliche Verarbeitungsschritte oder parallele Aufgaben auf der Zielhardware.
+  \item \textbf{Stabilität der Datenraten:} Die gemessenen Frequenzen der Punktwolken- und Track-Topics zeigen eine überwiegend konstante Verarbeitung ohne langanhaltende Aussetzer. Kurzzeitige Einbrüche (z.\,B. durch Bodenwellen) werden schnell kompensiert, was auf eine robuste Pipeline hinweist.
+  \item \textbf{Tracking-Qualität:} In statischen Szenarien treten relativ viele Track-Geburten mit kurzen Lebensdauern auf. Dies deutet auf Optimierungspotenzial bei den Schwellenwerten der Track-Verwaltung hin, beeinträchtigt aber die grundlegende Leistungsfähigkeit nicht.
+  \item \textbf{Übertragbarkeit:} Die ähnlichen Ressourcen- und Latenzprofile in heterogenen Szenarien (Stand, urbanes Fahren, Steigung, Unebenheiten) sprechen dafür, dass der Algorithmus gut skalierbar und gegenüber Umgebungsvariationen robust ist.
+\end{itemize}
+
+In Summe erfüllt die aktuelle Konfiguration der Verarbeitungskette die definierten Echtzeit- und Stabilitätsanforderungen und bietet gleichzeitig Ansatzpunkte für weitere Verbesserungen, insbesondere im Feintuning der Tracking-Parameter zur Reduktion unnötiger ID-Wechsel.
+Damit sind zentrale Kriterien aus den in Tabelle~\ref{tab:anforderungen_messkette} formulierten Anforderungen an den Algorithmus erfüllt, namentlich die Einhaltung der End-to-End-Latenz \(<100\,\mathrm{ms}\) sowie eine ressourcenschonende Ausführung auf Standardhardware.
