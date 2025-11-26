@@ -2448,9 +2448,31 @@ weitergehende Funktionalitäten bietet.
 
 % ====== 8 Zusammenfassung und Ausblick ======
 \chapter{Zusammenfassung und Ausblick}
-% Inhalt hier ergÃ¤nzen
 \section{Zusammenfassung}
+Die vorliegende Arbeit entwickelte eine LiDAR-basierte Verarbeitungspipeline, die alle Schritte von der Vorverarbeitung bis zur
+Objektverfolgung integriert. Ausgehend von einer ROS~2-basierten Systemarchitektur wurden zunächst robuste Verfahren zur
+Normalisierung und Filterung der Punktwolken aufgebaut, die eine verlässliche Grundlage für nachgelagerte Algorithmen schaffen.
+Darauf aufbauend ermöglicht die Bodensegmentierung eine stabile Trennung zwischen Fahrbahn- und Objektpunkten, während die
+Clustering-Verfahren mit datengetriebenen Bounding-Boxen eine kompakte und interpretierbare Objektrepräsentation liefern.
+Die anschließende Verfolgung stellt durch geeignete Datenassoziation und modellbasierte Prädiktion sicher, dass auch bei
+temporären Sensorausfällen oder Abschattungen konsistente Trajektorien berechnet werden. In umfangreichen Versuchsfahrten
+bestätigte die Pipeline ihre Echtzeitfähigkeit: Die Verarbeitungslatenzen blieben im typischen Fahrbetrieb deutlich unter
+der Eingangstaktung des Sensors, sodass ausreichend Reserven für zusätzliche Funktionen bestehen. Insgesamt zeigt die Arbeit,
+dass die Kombination aus klassischen Verfahren und sorgfältiger Parametrierung eine zuverlässige 360°-Umfelderfassung mit
+hochaufgelösten LiDAR-Daten ermöglicht.
 \section{Ausblick}
+Die erzielten Ergebnisse legen mehrere Ansatzpunkte für weiterführende Arbeiten nahe. Kurzfristig bietet sich eine adaptive
+Parametrierung der Filter- und Segmentierungsstufen an, um die Pipeline dynamisch an unterschiedliche Wetter- oder
+Verkehrssituationen anzupassen. Perspektivisch könnten probabilistische Filter oder graphbasierte Optimierungsverfahren die
+Tracking-Genauigkeit in komplexen Szenen erhöhen und robuste Reidentifikation ermöglichen. Darüber hinaus lässt sich durch
+Sensorfusion mit Kamera- oder Radardaten sowohl die semantische als auch die geometrische Konsistenz steigern, etwa über
+gemeinsame Objektmerkmale oder BEV-Repräsentationen. Ergänzend sollte geprüft werden, wie SLAM-Verfahren auf Basis der
+LiDAR-Daten eine lokale Karte aufbauen und die Eigenbewegung präzisieren können, um die Objekttrajektorien in ein konsistentes
+Weltkoordinatensystem einzubetten. Für eine spätere Integration in hochautomatisierte Fahrfunktionen sind zusätzliche
+Safety-Mechanismen wie Zustandsüberwachung, Plausibilitätsprüfungen und Fallback-Strategien wünschenswert. Eine kontinuierliche
+Evaluation mit erweiterten Datensätzen und realen Fahrversuchen wird entscheidend sein, um die Übertragbarkeit auf
+unterschiedliche Fahrzeugplattformen und Einsatzgebiete zu sichern und das volle Potenzial der LiDAR-basierten
+Umfelderfassung auszuschöpfen.
 
 % ====== Literaturverzeichnis ======
 \cleardoublepage
