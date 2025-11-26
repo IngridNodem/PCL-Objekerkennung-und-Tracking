@@ -2202,6 +2202,8 @@ Real & 15 & 0 & 1 & 3 & 19 \\
 \label{tab:geparkt_cluster_tolerance}
 \end{table}
 
+Die Auswertungen für \textbf{S1} zeigen deutlich, wie sensibel die Pipeline auf Übersegmentierung reagiert. Eine Vergrößerung der \texttt{voxel\_size} von \SI{0.10}{m} auf \SI{0.20}{m} reduziert die Fehlklassifikationen von Menschen und Fahrradfahrern vollständig und nähert sich mit insgesamt 17 Detektionen dem Realwert von 19 Objekten an. Gleichzeitig verhindert die feinere Bodenschätzung mit einem \texttt{distance\_threshold} von \SI{0.20}{m}, dass Fahrzeugdachpunkte als Boden eingestuft werden; dies steigert die Gesamtdetektionen auf 20, jedoch um den Preis eines zusätzlichen LKW-Falschpositivs. Am deutlichsten wird der Einfluss der \texttt{cluster\_tolerance}: Zu kleine Werte (\SI{0.30}{m}) führen zu einer Übersegmentierung von PKW (24 Gesamt\-detektionen), während zu große Werte (\SI{0.70}{m} und \SI{0.90}{m}) angrenzende Fahrzeuge zusammenziehen (nur 11 bzw. 10 Detektionen). Die Einstellung \SI{0.50}{m} liefert mit 19 Detektionen eine nahezu perfekte Übereinstimmung mit der Bodenwahrheit und stellt damit den besten Kompromiss zwischen Trennschärfe und Zusammenfassung dar.
+
 \subsection{S2 – Kreuzung}
 
 \begin{table}[H]
