@@ -2258,6 +2258,16 @@ Real & 15 & 0 & 1 & 3 & 19 \\
   \label{tab:kreuzung_cluster_tolerance}
 \end{table}
 
+Die Ergebnisse der Szene \textbf{S2~–~Kreuzung} zeigen, dass eine dichte und dynamische Umgebung die Wirkung jedes Parameters verstärkt.
+Eine moderate Reduzierung der \textit{voxel\_size} (0,15--0,20\,m) senkt die Falschmeldungen in der Klasse \textit{Mensch} (von 13 auf 2~Detektionen),
+führt aber gleichzeitig zu einer leichten Untererfassung der tatsächlichen Fußgänger (3 erwartete Ziele) und weiterer Klassen \big(\autoref{tab:kreuzung_voxel_size}\big).
+Ein \textit{distance\_threshold} von 0,15--0,20\,m verhindert eine Explosion von Fehl-Clustern, ohne große Objekte zu verlieren; geringere Werte (0,10\,m)
+bewirken eine Übersegmentierung und fast doppelt so viele Detektionen wie real vorhanden \big(29 statt 14, \autoref{tab:kreuzung_distance_threshold}\big).
+Die Variation der \textit{cluster\_tolerance} belegt, dass ein Umfeld von 0,50--0,70\,m einen guten Kompromiss bietet: darunter (0,30\,m) werden Objekte übersegmentiert (21~Detektionen, davon 4~falsche Radfahrer),
+darüber (0,90\,m) beginnen sie zu fusionieren (26~Detektionen, 7 über dem Realwert), siehe \autoref{tab:kreuzung_cluster_tolerance}.
+In Summe bleiben die gewählten Einsatzwerte (\textit{voxel\_size} = 0,15--0,20\,m, \textit{distance\_threshold} = 0,15\,m, \textit{cluster\_tolerance} = 0,50\,m)
+eine robuste Wahl, um Fehlalarme zu begrenzen und gleichzeitig die wesentlichen Ziele in einer stark frequentierten Kreuzung zu erhalten.
+
 \subsection{S3 – Unebene Fahrbahn}
 
 \begin{table}[H]
