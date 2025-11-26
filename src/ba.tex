@@ -2091,9 +2091,9 @@ Zur Visualisierung und qualitativen Analyse wurde \textit{\ac{RViz}} eingesetzt.
 \section{Parameterstudie}
 \label{sec:parameterstudie}
 
-Die gewählte Detektionspipeline ist sensitiv gegenüber mehreren Parametern, die die Qualität der Segmentierung, Clusterbildung und Klassentrennung maßgeblich beeinflussen. Ziel der Parameterstudie ist daher die Untersuchung, welche Kombinationen aus \textit{voxel\_size}, \textit{distance\_threshold} und \textit{cluster\_tolerance} robuste Ergebnisse in unterschiedlichen urbanen Szenarien liefern. Zu diesem Zweck wurden aufgezeichnete ROS2-Bagfiles mehrfach wiederholt abgespielt und jeweils nur ein Parameter verändert, während alle anderen konstant gehalten wurden. Dadurch lässt sich der isolierte Einfluss jeder Stellgröße bewerten.
+Die gewählte Detektionspipeline ist sensitiv gegenüber mehreren Parametern, die die Qualität der Segmentierung, Clusterbildung und Klassentrennung maßgeblich beeinflussen. Entsprechend untersucht die Parameterstudie, welche Kombinationen aus \textit{voxel\_size}, \textit{distance\_threshold} und \textit{cluster\_tolerance} in unterschiedlichen urbanen Szenarien robuste Ergebnisse liefern. Die ROS2-Bagfiles wurden dazu mehrfach wiederholt abgespielt; pro Durchgang änderte sich nur ein Parameter, während alle anderen konstant blieben. So lässt sich der isolierte Einfluss jeder Stellgröße bewerten und gezielt gegenrechnen.
 
-Die Datensätze für die Parametrisierung wurden bei 9\,°C und bedecktem Himmel aufgezeichnet, sodass keine direkten Wettereinflüsse durch starke Sonneneinstrahlung oder Niederschlag zu erwarten waren. Für die Parametrisierung kam ein MEDION 15~E1 Laptop mit einem AMD Ryzen~5~7430U (6~Kerne/12~Threads) und 32~GB RAM zum Einsatz.
+Die Datensätze für die Parametrisierung wurden bei 9\,°C und bedecktem Himmel aufgezeichnet, sodass keine direkten Wettereinflüsse durch starke Sonneneinstrahlung oder Niederschlag zu erwarten waren. Verarbeitet wurden sie auf einem MEDION 15~E1 Laptop mit AMD Ryzen~5~7430U (6~Kerne/12~Threads) und 32~GB RAM.
 
 Im Fokus stehen bewusst nur diese drei Stellgrößen, weil sie die größten Hebel auf die Verarbeitungsqualität besitzen und jeweils unterschiedliche Stufen der Pipeline adressieren: \textit{voxel\_size} steuert die Ausdünnung der Punktwolke (Rauschunterdrückung versus Detailtreue), \textit{distance\_threshold} legt die Inlier-Schwelle der Bodensegmentierung fest und \textit{cluster\_tolerance} bestimmt die räumliche Nachbarschaft beim Clustering. Andere Parameter wurden nicht variiert, da sie entweder stark durch die Versuchskonfiguration vorgegeben sind (\texttt{min\_bound}/\texttt{max\_bound} der CropBox definieren den vermessenen Sichtbereich), bereits konservative Robustheitsreserven bieten (\texttt{max\_iterations} der \ac{RANSAC}-Suche), nur sekundären Einfluss auf die Klassentrennung haben (\texttt{min\_cluster\_size}, \texttt{max\_cluster\_size}, \texttt{max\_clusters}, \texttt{bbox\_type}) oder die Stabilität der Track-IDs betreffen und damit die Vergleichbarkeit der Wiederholungsmessungen erschweren würden (\texttt{gate\_dist\_max}, \texttt{max\_missed}, \texttt{min\_hits}). Auf diese Weise bleibt der Suchraum handhabbar, ohne zentrale Qualitätstreiber der Pipeline zu vernachlässigen.
 
@@ -2118,9 +2118,9 @@ Die Messungen wurden in drei realen Szenarien durchgeführt:
   \end{tabular}
 \end{table}
 
-Als Bodenwahrheit (``Realwert'') dienten zum einen Kameraaufnahmen im Vorderbereich, zum anderen das 360° \ac{LiDAR}-Datenbild für rückwärtige Objekte. Bewertet wurden jeweils die Klassen \textit{PKW}, \textit{Mensch}, \textit{Fahrradfahrer} und \textit{LKW} sowie die Gesamtdetektionen.
+Als Bodenwahrheit (``Realwert'') dienten zum einen Kameraaufnahmen im Vorderbereich, zum anderen das 360° \ac{LiDAR}-Datenbild für rückwärtige Objekte. Bewertet wurden jeweils die Klassen \textit{PKW}, \textit{Mensch}, \textit{Fahrradfahrer} und \textit{LKW} sowie die Gesamtdetektionen, sodass sowohl Über- als auch Untersegmentierungen sichtbar werden.
 
-Die in Tabelle~\ref{tab:startwerte_parameter} aufgeführten Werte blieben während der Variation von \textit{voxel\_size} unverändert und dienen als Referenz für die folgenden Auswertungen.
+Die in Tabelle~\ref{tab:startwerte_parameter} aufgeführten Werte blieben während der Variation von \textit{voxel\_size} unverändert und dienen als Referenz für die folgenden Auswertungen. Erst im Anschluss wurden \textit{distance\_threshold} und \textit{cluster\_tolerance} analog variiert, immer ausgehend von denselben Startwerten.
 
 \begin{table}[H]
   \centering
@@ -2334,17 +2334,7 @@ Real & 13 & 0 & 1 & 5 & 19 \\
 \caption{Anzahl Detektionen pro Klasse für verschiedene cluster\_tolerance (Unebene Fläche).}
 \end{table}
 
-Im Vergleich zu den ebenen Szenarien fällt auf, dass die geneigte Fahrbahn deutlich mehr Fehlalarme bei kleinen Objekten erzeugt:
-Schon bei \(\textit{voxel\_size} = 0{,}10\,\text{m}\) entstehen insgesamt 25 Detektionen, obwohl das Realbild nur 19 Objekte enthält,
-was auf ein überbetontes Rauschen in der höhenvariierenden Punktwolke schließen lässt. Größere Voxel glätten die Punktwolke und
-reduzieren so die Zahl fälschlicher Personen-Detektionen (von 7 auf 0), senken aber zugleich die Lkw-Erkennung, weil schräge
-Fahrzeugflanken in groben Voxeln zusammenfallen. Ähnlich zeigt das Bodensegment \(\textit{distance\_threshold}\), dass Werte oberhalb
-von \(0{,}15\,\text{m}\) die Gesamtzahl auf das Realniveau (19) stabilisieren, weil übermäßige Bodenpunkte entfernt werden, während
-zu kleine Schwellen (0{,}10\,\text{m}) Objekte in Bodenausreißer zerlegen. Bei der Clusterung trennt eine mittlere
-\(\textit{cluster\_tolerance}\) von \(0{,}50\,\text{m}\) die Fahrzeuge trotz Steigung am zuverlässigsten und vermeidet gleichzeitig die
-Übersegmentierung, die bei \(0{,}30\,\text{m}\) zu fünf Fahrrad-Fehldetektionen führt. Insgesamt bestätigen die geneigten Szenen, dass
-moderat gewählte Parameter die Höhenstreuung abfangen und die Detektionszahlen nahe an den Realwerten halten, ohne relevante
-Objektstrukturen zu verlieren.
+Im Vergleich zu den ebenen Szenarien fällt auf, dass die geneigte Fahrbahn deutlich mehr Fehlalarme bei kleinen Objekten erzeugt. Schon bei \(\textit{voxel\_size} = 0{,}10\,\text{m}\) entstehen insgesamt 25 Detektionen, obwohl das Realbild nur 19 Objekte enthält; die Höhenvarianz verstärkt hier das Rauschen. Größere Voxel glätten die Punktwolke und reduzieren fälschliche Personen-Detektionen (von 7 auf 0), senken aber zugleich die Lkw-Erkennung, weil schräge Fahrzeugflanken in groben Voxeln zusammenfallen. Ähnlich zeigt das Bodensegment \(\textit{distance\_threshold}\), dass Werte oberhalb von \(0{,}15\,\text{m}\) die Gesamtzahl auf das Realniveau (19) stabilisieren, während zu kleine Schwellen (0{,}10\,\text{m}) Objekte in Bodenausreißer zerlegen. Bei der Clusterung trennt eine mittlere \(\textit{cluster\_tolerance}\) von \(0{,}50\,\text{m}\) die Fahrzeuge trotz Steigung am zuverlässigsten und vermeidet zugleich die Übersegmentierung, die bei \(0{,}30\,\text{m}\) zu fünf Fahrrad-Fehldetektionen führt. Insgesamt bestätigen die geneigten Szenen, dass moderat gewählte Parameter die Höhenstreuung abfangen und die Detektionszahlen nahe an den Realwerten halten, ohne relevante Objektstrukturen zu verlieren.
 
 \subsection{Fazit der Parameterstudie}
 
