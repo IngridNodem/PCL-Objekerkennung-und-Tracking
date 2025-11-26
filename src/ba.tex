@@ -2311,6 +2311,7 @@ Real & 13 & 0 & 1 & 5 & 19 \\
 
 \subsection{Fazit der Parameterstudie}
 
+Die Studie belegt, dass moderate Werte für die Kernparameter die robustesten Ergebnisse liefern: Eine Voxelgröße von \(0{,}15\,\text{m}\) bis \(0{,}20\,\text{m}\) glättet Rauschen, ohne feine Objektstrukturen zu verlieren, \(\textit{distance\_threshold} = 0{,}15\,\text{m}\) verhindert Ausfransungen in geneigten Szenen und \(\textit{cluster\_tolerance}\) um \(0{,}50\,\text{m}\) trennt dicht beieinanderstehende Objekte zuverlässig, ohne sie zu übersegmentieren. Größere oder kleinere Abweichungen führten entweder zu übermäßiger Detektionszahl (Fehlalarme) oder zum Zusammenfallen benachbarter Objekte. Insgesamt bestätigt die Parameterstudie, dass die gewählte Pipeline mit konservativen Mittelwerten ein stabiles Gleichgewicht zwischen Präzision und Robustheit erreicht und damit eine gute Ausgangsbasis für den Einsatz im Fahrbetrieb bietet.
 
 \section{Test im Fahrbetrieb}
 
