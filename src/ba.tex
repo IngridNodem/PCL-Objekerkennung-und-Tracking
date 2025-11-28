@@ -1066,7 +1066,7 @@ Die Güte der Objektdetektion und -verfolgung wurde primär mit zwei ROS-Tools b
 \chapter{Vorverarbeitung}
 \label{chap:vorverarbeitung}
 
-Dieses Kapitel konzentriert sich auf die Vorverarbeitung der \ac{LiDAR}-Punktwolken, um Datenvolumen und Rauschen vor den nachfolgenden Schritten zu reduzieren. Es beschreibt die verwendeten Filter zur räumlichen Begrenzung und Ausdünnung der Punktwolke sowie ihre Parametrierung, sodass die späteren Segmentierungs- und Clusteringverfahren auf einer robusten und gleichmäßig verteilten Datenbasis aufsetzen können.
+Dieses Kapitel bündelt die Vorverarbeitungsschritte der \ac{LiDAR}-Punktwolken. Ziel ist es, Datenvolumen und Rauschen vor den nachfolgenden Modulen zu reduzieren und gleichzeitig eine gleichmäßig verteilte Datenbasis für Segmentierung und Clustering zu schaffen. Im Zentrum stehen die räumliche Begrenzung per CropBox und die Ausdünnung mittels VoxelGrid, jeweils mit den verwendeten Parametern und der Umsetzung in der \ac{ROS}~2-Pipeline.
 
 \section{CropBox-Filter}
 \label{sec:cropbox}
@@ -1079,21 +1079,10 @@ Der \textit{CropBox-Filter} begrenzt eine Punktwolke auf eine achsenparallel aus
 \end{align}
 gilt, wobei \(\mathbf{R}\in\mathbb{R}^{3\times4}\) die ersten drei Zeilen der \ac{PCL}-internen Transformationsmatrix sind, \(\mathbf{t}\) eine optionale Translation darstellt und \(\mathbf{b}_\text{min/max}=[x_{\min/\max},y_{\min/\max},z_{\min/\max}]^\top\) die parametrisierte Box definieren. Punkte, die diese Ungleichung nicht erfüllen, werden verworfen. Die Operation besitzt eine lineare Laufzeit \(\mathcal{O}(|\mathcal{P}|)\) und reduziert das Datenvolumen vor nachgelagerten Schritten signifikant (vgl. \cite{rusu2011pcl,pcl_cropbox_2025}). Durch die optionale Transformationsmatrix lassen sich zusätzlich gekippte Sensorkoordinaten oder Fahrzeugversätze berücksichtigen, wodurch die AABB effektiv einer beliebig orientierten Bounding Box im globalen Rahmen entspricht \cite{pcl_docs_2025}.
 
-Die Auswahl der Grenzen folgt in dieser Arbeit einem systematischen Verfahren: Zunächst wurde eine großzügige Box \(\mathbf{b}_\text{min}=[-20,-15,-3]^\top\), \(\mathbf{b}_\text{max}=[20,15,5]^\top\) definiert, um alle relevanten Rückläufer sicher zu erfassen. Anschließend erfolgte eine schrittweise Schrumpfung entlang \(x\), \(y\) und \(z\) in \(0{,}5\,\mathrm{m}\)-Schritten. Bewertet wurde jede Konfiguration anhand (i) Detektionspräzision nach dem Clustering (Anteil falsch positiver Objekte), (ii) verbleibender Punktzahl sowie (iii) Anteil abgeschnittener Fahrbahnränder in \ac{RViz}. Dieses Vorgehen entspricht der iterativen \ac{ROI}-Abgrenzung, wie sie in \ac{LiDAR}-Pipelines zur Falsch-Alarm-Reduktion empfohlen wird \cite{hu2013robust,himmelsbach2010fast}. Die finalen Grenzen \(\mathbf{b}_\text{min}=[-10,-6,-3]^\top\) und \(\mathbf{b}_\text{max}=[10,6,5]^\top\) lieferten den besten Kompromiss aus reduzierter Punktzahl und stabiler Objektabdeckung im urbanen Messfeld.
+Die Grenzen wurden schrittweise verengt: Ausgangspunkt war eine großzügige Box \(\mathbf{b}_\text{min}=[-20,-15,-3]^\top\), \(\mathbf{b}_\text{max}=[20,15,5]^\top\), die anschließend entlang \(x\), \(y\) und \(z\) in \(0{,}5\,\mathrm{m}\)-Schritten reduziert wurde. Jede Variante wurde anhand der Detektionspräzision nach dem Clustering, der verbleibenden Punktzahl und des abgeschnittenen Fahrbahnrands in \ac{RViz} bewertet. Dieses iterative \ac{ROI}-Tuning folgt gängigen Empfehlungen zur Falsch-Alarm-Reduktion \cite{hu2013robust,himmelsbach2010fast}. Die finalen Grenzen \(\mathbf{b}_\text{min}=[-10,-6,-3]^\top\) und \(\mathbf{b}_\text{max}=[10,6,5]^\top\) balancieren Datenreduktion und stabile Objektabdeckung im urbanen Messfeld.
 
 \subsection{Implementierung}
-Im Rahmen dieser Arbeit wurde der \texttt{crop\_box\_node} in C++ unter \ac{ROS}~2
-entwickelt, um diesen Filter dynamisch innerhalb der gesamten Verarbeitungskette anzuwenden.
-Der Node empfängt eine eingehende Punktwolke vom Ouster-\ac{LiDAR}-Sensor auf dem Topic
-\texttt{/ouster/points}, filtert die Daten gemäß den eingestellten Grenzen und publiziert die
-gefilterte Punktwolke auf \texttt{/points\_cropped}.
-Die Parameter \texttt{min\_bound} und \texttt{max\_bound} definieren die minimale und maximale Ausdehnung
-des Arbeitsvolumens in Metern, während die Parameter \texttt{input\_topic} und
-\texttt{output\_topic} den Ein- und Ausgang der Datenströme steuern.
-Das Konzept ist in Tabelle~\ref{tab:cropbox_params} zusammengefasst.
-Der produktive Code des Nodes liegt unter \texttt{ouster\_cpp/src/crop\_box\_node.cpp} und ist
-in Anhang~\ref{lst:cropbox_node} vollständig abgedruckt. Der gesamte ROS-2-Quelltext der Verarbeitungskette ist zusätzlich im digitalen Anhang abgelegt (Abschnitt~\ref{anhang:code}).
-Der \texttt{crop\_box\_node} wurde in C++ unter \ac{ROS}~2 implementiert und nutzt die \ac{PCL}-Schnittstellen, um die Ungleichung aus Gleichung~\eqref{eq:cropbox} Punkt für Punkt anzuwenden. Wichtige Kernschritte sind: Laden der Parameter \texttt{min\_bound} und \texttt{max\_bound}, Subscription des Eingangstopics \texttt{/ouster/points} mit SensorDataQoS und Publikation des Ergebnisses auf \texttt{/points\_cropped}. Ein Auszug zeigt den wesentlichen Ablauf \cite{pcl_docs_2025}:
+Der \texttt{crop\_box\_node} wurde in C++ unter \ac{ROS}~2 umgesetzt und nutzt die \ac{PCL}-Schnittstellen, um die Ungleichung aus Gleichung~\eqref{eq:cropbox} Punkt für Punkt anzuwenden. Der Node abonniert \texttt{/ouster/points} mit SensorDataQoS, lädt die Grenzen \texttt{min\_bound} und \texttt{max\_bound} sowie die Topics \texttt{input\_topic} und \texttt{output\_topic} und publiziert das Ergebnis auf \texttt{/points\_cropped}. Tabelle~\ref{tab:cropbox_params} fasst das Parameter-Set zusammen; der produktive Code unter \texttt{ouster\_cpp/src/crop\_box\_node.cpp} ist in Anhang~\ref{lst:cropbox_node} vollständig abgedruckt.
 
 \begin{verbatim}
 // Ausschnitt aus src/ouster_cpp/src/crop_box_node.cpp
@@ -1128,26 +1117,7 @@ Neben den Pflichtfeldern \(x,y,z\) unterstützt der Node optionale Felder (\text
   \label{tab:cropbox_params}
 \end{table}
 
-Das Zuschneidevolumen bezieht sich auf das Sensorkoordinatensystem des Ouster-LiDARs
-und folgt der in \ac{ROS} etablierten Konvention nach REP~103: \(x\) zeigt in Fahrtrichtung,
-\(y\) nach links und \(z\) nach oben; der Ursprung liegt im \ac{LiDAR}-Frame auf Fahrzeughöhe.
-Die Vektoren \texttt{min\_bound} und \texttt{max\_bound} geben damit den minimalen bzw.
-maximalen Wert entlang dieser Achsen in Metern an und definieren eine achsenparallele
-Box, innerhalb derer Punkte beibehalten werden.
-
-Der \texttt{crop\_box\_node} wurde so implementiert, dass er sowohl Pflichtfelder 
-(\texttt{x}, \texttt{y}, \texttt{z}) als auch optionale Felder wie 
-\texttt{intensity} (FLOAT32/UINT16) und \texttt{ring} erkennt.  
-Für jeden Punkt wird geprüft, ob er innerhalb des durch die Parameter definierten 
-Volumens liegt. Ist dies der Fall, wird er beibehalten und in die 
-Ausgabepunktwolke übernommen. 
-Die Implementierung erlaubt zudem eine Laufzeitänderung der Grenzen
-durch dynamische Re-Konfiguration via \texttt{set\_parameters}, ohne dass
-die \ac{ROS}~2-Verbindungen neu aufgebaut werden müssen.
-
-Da sich im Messbereich Gebäude und weitere störende Objekte befanden, welche die Anzahl falscher Detektionen signifikant erhöhen
- konnten, wurden die Grenzen des \texttt{crop\_box\_node} sukzessive angepasst. Durch iterative Parameteroptimierung ergaben sich
- folgende final verwendete Werte: \texttt{min\_bound = [-10.0, -6.0, -3.0]} sowie \texttt{max\_bound = [10.0, 6.0, 5.0]}.
+Das Zuschneidevolumen bezieht sich auf das Sensorkoordinatensystem des Ouster-LiDARs und folgt der in \ac{ROS} etablierten Konvention nach REP~103: \(x\) zeigt in Fahrtrichtung, \(y\) nach links und \(z\) nach oben; der Ursprung liegt im \ac{LiDAR}-Frame auf Fahrzeughöhe. Der Node unterstützt Pflichtfelder (\texttt{x}, \texttt{y}, \texttt{z}) sowie optionale Attribute wie \texttt{intensity} (FLOAT32/UINT16) und \texttt{ring}. Für jeden Punkt wird geprüft, ob er innerhalb der parametrierten Box liegt; bei Erfolg wird er übernommen. Über \texttt{set\_parameters} lassen sich die Grenzen zur Laufzeit anpassen, ohne die \ac{ROS}~2-Verbindungen neu aufzubauen.
 
 \subsection{Test und Ergebnis}
 Die Wirkung des CropBox-Filters wird nicht allein über Visualisierungen überprüft, sondern durch eine
