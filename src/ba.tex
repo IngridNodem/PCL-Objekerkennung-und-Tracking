@@ -1275,16 +1275,15 @@ ohne dass dabei wichtige Strukturen der Szene verloren gehen.
 \chapter{Bodensegmentierung}
 \label{chap:bodensegmentierung}
 
-Die Bodensegmentierung ist ein essenzieller Vorverarbeitungsschritt innerhalb der Verarbeitungskette zur Objekterkennung. 
-Ihr Ziel besteht darin, Bodenpunkte zuverlässig von Hindernissen und anderen Objekten zu trennen, um die nachfolgenden Schritte – insbesondere die Cluster- und Objekterkennung – zu erleichtern. 
-Im Folgenden werden zunächst die Anforderungen an die Bodensegmentierung beschrieben, anschließend verschiedene Methoden anhand definierter Bewertungskriterien verglichen und abschließend die in dieser Arbeit implementierte Methode vorgestellt.
+Die Bodensegmentierung ist ein essenzieller Vorverarbeitungsschritt innerhalb der Verarbeitungskette zur Objekterkennung.
+Ihr Ziel besteht darin, Bodenpunkte zuverlässig von Hindernissen und anderen Objekten zu trennen, um die nachfolgenden Schritte – insbesondere die Cluster- und Objekterkennung – zu erleichtern.
+Dieses Kapitel führt die Anforderungen an eine robuste Bodensegmentierung ein, vergleicht gängige Verfahren anhand klarer Bewertungskriterien und stellt die implementierte \ac{RANSAC}-Variante im Detail vor. Dadurch ergibt sich ein roter Faden von den Anforderungen über den Methodenvergleich bis hin zur konkreten Umsetzung.
 
 
-\section{Anforderungen an der Bodensegmentierung}
+\section{Anforderungen an die Bodensegmentierung}
 \label{sec:anforderungen_bodenseg}
 
-Die wichtigsten Anforderungen an ein Bodensegmentierungsverfahren lassen sich nach~\cite{gomes2023survey} in mehreren Kriterien zusammenfassen, 
-die in Tabelle~\ref{tab:anforderungen_bodensegmentierung} dargestellt sind.
+Die wichtigsten Anforderungen an ein Bodensegmentierungsverfahren lassen sich nach~\cite{gomes2023survey} in mehreren Kriterien zusammenfassen, die in Tabelle~\ref{tab:anforderungen_bodensegmentierung} dargestellt sind.
 
 \begin{table}[H]
 \centering
@@ -1324,7 +1323,7 @@ zuverlässige Ergebnisse liefern. \\ \hline
 \label{tab:anforderungen_bodensegmentierung}
 \end{table}
 
-Diese Arbeit fokusiert sich auf vier Hauptkriterien:
+Aus den sechs Anforderungen werden für die weitere Analyse vier Bewertungskriterien abgeleitet:
 
 \begin{table}[H]
 \centering
@@ -1341,21 +1340,7 @@ Diese Arbeit fokusiert sich auf vier Hauptkriterien:
 \label{tab:bewertungskriterien}
 \end{table}
 
-Die Auswahl dieser vier Bewertungskriterien basiert auf den Anforderungen, 
-die bei der Verarbeitung von \ac{LiDAR}-Daten in urbanen Umgebungen besonders relevant sind.  
-In städtischen Szenarien treten komplexe Strukturen, wechselnde Oberflächenmaterialien 
-und zahlreiche bewegte Objekte auf, was eine hohe Robustheit und Genauigkeit bei der 
-Bodensegmentierung erfordert.  
-Gleichzeitig muss die Verarbeitung der Sensordaten in Echtzeit erfolgen, 
-um eine kontinuierliche Umfeldwahrnehmung und gegebenenfalls eine sichere Fahrzeugführung 
-zu gewährleisten.  
-Da in praktischen Anwendungen häufig nur begrenzte Rechenressourcen zur Verfügung stehen,
-ist auch der Rechenaufwand ein entscheidender Faktor für die Auswahl geeigneter Verfahren.
-Diese vier Kriterien bilden somit die Grundlage für eine objektive Bewertung
-und den methodischen Vergleich der in dieser Arbeit betrachteten Ansätze.
-
-Die sechs Anforderungen aus Tabelle~\ref{tab:anforderungen_bodensegmentierung} werden in Tabelle~\ref{tab:bewertungskriterien}
-zu vier Bewertungskriterien zusammengeführt, indem inhaltlich verwandte Punkte gebündelt werden:
+Die Auswahl dieser vier Bewertungskriterien orientiert sich an den Einsatzbedingungen urbaner \ac{LiDAR}-Szenarien: komplexe Geometrien und bewegte Objekte erfordern Robustheit und Genauigkeit, das Bordzeitbudget verlangt Echtzeitfähigkeit, und eingeschränkte Ressourcen machen einen geringen Rechenaufwand nötig. Tabelle~\ref{tab:bewertungskriterien} fasst die Verdichtung der sechs Anforderungen aus Tabelle~\ref{tab:anforderungen_bodensegmentierung} zusammen, indem inhaltlich verwandte Punkte gebündelt werden:
 \begin{itemize}
     \item \textbf{Robustheit} fasst die Leistungsbewertung bei steigenden Hindernissen, unebenem Gelände und spärlichen Daten zusammen,
     weil alle drei Aspekte die Widerstandsfähigkeit gegenüber unterschiedlichen Gelände- und Sensordichtevariationen abprüfen.
