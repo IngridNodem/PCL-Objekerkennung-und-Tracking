@@ -1054,11 +1054,11 @@ Ressourcennutzung) knüpfen somit unmittelbar an die definierten Anforderungen a
 nachvollziehbar, wie deren Erfüllung gemessen und nachgewiesen wird.
 
 \subsection{E2E-Latenz}
-Für das betrachtete System wird eine Ende-zu-Ende-Latenz von weniger als \(100\,\text{ms}\) bei einer Verarbeitung mit \(10\,\text{Hz}\) angestrebt. Zur Verifikation werden an den Modulgrenzen Zeitstempel gesetzt (Eingang und Ausgang), die anschließend hinsichtlich Mittelwert, 95. Perzentil und 99. Perzentil über lange Sequenzen ausgewertet werden. Die Messungen erfolgen bei der Wiedergabe identischer Datensätze aus \texttt{rosbag2}. Die Instrumentierung erfolgt anhand des Eingangszeitstempels aus \texttt{header.stamp}, während Zwischenzeiten innerhalb der Module mitgeführt und protokolliert werden. Eine gemeinsame Zeitbasis (z.\,B. deaktivierte Simulationszeit oder externe Synchronisation) wird vorausgesetzt, um Vergleichbarkeit und Konsistenz zu gewährleisten.
+Für das betrachtete System wird eine Ende-zu-Ende-Latenz von weniger als \(100\,\text{ms}\) bei einer Verarbeitung mit \(10\,\text{Hz}\) angestrebt. Zur Verifikation werden an den Modulgrenzen Zeitstempel gesetzt (Eingang und Ausgang), die anschließend hinsichtlich Mittelwert, 95. Perzentil und 99. Perzentil über lange Sequenzen ausgewertet werden. Die Messungen erfolgen bei der Wiedergabe identischer Datensätze aus \texttt{rosbag2}; die zugrundeliegenden Aufzeichnungen sind im digitalen Anhang dokumentiert (Abschnitt~\ref{anhang:messaufzeichnungen}). Die Instrumentierung erfolgt anhand des Eingangszeitstempels aus \texttt{header.stamp}, während Zwischenzeiten innerhalb der Module mitgeführt und protokolliert werden. Eine gemeinsame Zeitbasis (z.\,B. deaktivierte Simulationszeit oder externe Synchronisation) wird vorausgesetzt, um Vergleichbarkeit und Konsistenz zu gewährleisten.
 
 \subsection{Ressourcennutzung (CPU/RAM)}
 Die Auslastung der Rechen- und Speicherressourcen wird für jeden Knoten unter repräsentativer Last erfasst. Optimierungsmaßnahmen wie ein angepasstes Datenlayout, die Vermeidung unnötiger Kopien oder die Vorallokation von Puffern werden dokumentiert und quantitativ bewertet. Zur Analyse kommen Werkzeuge wie \texttt{ros2 topic hz /ouster/points} und \texttt{ros2 topic hz /tracks\_raw} zum Einsatz.
-Außerdem wird ein Python Skript ausgeführt zur Berechnung der CPU Auslastung pro Node (resource\_probe.py)
+Außerdem wird ein Python Skript ausgeführt zur Berechnung der CPU Auslastung pro Node (resource\_probe.py); das vollständige Skript ist im digitalen Anhang hinterlegt (Abschnitt~\ref{anhang:skripte}).
 
 \subsection{Objekterkennung und -verfolgung}
 Die Güte der Objektdetektion und -verfolgung wurde primär mit zwei ROS-Tools bewertet: \texttt{ids\_probe.py} und \texttt{frame\_loss\_probe.py}. Erstere verfolgt die Lebenszyklen einzelner Track-IDs und meldet pro Auswertefenster die Anzahl neu erzeugter IDs (\emph{births/min}), abgeschlossener Tracks (\emph{completed/min}) sowie die mediane aktive Lebensdauer sowohl laufender als auch bereits finalisierter Tracks. Damit lassen sich übermäßige ID-Wechsel oder instabile Verfolgungen unmittelbar erkennen. \texttt{frame\_loss\_probe.py} misst hingegen für jede Stufe der Verarbeitungskette die effektive Nachrichtenrate und berechnet Durchlassraten zwischen den benachbarten Topics (\emph{pass\%}) sowie gezählte Lücken (\emph{gaps}) basierend auf ausbleibenden Nachrichten über eine adaptive Schwellwertlogik. So wird transparent, an welcher Stelle Frames verloren gehen oder die Frequenz einbricht, und wie sich dies auf die nachgelagerten Detektions- und Tracking-Ergebnisse auswirkt.
@@ -1092,7 +1092,7 @@ des Arbeitsvolumens in Metern, während die Parameter \texttt{input\_topic} und
 \texttt{output\_topic} den Ein- und Ausgang der Datenströme steuern.
 Das Konzept ist in Tabelle~\ref{tab:cropbox_params} zusammengefasst.
 Der produktive Code des Nodes liegt unter \texttt{ouster\_cpp/src/crop\_box\_node.cpp} und ist
-in Anhang~\ref{lst:cropbox_node} vollständig abgedruckt.
+in Anhang~\ref{lst:cropbox_node} vollständig abgedruckt. Der gesamte ROS-2-Quelltext der Verarbeitungskette ist zusätzlich im digitalen Anhang abgelegt (Abschnitt~\ref{anhang:code}).
 Der \texttt{crop\_box\_node} wurde in C++ unter \ac{ROS}~2 implementiert und nutzt die \ac{PCL}-Schnittstellen, um die Ungleichung aus Gleichung~\eqref{eq:cropbox} Punkt für Punkt anzuwenden. Wichtige Kernschritte sind: Laden der Parameter \texttt{min\_bound} und \texttt{max\_bound}, Subscription des Eingangstopics \texttt{/ouster/points} mit SensorDataQoS und Publikation des Ergebnisses auf \texttt{/points\_cropped}. Ein Auszug zeigt den wesentlichen Ablauf \cite{pcl_docs_2025}:
 
 \begin{verbatim}
@@ -1947,7 +1947,7 @@ Tracks werden als \texttt{vision\_msgs/Detection3D} ausgegeben (Zentrum, Größe
 \section{Test und Ergebnis}
 \label{sec:ergebnis_tracking}
 
-\texttt{ids\_probe.py} beobachtet das Marker-Topic \texttt{tracks\_markers} und führt ein Lebensdauerkonto pro Track-ID: Geburt und Abschluss (bei Leerlauf länger als \texttt{idle\_timeout}) werden gezählt, aktive und abgeschlossene mittlere Lebensdauern berechnet und die Geburts- bzw. Abschlussrate pro Minute ausgegeben. Der Skript läugt als eigene \ac{ROS}~2-Nodes, greift auf die bestehenden Topics zu und unterstützt damit die Stabilität der Track-IDs.
+\texttt{ids\_probe.py} beobachtet das Marker-Topic \texttt{tracks\_markers} und führt ein Lebensdauerkonto pro Track-ID: Geburt und Abschluss (bei Leerlauf länger als \texttt{idle\_timeout}) werden gezählt, aktive und abgeschlossene mittlere Lebensdauern berechnet und die Geburts- bzw. Abschlussrate pro Minute ausgegeben. Der Skript läugt als eigene \ac{ROS}~2-Nodes, greift auf die bestehenden Topics zu und unterstützt damit die Stabilität der Track-IDs. Alle zugehörigen Auswerteskripte befinden sich zentral im digitalen Anhang (Abschnitt~\ref{anhang:skripte}).
 
 Ergebnisse der Verifikation der Objektverfolgung sind ~ref{label:gerade_strecke} zu entnehmen.
 
@@ -2652,6 +2652,7 @@ Umfelderfassung auszuschöpfen.
 
 % ====== Anhang ======
 \chapter*{Digitaler Anhang}
+\label{chap:digitaler_anhang}
 \addcontentsline{toc}{chapter}{Digitaler Anhang}
 
 Alle im Rahmen dieser Arbeit verwendeten Codes und Skripte sind im
@@ -2664,6 +2665,7 @@ FAS\_Studenten\_Austausch/FAS\_Sensorik\_am\_Astra/BA\_Nodem\_Ouster/}
 \end{quote}
 
 \section*{1. Implementierter ROS-2-Code}
+\label{anhang:code}
 
 Ablageort:
 
@@ -2685,6 +2687,7 @@ Enthalten sind:
 \end{itemize}
 
 \section*{2. Skripte zur Messung und Analyse}
+\label{anhang:skripte}
 
 Ablageort:
 
@@ -2703,6 +2706,7 @@ Enthalten sind:
 \end{itemize}
 
 \section*{3. Messaufzeichnungen}
+\label{anhang:messaufzeichnungen}
 
 Die vollständigen Messdaten der Fahrversuche (\texttt{rosbag2}) werden zentral im Labor
 Fahrzeugtechnik gespeichert.
