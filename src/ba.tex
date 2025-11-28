@@ -1578,7 +1578,7 @@ Als Ergebnis ergibt sich eine Punktwolke, die frei von Bodenpunkten ist (siehe A
 \label{chap:clustering}
 \label{chap:cluster_extraction}
 
-Nach der Entfernung der Bodenpunkte (vgl. Kapitel~\ref{chap:bodensegmentierung}) werden die verbleibenden Punktwolken in zusammenhängende Punktmengen (Cluster) gruppiert und mit Begrenzungsboxen beschrieben. Ziel ist eine in Echtzeit lauffähige, robuste Objektbildung, die konsistente Boxen (Lage, Abmessungen) für die nachgelagerte Verfolgung bereitstellt.
+Nach der Entfernung der Bodenpunkte (vgl. Kapitel~\ref{chap:bodensegmentierung}) werden die verbleibenden Punktwolken in zusammenhängende Punktmengen (Cluster) gruppiert und mit Begrenzungsboxen beschrieben. Die Stufe bildet somit die Brücke zwischen Bodensegmentierung und Tracking: Sie fasst Punkte zu Objekten zusammen, bestimmt deren Lage und Abmessungen und stellt diese als Detektionen für die Verfolgung bereit. Der Schwerpunkt liegt auf einer robusten, echtzeitfähigen Verarbeitung, die auch bei variabler Punktdichte und Teilokklusion konsistente Boxen liefert.
 
 \section{Cluster-Extraktion}
 \label{sec:cluster_extraction}
@@ -1640,7 +1640,7 @@ Für jeden Cluster werden Zentrum und Ausdehnung über eine Begrenzungsbox besti
   \label{fig:aabb_obb_vs}
 \end{figure}
 
-Die Boxermittlung folgt auf die Punktzusammenfassung und nutzt ausschließlich Clusterpunkte.
+Die Boxermittlung folgt direkt auf die Punktzusammenfassung und nutzt ausschließlich Clusterpunkte; zusätzliche Transformationen oder Hilfsdaten sind nicht notwendig. Dadurch bleibt der gesamte Schritt deterministisch und gut kontrollierbar.
 
 \subsection{AABB}
 \label{sec:aabb}
@@ -1650,12 +1650,9 @@ Die AABB wird durch die minimalen und maximalen Koordinaten je Achse bestimmt:
  L=x_{\max}-x_{\min},\; W=y_{\max}-y_{\min},\; H=z_{\max}-z_{\min}.
 \]
 
-In der Implementierung wird diese Berechnung direkt auf den Clusterpunkten ausgeführt, ohne dass zusätzliche Transformationen
-oder Optimierungsschritte erforderlich sind. Die Operation besteht lediglich aus sechs Min-/Max-Suchen und drei Differenzen und
-skaliert deshalb linear mit der Anzahl der Punkte. Die resultierende Box ist deterministisch und wiederholbar, selbst wenn der
-Cluster durch das Downsampling nur grob abgetastet ist. Ein weiterer Vorteil ist die Invarianz gegenüber Rauschen in einzelnen
-Punkten: Ausreißer können durch einfache Vorfilter (z.\,B. Voxel- oder Radius-Filter) entfernt werden, bevor die Min-/Max-Suche
-greift.
+In der Implementierung besteht der Aufwand nur aus sechs Min-/Max-Suchen und drei Differenzen, skaliert damit linear mit der
+Punktanzahl und bleibt deterministisch reproduzierbar – selbst bei grobem Downsampling. Ausreißer lassen sich vorab durch
+einfache Filter entfernen, sodass die Min-/Max-Suche stabile Boxen liefert.
 
 Nachteil der AABB ist, dass sie die Orientierung des Objekts nicht abbildet und bei stark gedrehten Objekten in der Draufsicht
 (\ac{BEV}) eine größere Grundfläche einnimmt als nötig. Für Fahrszenarien mit überwiegend längs ausgerichteten Verkehrsteilnehmern
@@ -1674,9 +1671,9 @@ kleinen Clustern (z.\,B. Poller, Fußgänger) kam es jedoch zu instabilen Haupta
 die Datenassoziation im Tracking erschwerte.
 
 Die AABB erreichte demgegenüber konsistent stabile Abmessungen und reagierte kaum empfindlich auf Ausdünnung oder temporäre
-Okklusionen. In Kombination mit einem BEV-Minimalrechteck (nur für die Yaw-Schätzung) ließe sich der Orientierungsnachteil weiter
-reduzieren, ohne die AABB-Orientierung vollständig zu ersetzen. Aus Gründen der Robustheit und Echtzeitfähigkeit wird daher in
-dieser Arbeit \textbf{AABB} als Standard gewählt; OBB bleibt optional für spezielle Auswertungen verfügbar.
+Okklusionen. In Kombination mit einem BEV-Minimalrechteck (nur für die Yaw-Schätzung) ließe sich der Orientierungsnachteil
+weiter reduzieren, ohne die AABB-Orientierung vollständig zu ersetzen. Aus Gründen der Robustheit und Echtzeitfähigkeit wird
+daher in dieser Arbeit \textbf{AABB} als Standard gewählt; OBB bleibt optional für spezielle Auswertungen verfügbar.
 \begin{figure}[H]
   \centering
   \includegraphics[width=\linewidth]{Bilder/aabb_obb_compare.png}
@@ -1684,8 +1681,7 @@ dieser Arbeit \textbf{AABB} als Standard gewählt; OBB bleibt optional für spez
   \label{fig:aabb_obb_compare}
 \end{figure}
 
-Hauptgründe sind die hohe Stabilität der Boxen unter realen Sensorbedingungen (variable Punktdichte, Okklusionen) und die geringen Rechenkosten, die die Echtzeitfähigkeit in der Gesamtkette begünstigen. Die Orientierung kann optional aus nachfolgenden Schritten (z.\,B. in \ac{BEV}) geschätzt werden, ohne die Boxbildung zu destabilisieren. Eine OBB-Erweiterung ist als künftige Verbesserung vorgesehen, insbesondere wenn robuste Orientierungsmerkmale (z.\,B. \ac{BEV}-MinArea) zuverlässig verfügbar sind.
-Abbildung~\ref{fig:aabb_obb_compare} zeigt den praktischen Unterschied.
+Hauptgründe für diese Wahl sind die hohe Stabilität der Boxen unter realen Sensorbedingungen (variable Punktdichte, Okklusionen) und die geringen Rechenkosten, die die Echtzeitfähigkeit der Gesamtkette sichern. Die Orientierung kann optional aus nachfolgenden Schritten (z.\,B. in \ac{BEV}) geschätzt werden, ohne die Boxbildung zu destabilisieren. Eine OBB-Erweiterung bleibt als künftige Verbesserung vorgesehen, sobald robuste Orientierungsmerkmale (etwa ein \ac{BEV}-MinArea-Rechteck) zuverlässig verfügbar sind. Abbildung~\ref{fig:aabb_obb_compare} zeigt den praktischen Unterschied.
 
 \section{Implementierung}
 \label{sec:implementierung_cluster_boxes}
