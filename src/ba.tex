@@ -20,14 +20,11 @@
 \usepackage{csquotes}
 \usepackage{tikz}
 \usetikzlibrary{shapes.multipart}
-\usepackage{tikz}
-\usetikzlibrary{shapes.multipart}
 \usepackage{tabularx}
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 \usepackage{array}
 \usepackage{enumitem}
 \usepackage{listings}
-\usepackage{csquotes}
 \usepackage[printonlyused]{acronym}
 \usepackage{tocbasic} % better control of ToC lists
 \usepackage{scrlayer-scrpage} % recommended for KOMA-Script classes
@@ -82,7 +79,6 @@
 \newcommand{\firmenbetreuer}{\textit{(Name, Abt., Tel.-Nr.)}} % Placeholder
 \newcommand{\ausgabedatum}{\textit{(eintragen)}} % Placeholder
 
-%-----------Literatur--------------
 %-----------Literatur--------------
 \usepackage[backend=biber,style=authoryear,sorting=nyt,maxbibnames=99]{biblatex}
 \addbibresource{literatur.bib} % nom exact du .bib
@@ -314,49 +310,13 @@ Zur Orientierung zeigt Abbildung~\ref{fig:aufbau} den strukturellen Aufbau der A
 \chapter{Stand der Technik und Wissenschaft}
 \label{chap:stand-der-technik}
 
-Dieses Kapitel bündelt die wissenschaftlichen Grundlagen der \ac{LiDAR}-Sensorik und ordnet sie in den automobilen Kontext ein. Es stellt die Messprinzipien und den historischen Entwicklungspfad von \ac{LiDAR} vor, grenzt die Technologie gegenüber Kamera und Radar ab, erläutert den Aufbau des verwendeten Sensors und bereitet damit die theoretische Basis für die in den Folgekapiteln entwickelte Verarbeitungskette.
+Dieses Kapitel bündelt die wissenschaftlichen Grundlagen der \ac{LiDAR}-Sensorik, verortet sie im automobilen Kontext und leitet daraus die für die Verarbeitungskette relevanten Anforderungen ab. Es beschreibt die Messprinzipien, skizziert den historischen Entwicklungspfad, grenzt \ac{LiDAR} gegenüber Kamera und Radar ab und erläutert den Aufbau des verwendeten Sensors.
 
-Die Umfeldwahrnehmung eines Fahrzeugs basiert in modernen
-Fahrerassistenzsystemen und im autonomen Fahren auf einer Vielzahl
-von Sensortechnologien. Neben Radar und Kamerasystemen 
-hat sich insbesondere die \ac{LiDAR}-Sensorik (\emph{Light Detection and Ranging}) 
-als Schlüsseltechnologie etabliert (\cite{beuth2021handbuch}).
+Moderne Fahrerassistenzsysteme und autonome Fahrfunktionen stützen sich auf ein Zusammenspiel aus Kamera-, Radar- und \ac{LiDAR}-Sensorik. Kameras liefern hochauflösende Bildinformationen für semantische Aufgaben, Radar überzeugt durch robuste Distanz- und Geschwindigkeitsmessung auch bei ungünstigen Wetterbedingungen. \ac{LiDAR} ergänzt diese Systeme durch präzise dreidimensionale Punktwolken mit hoher Winkelauflösung und konstanter Leistungsfähigkeit bei wechselnden Lichtverhältnissen \parencite{beuth2021handbuch}.
 
-Das Akronym \emph{\ac{LiDAR}} steht für „Light Detection and Ranging“ und 
-bezeichnet alle optischen Messverfahren, die mittels elektromagnetischer 
-Wellen einer Lichtquelle im ultravioletten, sichtbaren oder infraroten 
-Spektralbereich Eigenschaften von Objekten durch Reflexion und 
-Streuungsprozesse erfassen. \ac{LiDAR}-Systeme senden kurze Lichtimpulse 
-aus, messen die Laufzeit bis zur Reflexion und ermöglichen dadurch eine 
-präzise Abstandsschätzung sowie die Rekonstruktion dreidimensionaler 
-Strukturen der Umgebung (\cite{mcmanamon2015fieldguide}).
+Das Akronym \emph{\ac{LiDAR}} bezeichnet optische Messverfahren, die Lichtimpulse aussenden, deren Laufzeit bis zur Reflexion messen und so Entfernungen sowie Strukturen in drei Dimensionen rekonstruieren \parencite{mcmanamon2015fieldguide}. Nach frühen Anwendungen in Geodäsie und Fernerkundung seit den 1960er-Jahren ermöglichte der Fortschritt in Lasertechnik und Miniaturisierung die Übertragung in die Automobilindustrie, wo \ac{LiDAR} heute eine Schlüsselrolle für hochautomatisierte Funktionen einnimmt \parencite{beuth2021handbuch}.
 
-Die Entwicklung von \ac{LiDAR} begann in den 1960er-Jahren, zunächst für 
-Anwendungen in der Geodäsie, Fernerkundung und Atmosphärenforschung. 
-Mit dem technologischen Fortschritt in der Lasertechnik sowie der 
-Miniaturisierung optoelektronischer Komponenten fand die \ac{LiDAR}-Sensorik 
-in den 2000er-Jahren zunehmend Eingang in die Automobilindustrie. 
-Heute gilt sie als eine der zentralen Technologien für Fahrerassistenzsysteme 
-und hochautomatisiertes Fahren (\cite{beuth2021handbuch}).
-
-Kameras liefern hochauflösende Bildinformationen, die für die 
-Objekterkennung und Klassifizierung besonders geeignet sind, zeigen jedoch 
-Schwächen bei schlechten Lichtverhältnissen oder starker Blendung. 
-Radarsensoren dagegen arbeiten robust unter verschiedenen Wetterbedingungen 
-und liefern präzise Informationen über die Relativgeschwindigkeit, verfügen 
-jedoch nur über eine eingeschränkte Winkelauflösung. \ac{LiDAR} kombiniert die 
-Vorteile beider Systeme teilweise: Es liefert hochgenaue 
-Distanzinformationen mit einer hohen Winkelauflösung und erzeugt 
-dadurch eine dreidimensionale Punktwolke der Fahrzeugumgebung 
-(\cite{beuth2021handbuch}).
-
-Im Kontext des autonomen Fahrens ermöglicht \ac{LiDAR} eine 
-präzise Abbildung des Umfelds, die sowohl für die Hinderniserkennung 
-als auch für die simultane Lokalisierung und Kartierung (\ac{SLAM}) genutzt 
-werden kann. Aufgrund seiner Eigenschaften wird \ac{LiDAR} häufig als 
-unverzichtbare Ergänzung zu Kamera und Radar betrachtet, da es zusätzliche Redundanz und Genauigkeit im Sensorsystemverbund schafft (\cite{beuth2021handbuch}).
-
-Ziel dieses Kapitels ist die Darstellung der wissenschaftlich-technischen Grundlagen, relevanter Messprinzipien und Anwendungen sowie der in dieser Arbeit verwendeten Sensorik.
+Im Sensorsystemverbund liefert \ac{LiDAR} somit die geometrische Präzision, mit der Kamera- und Radarinformationen redundant oder ergänzend genutzt werden können. Diese Rolle macht die Technologie besonders wertvoll für Aufgaben wie Hinderniserkennung, Bahnplanung und eine robuste Umfeldrepräsentation. Auf dieser Grundlage werden im Folgenden Sensoraufbau, Wellenlängenbereiche und Messprinzip der Ouster-Plattform vorgestellt, die die experimentelle Basis der Arbeit bilden.
 
 \section{Sensoraufbau}
 \label{sec:sensoraufbau}
