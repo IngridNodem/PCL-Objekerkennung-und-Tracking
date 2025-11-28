@@ -314,8 +314,10 @@ Zur Orientierung zeigt Abbildung~\ref{fig:aufbau} den strukturellen Aufbau der A
 \chapter{Stand der Technik und Wissenschaft}
 \label{chap:stand-der-technik}
 
-Die Umfeldwahrnehmung eines Fahrzeugs basiert in modernen 
-Fahrerassistenzsystemen und im autonomen Fahren auf einer Vielzahl 
+Dieses Kapitel bündelt die wissenschaftlichen Grundlagen der \ac{LiDAR}-Sensorik und ordnet sie in den automobilen Kontext ein. Es stellt die Messprinzipien und den historischen Entwicklungspfad von \ac{LiDAR} vor, grenzt die Technologie gegenüber Kamera und Radar ab, erläutert den Aufbau des verwendeten Sensors und bereitet damit die theoretische Basis für die in den Folgekapiteln entwickelte Verarbeitungskette.
+
+Die Umfeldwahrnehmung eines Fahrzeugs basiert in modernen
+Fahrerassistenzsystemen und im autonomen Fahren auf einer Vielzahl
 von Sensortechnologien. Neben Radar und Kamerasystemen 
 hat sich insbesondere die \ac{LiDAR}-Sensorik (\emph{Light Detection and Ranging}) 
 als Schlüsseltechnologie etabliert (\cite{beuth2021handbuch}).
@@ -718,9 +720,7 @@ Abbildung~\ref{fig:position_sensor} veranschaulicht den Versuchsträger Opel Ast
 \chapter{Systemarchitektur}
 \label{chap:systemarchitektur}
 
-Dieses Kapitel beschreibt die technische Systemarchitektur der Umfelderkennung auf Basis von \ac{ROS}~2 und eines Ouster~\ac{OS1}. Ziel ist eine nachvollziehbare, konsistente und echtzeitfähige Verarbeitungskette. Die Darstellung umfasst (i) Grundlagen von \ac{ROS}~2, (ii) Datenrepräsentation und Bibliotheken, (iii) Arbeitsumgebung, (iv) Gesamtsystem mit Datenaufnahme und Verarbeitungskette, (v) Deployment sowie (vi) Bewertungsmetriken.
-
-In diesem Zusammenhang "structure du chapitre"
+Dieses Kapitel skizziert die technische Systemarchitektur der \ac{LiDAR}-basierten Umfelderkennung und ordnet alle Software- und Hardwarekomponenten in eine durchgängige \ac{ROS}~2-Verarbeitungskette ein. Es erläutert die eingesetzten Frameworks und Bibliotheken, beschreibt die Arbeitsumgebung sowie die Datenaufnahme und -verarbeitung, geht auf das Deployment der Nodes ein und definiert die Bewertungsmetriken, anhand derer die Pipeline in den folgenden Kapiteln verifiziert wird.
 
 \section{Überblick über das Gesamtsystem}
 \subsection{Anforderungen an den Algorithmus}
@@ -1101,10 +1101,13 @@ Die Auslastung der Rechen- und Speicherressourcen wird für jeden Knoten unter r
 Außerdem wird ein Python Skript ausgeführt zur Berechnung der CPU Auslastung pro Node (resource\_probe.py)
 
 \subsection{Objekterkennung und -verfolgung}
-Die Güte der Objektdetektion und -verfolgung wurde primär mit zwei ROS-Tools bewertet: \texttt{ids\_probe.py} und \texttt{frame\_loss\_probe.py}. Erstere verfolgt die Lebenszyklen einzelner Track-IDs und meldet pro Auswertefenster die Anzahl neu erzeugter IDs (\emph{births/min}), abgeschlossener Tracks (\emph{completed/min}) sowie die mediane aktive Lebensdauer sowohl laufender als auch bereits finalisierter Tracks. Damit lassen sich übermäßige ID-Wechsel oder instabile Verfolgungen unmittelbar erkennen. \texttt{frame\_loss\_probe.py} misst hingegen für jede Stufe der Verarbeitungskette die effektive Nachrichtenrate und berechnet Durchlassraten zwischen den benachbarten Topics (\emph{pass\%}) sowie gezählte Lücken (\emph{gaps}) basierend auf ausbleibenden Nachrichten über eine adaptive Schwellwertlogik. So wird transparent, an welcher Stelle Frames verloren gehen oder die Frequenz einbricht, und wie sich dies auf die nachgelagerten Detektions- und Tracking-Ergebnisse auswirkt. 
+Die Güte der Objektdetektion und -verfolgung wurde primär mit zwei ROS-Tools bewertet: \texttt{ids\_probe.py} und \texttt{frame\_loss\_probe.py}. Erstere verfolgt die Lebenszyklen einzelner Track-IDs und meldet pro Auswertefenster die Anzahl neu erzeugter IDs (\emph{births/min}), abgeschlossener Tracks (\emph{completed/min}) sowie die mediane aktive Lebensdauer sowohl laufender als auch bereits finalisierter Tracks. Damit lassen sich übermäßige ID-Wechsel oder instabile Verfolgungen unmittelbar erkennen. \texttt{frame\_loss\_probe.py} misst hingegen für jede Stufe der Verarbeitungskette die effektive Nachrichtenrate und berechnet Durchlassraten zwischen den benachbarten Topics (\emph{pass\%}) sowie gezählte Lücken (\emph{gaps}) basierend auf ausbleibenden Nachrichten über eine adaptive Schwellwertlogik. So wird transparent, an welcher Stelle Frames verloren gehen oder die Frequenz einbricht, und wie sich dies auf die nachgelagerten Detektions- und Tracking-Ergebnisse auswirkt.
 
 \chapter{Vorverarbeitung}
 \label{chap:vorverarbeitung}
+
+Dieses Kapitel konzentriert sich auf die Vorverarbeitung der \ac{LiDAR}-Punktwolken, um Datenvolumen und Rauschen vor den nachfolgenden Schritten zu reduzieren. Es beschreibt die verwendeten Filter zur räumlichen Begrenzung und Ausdünnung der Punktwolke sowie ihre Parametrierung, sodass die späteren Segmentierungs- und Clusteringverfahren auf einer robusten und gleichmäßig verteilten Datenbasis aufsetzen können.
+
 \section{CropBox-Filter}
 \label{sec:cropbox}
 
@@ -1780,6 +1783,9 @@ Abbildung~\ref{fig:clustering_result} zeigt den Cluster eines detektierten Pkw m
 \end{figure}
 
 \chapter{Objektverfolgung}
+
+Dieses Kapitel erläutert die Methoden zur zeitlichen Verfolgung der in der Clusterstufe detektierten Objekte. Es beschreibt den eingesetzten zweidimensionalen Kalman-Filter samt Bewegungsmodell, die Mess- und Zuordnungslogik mit Ungarischem Algorithmus sowie das Track-Management und schließt mit den Tests und Ergebnissen zur Stabilität der Track-IDs.
+
 \section{Prinzip}
 
 Zur Verfolgung erkannter Objekte wird ein zweidimensionaler Kalman-Filter mit anschließender Zuordnung der Detektionen mittels Ungarischem Algorithmus eingesetzt. Der Tracking-Zyklus folgt dabei einem festgelegten Schema: (1) \textbf{Prädiktion} aller bestehenden Tracks anhand eines Bewegungsmodells, (2) \textbf{Gating} neuer Detektionen über Mahalanobis-Distanzen, (3) \textbf{globale Zuordnung} per ungarischem Algorithmus und (4) \textbf{Track-Management}. Letzteres umfasst die Initialisierung neuer Spuren aus nicht zugeordneten Detektionen, das Fortführen bestehender Tracks ohne Messung für eine begrenzte \textit{Time-to-Live} sowie das Löschen überalterter Tracks. Durch die Beschränkung auf eine 2D-Bewegungsebene wird Rechenaufwand eingespart, während Höhenvariationen bereits in der Clustering-Stufe kontrolliert werden. Im Folgenden wird zunächst der Kalman-Filter und anschließend das Zuordnungsverfahren erläutert.
@@ -1988,6 +1994,8 @@ Ergebnisse der Verifikation der Objektverfolgung sind ~ref{label:gerade_strecke}
 \chapter{Integration in der GUI}
 \label{chap:integration_gui}
 
+Dieses Kapitel beschreibt die Einbindung der \ac{LiDAR}-Verarbeitungskette in die bestehende IFZN-GUI. Es fasst die vorhandenen Funktionen zusammen, leitet die notwendigen Erweiterungen für den Ouster~\ac{OS1} ab, dokumentiert Anpassungen an Startskripten und Namespaces und diskutiert beobachtete Einschränkungen sowie Verbesserungsvorschläge für die zukünftige Bedienlogik.
+
 \section{Anforderungen: Bestehende Funktionen und notwendige Erweiterungen}
 
 Die bestehende IFZN-GUI folgt der modularen und erweiterbaren Architektur nach Wendel \cite{Wendel2025} und bietet bereits eine stabile Bedienoberfläche für verschiedene Sensorsysteme. Zu den vorhandenen Funktionen gehören:
@@ -2116,9 +2124,7 @@ Eine mögliche Weiterentwicklung der GUI könnte darin bestehen, die Aktivitäts
 \chapter{Test und Bewertung}
 \label{chap:test_und_bewertung}
 
-In diesem Kapitel werden die Testergebnisse der entwickelten Umfelderkennungs-Verarbeitungskette vorgestellt und bewertet. 
-Die Verarbeitungskette wurde vollständig in \ac{ROS}~2 umgesetzt und besteht aus den in Abbildung~\ref{fig:ros2-pipeline-alltopics} gezeigten Modulen. 
-Die Konfiguration erfolgte über das Launch-File \textit{benchmark.launch.py}, welches alle Module innerhalb des gemeinsamen Namensraums \textit{/bench} startet. 
+Dieses Kapitel stellt die Testergebnisse der \ac{ROS}~2-basierten Verarbeitungskette vor und bewertet sie anhand der definierten Anforderungen. Es beschreibt den Versuchsaufbau und die Parametervariationen, fasst die Leistungskennzahlen zu Latenz, Ressourcenbedarf und Objekterkennung zusammen und diskutiert, wie die Ergebnisse den angestrebten Zielwerten gegenüberstehen. Die Verarbeitungskette wurde vollständig in \ac{ROS}~2 umgesetzt und besteht aus den in Abbildung~\ref{fig:ros2-pipeline-alltopics} gezeigten Modulen; die Konfiguration erfolgt über das Launch-File \textit{benchmark.launch.py}, welches alle Module innerhalb des gemeinsamen Namensraums \textit{/bench} startet.
 
 \section{Parameterstudie}
 \label{sec:parameterstudie}
