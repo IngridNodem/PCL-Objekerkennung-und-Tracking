@@ -1695,19 +1695,33 @@ Die AABB wird durch die minimalen und maximalen Koordinaten je Achse bestimmt:
  L=x_{\max}-x_{\min},\; W=y_{\max}-y_{\min},\; H=z_{\max}-z_{\min}.
 \]
 
-Vorteile: sehr geringe Rechenkosten, deterministisch und robust gegenüber Ausdünnung/Teilsicht. Nachteil: bei gedrehten Objekten überschätzt die AABB die Grundfläche in der Draufsicht (\ac{BEV}), da die Orientierung nicht erfasst wird.
+In der Implementierung wird diese Berechnung direkt auf den Clusterpunkten ausgeführt, ohne dass zusätzliche Transformationen
+oder Optimierungsschritte erforderlich sind. Die Operation besteht lediglich aus sechs Min-/Max-Suchen und drei Differenzen und
+skaliert deshalb linear mit der Anzahl der Punkte. Die resultierende Box ist deterministisch und wiederholbar, selbst wenn der
+Cluster durch das Downsampling nur grob abgetastet ist. Ein weiterer Vorteil ist die Invarianz gegenüber Rauschen in einzelnen
+Punkten: Ausreißer können durch einfache Vorfilter (z.\,B. Voxel- oder Radius-Filter) entfernt werden, bevor die Min-/Max-Suche
+greift.
+
+Nachteil der AABB ist, dass sie die Orientierung des Objekts nicht abbildet und bei stark gedrehten Objekten in der Draufsicht
+(\ac{BEV}) eine größere Grundfläche einnimmt als nötig. Für Fahrszenarien mit überwiegend längs ausgerichteten Verkehrsteilnehmern
+ist dieser Effekt jedoch beherrschbar, solange nachgelagerte Filter (z.\,B. Größenprüfung) geeignete Toleranzen besitzen.
 
 \subsection{OBB}
 \label{sec:obb}
 Die OBB richtet die Box entlang der Hauptachsen des Punktverteilungstensors aus. Praktisch wird dies in \ac{PCL} über die Trägheits-/PCA-Schätzung realisiert (z.\,B. \texttt{pcl::MomentOfInertiaEstimation}) \parencite{pcl_docs_2025}. Vorteile: kompaktere Umhüllung bei deutlich orientierten, elongierten Objekten (Fahrzeuge, Leitplanken); die abgeleitete Yaw kann nachgelagert genutzt werden. Nachteile: höhere Rechenkosten und potenzielle Instabilitäten bei kleinen, teilverdeckten oder nahezu isotropen Clustern (Rauscheinfluss, Sprünge der Hauptachsen). Eine alternative, zweidimensionale Näherung ist die Bestimmung eines Minimalrechtecks in der Draufsicht (\ac{BEV}), welches besonders stabile Yaw-Werte für straßennahe Objekte liefert; diese Option ist mit geringem Mehraufwand realisierbar und lässt sich mit AABB kombinieren (AABB für \(L,W,H\), Yaw aus \ac{BEV}). Abbildung~\ref{fig:bev_minarea} reserviert Platz für eine entsprechende Darstellung.
 
 \subsection{Vergleich AABB vs. OBB und Wahl in dieser Arbeit}
-\begin{itemize}
-  \item \textbf{AABB}: sehr schnell, stabil, deterministisch; \emph{−} keine Orientierung, tendenziell größere Grundfläche bei gedrehten Objekten.
-  \item \textbf{OBB}: Orientierung/kompaktere Hülle bei elongierten Objekten; \emph{−} aufwändiger, empfindlicher gegenüber Ausdünnung/Teilsicht, potenziell sprunghaft.
-\end{itemize}
+\textbf{AABB} arbeiten sehr schnell, stabil und deterministisch, bilden jedoch keine Orientierung ab und neigen bei stark gedrehten Objekten zu einer größeren Grundfläche. \textbf{OBB} liefern dagegen eine orientierte und bei elongierten Strukturen meist kompaktere Hülle, erfordern aber mehr Rechenaufwand, reagieren empfindlicher auf Ausdünnung oder Teilsicht und können dadurch sprunghaft wechseln.
 
-In dieser Arbeit werden beide Methoden getestet und verglichen und \textbf{AABB} ausgewählt. 
+Für die Versuchsumgebung wurden beide Ansätze implementiert und mit denselben Punktwolken ausgewertet. Die OBB-Variante liefert
+für gut ausgeprägte, längliche Fahrzeuge tatsächlich kompaktere Hüllen und eine nutzbare Yaw-Schätzung. Bei teilverdeckten oder
+kleinen Clustern (z.\,B. Poller, Fußgänger) kam es jedoch zu instabilen Hauptachsen und sprunghaften Orientierungen, was nachgelagert
+die Datenassoziation im Tracking erschwerte.
+
+Die AABB erreichte demgegenüber konsistent stabile Abmessungen und reagierte kaum empfindlich auf Ausdünnung oder temporäre
+Okklusionen. In Kombination mit einem BEV-Minimalrechteck (nur für die Yaw-Schätzung) ließe sich der Orientierungsnachteil weiter
+reduzieren, ohne die AABB-Orientierung vollständig zu ersetzen. Aus Gründen der Robustheit und Echtzeitfähigkeit wird daher in
+dieser Arbeit \textbf{AABB} als Standard gewählt; OBB bleibt optional für spezielle Auswertungen verfügbar.
 \begin{figure}[H]
   \centering
   \includegraphics[width=\linewidth]{Bilder/aabb_obb_compare.png}
