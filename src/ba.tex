@@ -1709,11 +1709,11 @@ Abbildung~\ref{fig:clustering_result} zeigt den Cluster eines detektierten Pkw m
 
 \chapter{Objektverfolgung}
 
-Dieses Kapitel erläutert die Methoden zur zeitlichen Verfolgung der in der Clusterstufe detektierten Objekte. Es beschreibt den eingesetzten zweidimensionalen Kalman-Filter samt Bewegungsmodell, die Mess- und Zuordnungslogik mit Ungarischem Algorithmus sowie das Track-Management und schließt mit den Tests und Ergebnissen zur Stabilität der Track-IDs.
+Dieses Kapitel beschreibt, wie die zuvor extrahierten Detektionen über die Zeit hinweg zu konsistenten Objektspuren zusammengeführt werden. Der Fokus liegt auf dem zweidimensionalen Kalman-Filter mit passendem Bewegungsmodell, der Mess- und Zuordnungslogik mittels Ungarischem Algorithmus sowie dem Track-Management. Abschließend werden die Testschritte und die beobachtete Stabilität der Track-IDs zusammengefasst.
 
 \section{Prinzip}
 
-Zur Verfolgung erkannter Objekte wird ein zweidimensionaler Kalman-Filter mit anschließender Zuordnung der Detektionen mittels Ungarischem Algorithmus eingesetzt. Der Tracking-Zyklus folgt dabei einem festgelegten Schema: (1) \textbf{Prädiktion} aller bestehenden Tracks anhand eines Bewegungsmodells, (2) \textbf{Gating} neuer Detektionen über Mahalanobis-Distanzen, (3) \textbf{globale Zuordnung} per ungarischem Algorithmus und (4) \textbf{Track-Management}. Letzteres umfasst die Initialisierung neuer Spuren aus nicht zugeordneten Detektionen, das Fortführen bestehender Tracks ohne Messung für eine begrenzte \textit{Time-to-Live} sowie das Löschen überalterter Tracks. Durch die Beschränkung auf eine 2D-Bewegungsebene wird Rechenaufwand eingespart, während Höhenvariationen bereits in der Clustering-Stufe kontrolliert werden. Im Folgenden wird zunächst der Kalman-Filter und anschließend das Zuordnungsverfahren erläutert.
+Kern des Trackers ist ein zweidimensionaler Kalman-Filter, der Positions- und Geschwindigkeitsanteile in der Straßenebene fortschreibt und bei neuen Messungen aktualisiert. Jeder Tracking-Zyklus durchläuft denselben Ablauf: (1) \textbf{Prädiktion} aller bestehenden Tracks anhand des Bewegungsmodells, (2) \textbf{Gating} der eingehenden Detektionen über Mahalanobis-Distanzen, (3) \textbf{globale Zuordnung} der verbleibenden Paare per Ungarischem Algorithmus sowie (4) \textbf{Track-Management}. Dieses verwaltet Neuinitialisierungen aus nicht zugeordneten Detektionen, lässt bestehende Tracks für eine begrenzte \textit{Time-to-Live} ohne Messung weiterlaufen und entfernt überalterte Spuren. Die Beschränkung auf die 2D-Ebene reduziert den Rechenaufwand, da Höhenvariationen bereits in der Clustering-Stufe bewertet werden. Die folgenden Abschnitte erläutern Kalman-Filter und Zuordnungslogik im Detail.
 
 \subsection{2D-Kalman-Filter}
 Der Kalman-Filter schätzt den Zustandsvektor eines Objekts und aktualisiert ihn bei jeder neuen Messung (\cite{kalman1960}). Im hier verwendeten 2D-Modell lautet der Zustandsvektor
@@ -1912,9 +1912,9 @@ Tracks werden als \texttt{vision\_msgs/Detection3D} ausgegeben (Zentrum, Größe
 \section{Test und Ergebnis}
 \label{sec:ergebnis_tracking}
 
-\texttt{ids\_probe.py} beobachtet das Marker-Topic \texttt{tracks\_markers} und führt ein Lebensdauerkonto pro Track-ID: Geburt und Abschluss (bei Leerlauf länger als \texttt{idle\_timeout}) werden gezählt, aktive und abgeschlossene mittlere Lebensdauern berechnet und die Geburts- bzw. Abschlussrate pro Minute ausgegeben. Der Skript läugt als eigene \ac{ROS}~2-Nodes, greift auf die bestehenden Topics zu und unterstützt damit die Stabilität der Track-IDs. Alle zugehörigen Auswerteskripte befinden sich zentral im digitalen Anhang (Abschnitt~\ref{anhang:skripte}).
+\texttt{ids\_probe.py} beobachtet das Marker-Topic \texttt{tracks\_markers} und führt ein Lebensdauerkonto pro Track-ID. Für jede Spur werden Geburt und Abschluss (bei Leerlauf länger als \texttt{idle\_timeout}) gezählt, aktive sowie abgeschlossene mittlere Lebensdauern berechnet und die Geburts- bzw. Abschlussrate pro Minute ausgegeben. Der Skript läuft als eigener \ac{ROS}~2-Node, greift auf die bestehenden Topics zu und liefert so eine objektive Einschätzung der ID-Stabilität. Alle zugehörigen Auswerteskripte befinden sich zentral im digitalen Anhang (Abschnitt~\ref{anhang:skripte}).
 
-Ergebnisse der Verifikation der Objektverfolgung sind ~ref{label:gerade_strecke} zu entnehmen.
+Die Messergebnisse der Verifikation sind in Abschnitt~\ref{label:gerade_strecke} zusammengestellt und belegen eine stabile Zuordnung auch bei kurzzeitigen Okklusionen.
 
 \chapter{Integration in der GUI}
 \label{chap:integration_gui}
