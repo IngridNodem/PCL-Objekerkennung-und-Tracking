@@ -163,7 +163,7 @@ Die vorliegende Arbeit entwickelt eine modular aufgebaute Verarbeitungsstrecke z
 
 Das System umfasst eine rausch- und ausreißerreduzierende Vorverarbeitung, eine szenarienunabhängige Bodensegmentierung, die Bildung konsistenter Cluster mit zugehörigen Bounding-Boxen sowie ein darauf aufbauendes Objekt-Tracking. Sämtliche Schritte werden in \ac{ROS}~2 implementiert, mit einheitlichen Schnittstellen versehen und hinsichtlich Ausführungsfrequenz, Latenz und Speicherbedarf untersucht. Für zentrale Algorithmen wie \ac{RANSAC}-Bodenschätzung, Euclidean-Cluster-Extraction, \ac{DBSCAN} und \ac{CV}-Kalman-Filter werden Parameterstudien durchgeführt, um die Balance zwischen Genauigkeit und Rechenaufwand zu optimieren.
 
-In realen Messszenarien auf urbanen Teststrecken zeigt die Pipeline stabile Resultate: Die Bodensegmentierung trennt befahrbare Fläche und Hindernisse verlässlich, die Clusterbildung erzeugt weitgehend trennscharfe Objektboxen, und das Tracking liefert kohärente Trajektorien auch bei kurzzeitigen Abschattungen. Die Ausführungsraten liegen auf handelsüblicher Hardware im Bereich von \SIrange{10}{15}{\hertz}, womit die geforderten Echtzeitanforderungen erfüllt werden. Die Arbeit schließt mit einer Bewertung der erzielten Leistung und einem Ausblick auf Erweiterungen wie Sensorfusion, semantische Segmentierung und eine engere Integration in das Fahrzeugsystem.
+In realen Messszenarien auf urbanen Teststrecken zeigt die Verarbeitungskette stabile Resultate: Die Bodensegmentierung trennt befahrbare Fläche und Hindernisse verlässlich, die Clusterbildung erzeugt weitgehend trennscharfe Objektboxen, und das Tracking liefert kohärente Trajektorien auch bei kurzzeitigen Abschattungen. Die Ausführungsraten liegen auf handelsüblicher Hardware im Bereich von \SIrange{10}{15}{\hertz}, womit die geforderten Echtzeitanforderungen erfüllt werden. Die Arbeit schließt mit einer Bewertung der erzielten Leistung und einem Ausblick auf Erweiterungen wie Sensorfusion, semantische Segmentierung und eine engere Integration in das Fahrzeugsystem.
 
 \cleardoublepage
 
@@ -720,7 +720,7 @@ Abbildung~\ref{fig:position_sensor} veranschaulicht den Versuchsträger Opel Ast
 \chapter{Systemarchitektur}
 \label{chap:systemarchitektur}
 
-Dieses Kapitel skizziert die technische Systemarchitektur der \ac{LiDAR}-basierten Umfelderkennung und ordnet alle Software- und Hardwarekomponenten in eine durchgängige \ac{ROS}~2-Verarbeitungskette ein. Es erläutert die eingesetzten Frameworks und Bibliotheken, beschreibt die Arbeitsumgebung sowie die Datenaufnahme und -verarbeitung, geht auf das Deployment der Nodes ein und definiert die Bewertungsmetriken, anhand derer die Pipeline in den folgenden Kapiteln verifiziert wird.
+Dieses Kapitel skizziert die technische Systemarchitektur der \ac{LiDAR}-basierten Umfelderkennung und ordnet alle Software- und Hardwarekomponenten in eine durchgängige \ac{ROS}~2-Verarbeitungskette ein. Es erläutert die eingesetzten Frameworks und Bibliotheken, beschreibt die Arbeitsumgebung sowie die Datenaufnahme und -verarbeitung, geht auf das Deployment der Nodes ein und definiert die Bewertungsmetriken, anhand derer die Verarbeitungskette in den folgenden Kapiteln verifiziert wird.
 
 \section{Überblick über das Gesamtsystem}
 \subsection{Anforderungen an den Algorithmus}
@@ -820,7 +820,7 @@ Der Embedded-PC leitet die Punktwolken über das interne \ac{ROS}~2-Netzwerk an 
 \end{figure}
 
 \subsection{Umsetzung}
-Abbildung~\ref{fig:ros2-pipeline-alltopics} zeigt die \ac{ROS}~2-Verarbeitungskette von der Aufnahme über Vorverarbeitung, Bodensegmentierung und Cluster/Bounding-Boxes bis zur Objektverfolgung. Jeder Knoten hat klar definierte Ein-/Ausgänge und Topics.
+Abbildung~\ref{fig:ros2-verarbeitungskette-alltopics} zeigt die \ac{ROS}~2-Verarbeitungskette von der Aufnahme über Vorverarbeitung, Bodensegmentierung und Cluster/Bounding-Boxes bis zur Objektverfolgung. Jeder Knoten hat klar definierte Ein-/Ausgänge und Topics.
 
 \begin{figure}[H]
 \centering
@@ -875,7 +875,7 @@ Abbildung~\ref{fig:ros2-pipeline-alltopics} zeigt die \ac{ROS}~2-Verarbeitungske
   % Caption & Label
   \end{tikzpicture}
   \caption{\ac{ROS}~2-Algorithmus mit allen Nodes, ihren Topic-Verbindungen und den Ausgaben zur Visualisierung in \ac{RViz}.}
-  \label{fig:ros2-pipeline-alltopics}
+  \label{fig:ros2-verarbeitungskette-alltopics}
 \end{figure}
 
 \section{Grundlagen von \ac{ROS}~2}
@@ -935,7 +935,7 @@ Praktisch empfiehlt es sich, bei Systemen mit hoher Punktdichte (z.\,B.\ \ac{LiD
 
 \paragraph{Quality of Service (\ac{QoS})}
 \label{sec:ros2_qos}
-In \ac{ROS}~2 definieren Quality-of-Service-Profile (\ac{QoS}) die Kommunikationssemantik zwischen Publishern und Subscribern. Sie beeinflussen maßgeblich Latenz, Paketverluste, Speicherbedarf und Synchronisation entlang der Verarbeitungspipeline. Besonders bei hochfrequenten Sensorströmen wie \ac{LiDAR} ist eine konsistente und angepasste \ac{QoS}-Konfiguration entscheidend für die Systemstabilität.
+In \ac{ROS}~2 definieren Quality-of-Service-Profile (\ac{QoS}) die Kommunikationssemantik zwischen Publishern und Subscribern. Sie beeinflussen maßgeblich Latenz, Paketverluste, Speicherbedarf und Synchronisation entlang der Verarbeitungskette. Besonders bei hochfrequenten Sensorströmen wie \ac{LiDAR} ist eine konsistente und angepasste \ac{QoS}-Konfiguration entscheidend für die Systemstabilität.
 
 Die Konfiguration der \ac{QoS}-Profile in \ac{ROS}~2 umfasst mehrere Parameter, von denen insbesondere \textbf{Reliability}, \textbf{History/Depth} und \textbf{Durability} die Übertragungseigenschaften von Sensordaten maßgeblich bestimmen. Eine kompakte Übersicht der Vor- und Nachteile findet sich in Tab.~\ref{tab:qos_vt_nt}. Die Definitionen basieren auf den DDS-Spezifikationen gemäß OMG-Standard \parencite{OMG_DDS_Spec}.
 
@@ -2119,21 +2119,21 @@ Es ist denkbar, dass die Einbindung dieser zusätzlichen Nodes in die GUI-intern
 
 Es handelt sich dabei um Hypothesen, die das beobachtete Verhalten plausibel erklären könnten; sie konnten im Rahmen der Arbeit jedoch nicht abschließend verifiziert werden. Entscheidend ist, dass die technische Integration des Pakets \texttt{ouster\_cpp} selbst erfolgreich war und die Einschränkungen ausschließlich die GUI-Validierung im Modus \emph{Embedded-PC + Laptop} betreffen.
 
-Eine mögliche Weiterentwicklung der GUI könnte darin bestehen, die Aktivitätsprüfung flexibler zu gestalten oder lediglich die Minimalmenge notwendiger Nodes (z.\,B.\ den Treiber \texttt{os\_driver}) zu überprüfen, um komplexere Verarbeitungspipelines künftig vollständig zu unterstützen.
+Eine mögliche Weiterentwicklung der GUI könnte darin bestehen, die Aktivitätsprüfung flexibler zu gestalten oder lediglich die Minimalmenge notwendiger Nodes (z.\,B.\ den Treiber \texttt{os\_driver}) zu überprüfen, um komplexere Verarbeitungsketten künftig vollständig zu unterstützen.
 
 \chapter{Test und Bewertung}
 \label{chap:test_und_bewertung}
 
-Dieses Kapitel stellt die Testergebnisse der \ac{ROS}~2-basierten Verarbeitungskette vor und bewertet sie anhand der definierten Anforderungen. Es beschreibt den Versuchsaufbau und die Parametervariationen, fasst die Leistungskennzahlen zu Latenz, Ressourcenbedarf und Objekterkennung zusammen und diskutiert, wie die Ergebnisse den angestrebten Zielwerten gegenüberstehen. Die Verarbeitungskette wurde vollständig in \ac{ROS}~2 umgesetzt und besteht aus den in Abbildung~\ref{fig:ros2-pipeline-alltopics} gezeigten Modulen; die Konfiguration erfolgt über das Launch-File \textit{benchmark.launch.py}, welches alle Module innerhalb des gemeinsamen Namensraums \textit{/bench} startet.
+Dieses Kapitel stellt die Testergebnisse der \ac{ROS}~2-basierten Verarbeitungskette vor und bewertet sie anhand der definierten Anforderungen. Es beschreibt den Versuchsaufbau und die Parametervariationen, fasst die Leistungskennzahlen zu Latenz, Ressourcenbedarf und Objekterkennung zusammen und diskutiert, wie die Ergebnisse den angestrebten Zielwerten gegenüberstehen. Die Verarbeitungskette wurde vollständig in \ac{ROS}~2 umgesetzt und besteht aus den in Abbildung~\ref{fig:ros2-verarbeitungskette-alltopics} gezeigten Modulen; die Konfiguration erfolgt über das Launch-File \textit{benchmark.launch.py}, welches alle Module innerhalb des gemeinsamen Namensraums \textit{/bench} startet.
 
 \section{Parameterstudie}
 \label{sec:parameterstudie}
 
-Die gewählte Detektionspipeline ist sensitiv gegenüber mehreren Parametern, die die Qualität der Segmentierung, Clusterbildung und Klassentrennung maßgeblich beeinflussen. Entsprechend untersucht die Parameterstudie, welche Kombinationen aus \textit{voxel\_size}, \textit{distance\_threshold} und \textit{cluster\_tolerance} in unterschiedlichen urbanen Szenarien robuste Ergebnisse liefern. Die ROS2-Bagfiles wurden dazu mehrfach wiederholt abgespielt; pro Durchgang änderte sich nur ein Parameter, während alle anderen konstant blieben. So lässt sich der isolierte Einfluss jeder Stellgröße bewerten und gezielt gegenrechnen.
+Die gewählte Detektionskette ist sensitiv gegenüber mehreren Parametern, die die Qualität der Segmentierung, Clusterbildung und Klassentrennung maßgeblich beeinflussen. Entsprechend untersucht die Parameterstudie, welche Kombinationen aus \textit{voxel\_size}, \textit{distance\_threshold} und \textit{cluster\_tolerance} in unterschiedlichen urbanen Szenarien robuste Ergebnisse liefern. Die ROS2-Bagfiles wurden dazu mehrfach wiederholt abgespielt; pro Durchgang änderte sich nur ein Parameter, während alle anderen konstant blieben. So lässt sich der isolierte Einfluss jeder Stellgröße bewerten und gezielt gegenrechnen.
 
 Die Datensätze für die Parametrisierung wurden bei 9\,°C und bedecktem Himmel aufgezeichnet, sodass keine direkten Wettereinflüsse durch starke Sonneneinstrahlung oder Niederschlag zu erwarten waren. Verarbeitet wurden sie auf einem MEDION 15~E1 Laptop mit AMD Ryzen~5~7430U (6~Kerne/12~Threads) und 32~GB RAM.
 
-Im Fokus stehen bewusst nur diese drei Stellgrößen, weil sie die größten Hebel auf die Verarbeitungsqualität besitzen und jeweils unterschiedliche Stufen der Pipeline adressieren: \textit{voxel\_size} steuert die Ausdünnung der Punktwolke (Rauschunterdrückung versus Detailtreue), \textit{distance\_threshold} legt die Inlier-Schwelle der Bodensegmentierung fest und \textit{cluster\_tolerance} bestimmt die räumliche Nachbarschaft beim Clustering. Andere Parameter wurden nicht variiert, da sie entweder stark durch die Versuchskonfiguration vorgegeben sind (\texttt{min\_bound}/\texttt{max\_bound} der CropBox definieren den vermessenen Sichtbereich), bereits konservative Robustheitsreserven bieten (\texttt{max\_iterations} der \ac{RANSAC}-Suche), nur sekundären Einfluss auf die Klassentrennung haben (\texttt{min\_cluster\_size}, \texttt{max\_cluster\_size}, \texttt{max\_clusters}) oder die Stabilität der Track-IDs betreffen und damit die Vergleichbarkeit der Wiederholungsmessungen erschweren würden (\texttt{gate\_dist\_max}, \texttt{max\_missed}, \texttt{min\_hits}). Auf diese Weise bleibt der Suchraum handhabbar, ohne zentrale Qualitätstreiber der Pipeline zu vernachlässigen.
+Im Fokus stehen bewusst nur diese drei Stellgrößen, weil sie die größten Hebel auf die Verarbeitungsqualität besitzen und jeweils unterschiedliche Stufen der Verarbeitungskette adressieren: \textit{voxel\_size} steuert die Ausdünnung der Punktwolke (Rauschunterdrückung versus Detailtreue), \textit{distance\_threshold} legt die Inlier-Schwelle der Bodensegmentierung fest und \textit{cluster\_tolerance} bestimmt die räumliche Nachbarschaft beim Clustering. Andere Parameter wurden nicht variiert, da sie entweder stark durch die Versuchskonfiguration vorgegeben sind (\texttt{min\_bound}/\texttt{max\_bound} der CropBox definieren den vermessenen Sichtbereich), bereits konservative Robustheitsreserven bieten (\texttt{max\_iterations} der \ac{RANSAC}-Suche), nur sekundären Einfluss auf die Klassentrennung haben (\texttt{min\_cluster\_size}, \texttt{max\_cluster\_size}, \texttt{max\_clusters}) oder die Stabilität der Track-IDs betreffen und damit die Vergleichbarkeit der Wiederholungsmessungen erschweren würden (\texttt{gate\_dist\_max}, \texttt{max\_missed}, \texttt{min\_hits}). Auf diese Weise bleibt der Suchraum handhabbar, ohne zentrale Qualitätstreiber der Verarbeitungskette zu vernachlässigen.
 
 \subsection{Untersuchungsaufbau}
 Die Messungen wurden in drei realen Szenarien durchgeführt:
@@ -2251,7 +2251,7 @@ Real & 15 & 0 & 1 & 3 & 19 \\
 \label{tab:geparkt_cluster_tolerance}
 \end{table}
 
-Die Auswertungen für \textbf{S1} zeigen deutlich, wie sensibel die Pipeline auf Übersegmentierung reagiert. Eine Vergrößerung der \texttt{voxel\_size} von \SI{0.10}{m} auf \SI{0.20}{m} reduziert die Fehlklassifikationen von Menschen und Fahrradfahrern vollständig und nähert sich mit insgesamt 17 Detektionen dem Realwert von 19 Objekten an. Gleichzeitig verhindert die feinere Bodenschätzung mit einem \texttt{distance\_threshold} von \SI{0.20}{m}, dass Fahrzeugdachpunkte als Boden eingestuft werden; dies steigert die Gesamtdetektionen auf 20, jedoch um den Preis eines zusätzlichen LKW-Falschpositivs. Am deutlichsten wird der Einfluss der \texttt{cluster\_tolerance}: Zu kleine Werte (\SI{0.30}{m}) führen zu einer Übersegmentierung von PKW (24 Gesamt\-detektionen), während zu große Werte (\SI{0.70}{m} und \SI{0.90}{m}) angrenzende Fahrzeuge zusammenziehen (nur 11 bzw. 10 Detektionen). Die Einstellung \SI{0.50}{m} liefert mit 19 Detektionen eine nahezu perfekte Übereinstimmung mit der Bodenwahrheit und stellt damit den besten Kompromiss zwischen Trennschärfe und Zusammenfassung dar.
+Die Auswertungen für \textbf{S1} zeigen deutlich, wie sensibel die Verarbeitungskette auf Übersegmentierung reagiert. Eine Vergrößerung der \texttt{voxel\_size} von \SI{0.10}{m} auf \SI{0.20}{m} reduziert die Fehlklassifikationen von Menschen und Fahrradfahrern vollständig und nähert sich mit insgesamt 17 Detektionen dem Realwert von 19 Objekten an. Gleichzeitig verhindert die feinere Bodenschätzung mit einem \texttt{distance\_threshold} von \SI{0.20}{m}, dass Fahrzeugdachpunkte als Boden eingestuft werden; dies steigert die Gesamtdetektionen auf 20, jedoch um den Preis eines zusätzlichen LKW-Falschpositivs. Am deutlichsten wird der Einfluss der \texttt{cluster\_tolerance}: Zu kleine Werte (\SI{0.30}{m}) führen zu einer Übersegmentierung von PKW (24 Gesamt\-detektionen), während zu große Werte (\SI{0.70}{m} und \SI{0.90}{m}) angrenzende Fahrzeuge zusammenziehen (nur 11 bzw. 10 Detektionen). Die Einstellung \SI{0.50}{m} liefert mit 19 Detektionen eine nahezu perfekte Übereinstimmung mit der Bodenwahrheit und stellt damit den besten Kompromiss zwischen Trennschärfe und Zusammenfassung dar.
 
 \subsection{S2 – Kreuzung}
 
@@ -2376,7 +2376,7 @@ Im Vergleich zu den ebenen Szenarien fällt auf, dass die geneigte Fahrbahn deut
 
 \subsection{Fazit der Parameterstudie}
 
-Die Studie belegt, dass moderate Werte für die Kernparameter die robustesten Ergebnisse liefern: Eine Voxelgröße von \(0{,}15\,\text{m}\) bis \(0{,}20\,\text{m}\) glättet Rauschen, ohne feine Objektstrukturen zu verlieren, \(\textit{distance\_threshold} = 0{,}15\,\text{m}\) verhindert Ausfransungen in geneigten Szenen und \(\textit{cluster\_tolerance}\) um \(0{,}50\,\text{m}\) trennt dicht beieinanderstehende Objekte zuverlässig, ohne sie zu übersegmentieren. Größere oder kleinere Abweichungen führten entweder zu übermäßiger Detektionszahl (Fehlalarme) oder zum Zusammenfallen benachbarter Objekte. Insgesamt bestätigt die Parameterstudie, dass die gewählte Pipeline mit konservativen Mittelwerten ein stabiles Gleichgewicht zwischen Präzision und Robustheit erreicht und damit eine gute Ausgangsbasis für den Einsatz im Fahrbetrieb bietet.
+Die Studie belegt, dass moderate Werte für die Kernparameter die robustesten Ergebnisse liefern: Eine Voxelgröße von \(0{,}15\,\text{m}\) bis \(0{,}20\,\text{m}\) glättet Rauschen, ohne feine Objektstrukturen zu verlieren, \(\textit{distance\_threshold} = 0{,}15\,\text{m}\) verhindert Ausfransungen in geneigten Szenen und \(\textit{cluster\_tolerance}\) um \(0{,}50\,\text{m}\) trennt dicht beieinanderstehende Objekte zuverlässig, ohne sie zu übersegmentieren. Größere oder kleinere Abweichungen führten entweder zu übermäßiger Detektionszahl (Fehlalarme) oder zum Zusammenfallen benachbarter Objekte. Insgesamt bestätigt die Parameterstudie, dass die gewählte Verarbeitungskette mit konservativen Mittelwerten ein stabiles Gleichgewicht zwischen Präzision und Robustheit erreicht und damit eine gute Ausgangsbasis für den Einsatz im Fahrbetrieb bietet.
 
 Die Tabelle ~\ref{tab:benchmark_node_parameter_clean}  fasst die Endparameter zusammmen.
 \begin{table}[H]
@@ -2441,7 +2441,7 @@ Robustheit der Segmentierung und das ID-Handling beobachtet werden konnten:
     \item \textbf{Kurve, 40\,km/h (Urban/Innenstadt):} Dynamische Fahrt durch eine urbane Kurve, um die Stabilität von Frequenz
           und Latenz ohne längere Aussetzer zu verifizieren.
           
-    \item \textbf{Innenstadt mit Steigung, 30\,km/h:} Leichte Steigungsfahrt in urbanem Umfeld. Prüft, ob die Pipeline auch bei
+    \item \textbf{Innenstadt mit Steigung, 30\,km/h:} Leichte Steigungsfahrt in urbanem Umfeld. Prüft, ob die Verarbeitungskette auch bei
           Gefälle-/Steigungslagen konstante Frequenzen und Latenzen liefert.
           
     \item \textbf{Kreuzung, 50\,km/h:} Schnellere Passage über unebenes Terrain, um die Robustheit der
@@ -2457,7 +2457,7 @@ typisches Echtzeitverhalten, das durch mehrere systemtechnische Effekte beeinflu
 Bei der Wiedergabe der Aufzeichnungen (2025-11-21-VK-OL-001) meldete der \texttt{rosbag2\_player} zeitweise eine
 leere Read-Ahead-Queue (\enquote{Message queue starved}). Dies weist auf I/O-Limitierungen
 bei der Bag-Wiedergabe hin und kann zu zusätzlichen zeitlichen Schwankungen in den
-Eingangsfrequenzen führen, ohne jedoch die Verarbeitungslogik der Pipeline selbst zu
+Eingangsfrequenzen führen, ohne jedoch die Verarbeitungslogik der Verarbeitungskette selbst zu
 verändern. Die gemessenen Durchsatzraten des \texttt{frame\_loss\_probe} bestätigten dabei,
 dass alle Verarbeitungsknoten die eingehenden Frames zuverlässig verarbeiten
 (pass-Rate überwiegend $\geq 100\,\%$) und keine Sequenzlücken entstanden
@@ -2568,7 +2568,7 @@ rund \(2\,\text{Hz}\). Ein in den Messdaten ausgewiesener maximaler Abstand von
 \subsubsection{Kreuzung, 50\,km/h:}
 Die Visualisierung der Daten in diesem Fall ist fehlgeschlagen (2025-11-21-Messdaten/2025-11-21-VK-OL-005). 
 
-Im Szenario \emph{Kreuzung} mit einer Fahrgeschwindigkeit von \(50\,\text{km/h}\) wurde das Verhalten der Verarbeitungskette unter kombinierter Rotation, Fahrbahnunebenheiten und wechselnder Objektgeometrie untersucht. Die Verarbeitungsgeschwindigkeit zeigt über die gesamte Versuchsdauer eine konstante Frequenz von rund \(3.21{-}3.24\,\text{Hz}\). Gleichzeitig nimmt die Standardabweichung der Intervallzeiten kontinuierlich ab (von ca.\ \(0.072\,\text{s}\) auf \(0.057\,\text{s}\)), was auf eine zunehmende Stabilisierung der Pipeline trotz dynamischer Fahrsituation hinweist.
+Im Szenario \emph{Kreuzung} mit einer Fahrgeschwindigkeit von \(50\,\text{km/h}\) wurde das Verhalten der Verarbeitungskette unter kombinierter Rotation, Fahrbahnunebenheiten und wechselnder Objektgeometrie untersucht. Die Verarbeitungsgeschwindigkeit zeigt über die gesamte Versuchsdauer eine konstante Frequenz von rund \(3.21{-}3.24\,\text{Hz}\). Gleichzeitig nimmt die Standardabweichung der Intervallzeiten kontinuierlich ab (von ca.\ \(0.072\,\text{s}\) auf \(0.057\,\text{s}\)), was auf eine zunehmende Stabilisierung der Verarbeitungskette trotz dynamischer Fahrsituation hinweist.
 
 Die gemessenen Latenzen der einzelnen Verarbeitungsschritte bleiben ebenfalls über den gesamten Versuch sehr stabil. Die Hauptanteile entfallen erwartungsgemäß auf die Kombination aus \texttt{CropBox} und \texttt{VoxelGrid}, die im Bereich von \(15.4{-}17.3\,\text{ms}\) liegen. Die folgenden Schritte --- RANSAC-Bodensegmentierung und Cluster-Extraktion --- weisen jeweils sehr geringe Laufzeiten auf (unter \(2\,\text{ms}\) bzw.\ \(0.5\,\text{ms}\)). Die resultierende End-zu-End-Latenz zwischen Eingangspunktwolke und Tracking-Output beträgt konstant \(21{-}24\,\text{ms}\), was für die getestete Geschwindigkeit ein robustes Reaktionsverhalten sicherstellt.
 
@@ -2652,7 +2652,7 @@ Die Übersicht verdeutlicht, dass die gewählte Parametrierung im Fahrbetrieb zu
 Selbst in dynamischen Szenarien wie Kurvenfahrten oder innerstädtischen Abschnitten bleibt die mittlere Latenz deutlich
 unter 90\,ms, während die Ausgangsfrequenz nur moderat hinter der Eingangsfrequenz zurückbleibt. Auffällige Abweichungen
 treten lediglich im Kreuzungsszenario auf, wo kurzzeitige Frequenzeinbrüche beobachtet wurden. Insgesamt zeigen die
-Messwerte, dass die Pipeline auch unter variierenden Umweltbedingungen performant arbeitet und genügend Reserven für
+Messwerte, dass die Verarbeitungskette auch unter variierenden Umweltbedingungen performant arbeitet und genügend Reserven für
 weitergehende Funktionalitäten bietet.
 
 \section{Bewertung des Algorithmus}
@@ -2664,25 +2664,25 @@ Die in Kapitel~\ref{chap:systemarchitektur} formulierten Anforderungen an den Al
   \item \textbf{Visualisierung und Integration (Anforderungen~9~\&~10):} Rohdaten, Bodenfilter, Cluster und Tracks lassen sich in \texttt{RViz2} sowie der bestehenden GUI ohne spürbare Verzögerung darstellen. Die Verarbeitung bleibt auch bei zwei Betriebsmodi (Sensor, Sensor~+~PC) stabil, und muss bei einem verbessert werden.
 \end{itemize}
 
-Insgesamt erfüllt die entwickelte Pipeline die definierten funktionalen und nicht-funktionalen Anforderungen: Sie arbeitet echtzeitfähig, ressourcenschonend und robust gegenüber wechselnden Umgebungsbedingungen. Optimierungspotenzial besteht vor allem im Feintuning der Tracking-Schwellen, um kurzlebige Track-Geburten in statischen Szenen weiter zu reduzieren, ohne die Reaktionsfähigkeit in dynamischen Situationen zu beeinträchtigen.
+Insgesamt erfüllt die entwickelte Verarbeitungskette die definierten funktionalen und nicht-funktionalen Anforderungen: Sie arbeitet echtzeitfähig, ressourcenschonend und robust gegenüber wechselnden Umgebungsbedingungen. Optimierungspotenzial besteht vor allem im Feintuning der Tracking-Schwellen, um kurzlebige Track-Geburten in statischen Szenen weiter zu reduzieren, ohne die Reaktionsfähigkeit in dynamischen Situationen zu beeinträchtigen.
 
 % ====== 8 Zusammenfassung und Ausblick ======
 \chapter{Zusammenfassung und Ausblick}
 \section{Zusammenfassung}
-Die vorliegende Arbeit entwickelte eine \ac{LiDAR}-basierte Verarbeitungspipeline, die alle Schritte von der Vorverarbeitung bis zur
+Die vorliegende Arbeit entwickelte eine \ac{LiDAR}-basierte Verarbeitungskette, die alle Schritte von der Vorverarbeitung bis zur
 Objektverfolgung integriert. Ausgehend von einer \ac{ROS}~2-basierten Systemarchitektur wurden zunächst robuste Verfahren zur
 Normalisierung und Filterung der Punktwolken aufgebaut, die eine verlässliche Grundlage für nachgelagerte Algorithmen schaffen.
 Darauf aufbauend ermöglicht die Bodensegmentierung eine stabile Trennung zwischen Fahrbahn- und Objektpunkten, während die
 Clustering-Verfahren mit datengetriebenen Bounding-Boxen eine kompakte und interpretierbare Objektrepräsentation liefern.
 Die anschließende Verfolgung stellt durch geeignete Datenassoziation und modellbasierte Prädiktion sicher, dass auch bei
 temporären Sensorausfällen oder Abschattungen konsistente Trajektorien berechnet werden. In umfangreichen Versuchsfahrten
-bestätigte die Pipeline ihre Echtzeitfähigkeit: Die Verarbeitungslatenzen blieben im typischen Fahrbetrieb deutlich unter
+bestätigte die Verarbeitungskette ihre Echtzeitfähigkeit: Die Verarbeitungslatenzen blieben im typischen Fahrbetrieb deutlich unter
 der Eingangstaktung des Sensors, sodass ausreichend Reserven für zusätzliche Funktionen bestehen. Insgesamt zeigt die Arbeit,
 dass die Kombination aus klassischen Verfahren und sorgfältiger Parametrierung eine zuverlässige 360°-Umfelderfassung mit
 hochaufgelösten \ac{LiDAR}-Daten ermöglicht.
 \section{Ausblick}
 Die erzielten Ergebnisse legen mehrere Ansatzpunkte für weiterführende Arbeiten nahe. Kurzfristig bietet sich eine adaptive
-Parametrierung der Filter- und Segmentierungsstufen an, um die Pipeline dynamisch an unterschiedliche Wetter- oder
+Parametrierung der Filter- und Segmentierungsstufen an, um die Verarbeitungskette dynamisch an unterschiedliche Wetter- oder
 Verkehrssituationen anzupassen. Perspektivisch könnten probabilistische Filter oder graphbasierte Optimierungsverfahren die
 Tracking-Genauigkeit in komplexen Szenen erhöhen und robuste Reidentifikation ermöglichen. Darüber hinaus lässt sich durch
 Sensorfusion mit Kamera- oder Radardaten sowohl die semantische als auch die geometrische Konsistenz steigern, etwa über
@@ -2729,8 +2729,7 @@ Enthalten sind:
   \item \texttt{cluster\_extraction\_node.cpp}
   \item \texttt{tracking\_node.cpp}
   \item \texttt{CMakeLists.txt}, \texttt{package.xml}
-  \item verwendete Launch-Dateien (z.\,B. \texttt{benchmark.launch.py},
-        \texttt{ouster\_pipeline.launch.py})
+  \item verwendete Launch-Dateien (z.\,B. \texttt{benchmark.launch.py} sowie das Ouster-Launch-File)
 \end{itemize}
 
 \section*{2. Skripte zur Messung und Analyse}
