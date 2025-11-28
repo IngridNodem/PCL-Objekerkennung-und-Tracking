@@ -165,11 +165,11 @@ private:
         pcl::MomentOfInertiaEstimation<PointT> moi;
         moi.setInputCloud(cluster);
         moi.compute();
-        Eigen::Vector3f min_obb, max_obb, pos_obb;
+        pcl::PointXYZ min_obb, max_obb, pos_obb;
         Eigen::Matrix3f rot_obb;
         moi.getOBB(min_obb, max_obb, pos_obb, rot_obb);
-        center = pos_obb;
-        dims   = (max_obb - min_obb).cwiseAbs();
+        center = pos_obb.getVector3fMap();
+        dims   = (max_obb.getVector3fMap() - min_obb.getVector3fMap()).cwiseAbs();
         q      = Eigen::Quaternionf(rot_obb);
       } else {
         // AABB (achsenparallel)

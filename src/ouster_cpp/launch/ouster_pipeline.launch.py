@@ -33,8 +33,8 @@ def generate_launch_description():
                     'input_topic':  input_topic,        # absolut: bleibt /ouster/points
                     'output_topic': 'points_cropped',   # relativ: -> /<ns>/points_cropped
                     # Arbeitsvolumen (X,Y,Z) in Metern
-                    'min_bound': [-10.0, -4.0, -3.0],
-                    'max_bound': [ 10.0, 4.0, 5.0],
+                    'min_bound': [-10.0, -6.0, -3.0],
+                    'max_bound': [ 10.0, 6.0, 5.0],
                 }]
             ),
 
