@@ -310,18 +310,16 @@ Zur Orientierung zeigt Abbildung~\ref{fig:aufbau} den strukturellen Aufbau der A
 \chapter{Stand der Technik und Wissenschaft}
 \label{chap:stand-der-technik}
 
-Dieses Kapitel bündelt die wissenschaftlichen Grundlagen der \ac{LiDAR}-Sensorik, verortet sie im automobilen Kontext und leitet daraus die für die Verarbeitungskette relevanten Anforderungen ab. Es beschreibt die Messprinzipien, skizziert den historischen Entwicklungspfad, grenzt \ac{LiDAR} gegenüber Kamera und Radar ab und erläutert den Aufbau des verwendeten Sensors.
+Moderne Fahrerassistenzsysteme und autonome Fahrfunktionen kombinieren Kamera-, Radar- und \ac{LiDAR}-Sensorik. Kameras liefern hochauflösende Bildinformationen für semantische Aufgaben, Radar überzeugt durch robuste Distanz- und Geschwindigkeitsmessungen bei widrigen Wetterbedingungen. \ac{LiDAR} ergänzt diese Systeme um präzise, dreidimensionale Punktwolken mit hoher Winkelauflösung, die auch bei wechselnden Lichtverhältnissen konstant verfügbar sind \parencite{beuth2021handbuch}. Dadurch entsteht ein Sensorverbund, der semantische, dynamische und geometrische Informationen gleichermaßen abdeckt.
 
-Moderne Fahrerassistenzsysteme und autonome Fahrfunktionen stützen sich auf ein Zusammenspiel aus Kamera-, Radar- und \ac{LiDAR}-Sensorik. Kameras liefern hochauflösende Bildinformationen für semantische Aufgaben, Radar überzeugt durch robuste Distanz- und Geschwindigkeitsmessung auch bei ungünstigen Wetterbedingungen. \ac{LiDAR} ergänzt diese Systeme durch präzise dreidimensionale Punktwolken mit hoher Winkelauflösung und konstanter Leistungsfähigkeit bei wechselnden Lichtverhältnissen \parencite{beuth2021handbuch}.
+Das Akronym \emph{\ac{LiDAR}} beschreibt optische Messverfahren, die Lichtimpulse aussenden, deren Laufzeit bis zur Reflexion erfassen und daraus Entfernungen sowie Strukturen in drei Dimensionen rekonstruieren \parencite{mcmanamon2015fieldguide}. Nach ersten Anwendungen in Geodäsie und Fernerkundung seit den 1960er-Jahren ermöglichte der Fortschritt in Lasertechnik und Miniaturisierung die Übertragung in die Automobilindustrie, wo \ac{LiDAR} heute eine Schlüsselrolle für hochautomatisierte Funktionen einnimmt \parencite{beuth2021handbuch}. Im automobilen Sensorsystemverbund liefert \ac{LiDAR} die geometrische Präzision, mit der Kamera- und Radarinformationen redundant oder ergänzend genutzt werden können.
 
-Das Akronym \emph{\ac{LiDAR}} bezeichnet optische Messverfahren, die Lichtimpulse aussenden, deren Laufzeit bis zur Reflexion messen und so Entfernungen sowie Strukturen in drei Dimensionen rekonstruieren \parencite{mcmanamon2015fieldguide}. Nach frühen Anwendungen in Geodäsie und Fernerkundung seit den 1960er-Jahren ermöglichte der Fortschritt in Lasertechnik und Miniaturisierung die Übertragung in die Automobilindustrie, wo \ac{LiDAR} heute eine Schlüsselrolle für hochautomatisierte Funktionen einnimmt \parencite{beuth2021handbuch}.
-
-Im Sensorsystemverbund liefert \ac{LiDAR} somit die geometrische Präzision, mit der Kamera- und Radarinformationen redundant oder ergänzend genutzt werden können. Diese Rolle macht die Technologie besonders wertvoll für Aufgaben wie Hinderniserkennung, Bahnplanung und eine robuste Umfeldrepräsentation. Auf dieser Grundlage werden im Folgenden Sensoraufbau, Wellenlängenbereiche und Messprinzip der Ouster-Plattform vorgestellt, die die experimentelle Basis der Arbeit bilden.
+Damit ist \ac{LiDAR} insbesondere für Hinderniserkennung, Bahnplanung und robuste Umfeldrepräsentation wertvoll. Der folgende Abschnitt beschreibt den Sensoraufbau, anschließend werden Wellenlängenbereiche und Messprinzip erläutert. Diese Bausteine bilden die experimentelle Grundlage der Ouster-Plattform, auf der die Arbeit aufsetzt. Dieses Kapitel stellt die wissenschaftlichen Grundlagen der \ac{LiDAR}-Sensorik zusammen, verortet sie im automobilen Kontext und leitet daraus die für die Verarbeitungskette relevanten Anforderungen ab. Im Mittelpunkt stehen die Messprinzipien, der historische Entwicklungspfad, die Abgrenzung zu Kamera und Radar sowie der Aufbau des in dieser Arbeit genutzten Sensors.
 
 \section{Sensoraufbau}
 \label{sec:sensoraufbau}
 
-Ein \ac{LiDAR}-Sensor umfasst Sendeoptik und Strahlablenkung, Empfangsoptik und Lichtsensor sowie Auslese- und Steuerungselektronik (vgl. Abb.~\ref{fig:sensoraufbau}).
+Ein \ac{LiDAR}-Sensor umfasst Sendeoptik und Strahlablenkung, Empfangsoptik und Lichtsensor sowie Auslese- und Steuerungselektronik (vgl. Abb.~\ref{fig:sensoraufbau}). Die nachfolgenden Abschnitte skizzieren den Beitrag der jeweiligen Komponenten zum Gesamtsystem.
 
 \begin{figure}[H]
     \centering
@@ -340,11 +338,7 @@ oder Prismen die Strahlablenkung durch rotierende oder oszillierende
 Bewegungen. Im Gegensatz dazu nutzen sogenannte Flash-Systeme DOEs oder 
 Diffusoren, um die Szene pro Aufnahme vollständig auszuleuchten (\cite{mcmanamon2015fieldguide}).
 
-Die Strahlablenkung ist ein zentrales Element zur Erzeugung der Winkelinformation. 
-Sie legt fest, welcher Raumwinkel zu einem bestimmten Zeitpunkt erfasst wird 
-und ermöglicht so die sukzessive Abtastung der Umgebung. Die Genauigkeit der 
-Ablenkmechanik und ihre Synchronisation bestimmen unmittelbar die geometrische 
-Konsistenz des entstehenden Punktwolkenbildes (\cite{schuldt2020phd}).
+Die Strahlablenkung erzeugt die Winkelinformation und legt fest, welcher Raumwinkel zu einem bestimmten Zeitpunkt erfasst wird. Sie ermöglicht die sukzessive Abtastung der Umgebung und beeinflusst mit ihrer Genauigkeit und Synchronisation direkt die geometrische Konsistenz der resultierenden Punktwolke (\cite{schuldt2020phd}).
 
 Die Empfangsoptik übernimmt die Aufgabe, das vom Zielobjekt diffus oder spiegelnd 
 zurückgestreute Licht möglichst verlustarm einzusammeln und dem Detektorsystem 
@@ -357,15 +351,7 @@ sperrbandselektive Filter -- deren Durchlässigkeit exakt auf die Laserwellenlä
 abgestimmt ist -- für eine wirksame Unterdrückung von Umgebungslicht und erhöhen 
 somit die Robustheit gegenüber Sonnenlicht (\cite{wolter2021optoelektronik}).
 
-Als Detektoren kommen für automotive \ac{LiDAR}-Systeme typischerweise 
-Avalanche-Photodioden (APD) oder Single-Photon-Avalanche-Diodes (SPAD-Arrays) 
-zum Einsatz. APDs bieten durch ihren internen Lawineneffekt eine hohe 
-Verstärkung und eignen sich zur Detektion schwacher Rückstreusignale bei 
-gleichzeitig guter zeitlicher Auflösung. SPAD-Arrays ermöglichen die Erfassung 
-einzelner Photonen und erreichen extrem kurze Anstiegszeiten, wodurch sie eine 
-sehr präzise Laufzeitmessung unterstützen. Diese Eigenschaften sind entscheidend 
-für die Genauigkeit des Time-of-Flight-Prinzips (vgl. Kap.~\ref{sec:dTOF} und ~\ref{sec:iTOF} )und wirken sich direkt auf die 
-präzise Rekonstruktion der Objektentfernung aus (\cite{lemkin2020spad}).
+Als Detektoren kommen in automobilen \ac{LiDAR}-Systemen typischerweise Avalanche-Photodioden (APD) oder Single-Photon-Avalanche-Diodes (SPAD-Arrays) zum Einsatz. APDs bieten durch ihren internen Lawineneffekt eine hohe Verstärkung und eignen sich zur Detektion schwacher Rückstreusignale bei gleichzeitig guter zeitlicher Auflösung. SPAD-Arrays erfassen einzelne Photonen und erreichen extrem kurze Anstiegszeiten, wodurch sie eine sehr präzise Laufzeitmessung unterstützen. Diese Eigenschaften sind entscheidend für die Genauigkeit des Time-of-Flight-Prinzips (vgl. Kap.~\ref{sec:dTOF} und ~\ref{sec:iTOF}) und wirken sich direkt auf die präzise Rekonstruktion der Objektentfernung aus (\cite{lemkin2020spad}).
 
 Die vom Detektor erzeugten elektrischen Signale werden anschließend durch die 
 Ausleseelektronik verarbeitet. Diese umfasst Verstärker, Analog-Digital-Wandler 
